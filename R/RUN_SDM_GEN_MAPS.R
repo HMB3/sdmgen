@@ -43,6 +43,7 @@ sapply(package.list, require, character.only = TRUE)
 
 ## Source functions, and set temporary directory
 source('./R/SDM_GEN_PROCESSOR_FUNCTIONS.R')
+source('./R/SDM_GEN_MODEL_LISTS.R')
 # source('./R/READ_SPATIAL_DATA.R')
 
 
@@ -56,7 +57,7 @@ source('./R/SDM_GEN_PROCESSOR_FUNCTIONS.R')
 ## STEP 1 ======================================================================================================
 
 
-## Load in all the .rda files :: this is all the data needed to run an example analysis
+## Load in all the .rda files that are save with the package :: this is all the data needed to run an example analysis
 list.filenames <- list.files(path = './data/', pattern = ".rda$", full.names = TRUE)
 list.data<-list()
 
