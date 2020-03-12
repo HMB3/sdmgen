@@ -6,9 +6,6 @@
 ## Below is a list of the functions used to prepare the data for SDM analysis, and run the analysis
 
 
-
-
-
 ## Get a complete df ----
 #' @export
 completeFun <- function(data, desiredCols) {
@@ -17,6 +14,9 @@ completeFun <- function(data, desiredCols) {
   return(data[completeVec, ])
 
 }
+
+
+
 
 
 ## Estiamte the niche from species records ----
@@ -2807,6 +2807,126 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 
   })
 
+}
+
+
+
+
+
+## Simplify the maxent models ----
+#' @export
+local_simplify = function (occ, bg, path, species_column = "species", response_curves = TRUE,
+                           logistic_format = TRUE, type = "PI", cor_thr, pct_thr, k_thr,
+                           features = "lpq", replicates = 1, quiet = TRUE)
+{
+  if (!species_column %in% colnames(occ))
+    stop(species_column, " is not a column of `occ`", call. = FALSE)
+  if (!species_column %in% colnames(bg))
+    stop(species_column, " is not a column of `bg`", call. = FALSE)
+  if (missing(path)) {
+    save <- FALSE
+    path <- tempdir()
+
+  }
+
+  else save <- TRUE
+  features <- unlist(strsplit(gsub("\\s", "", features), ""))
+  if (length(setdiff(features, c("l", "p", "q", "h", "t"))) >
+      1)
+    stop("features must be a vector of one or more of ',\n         'l', 'p', 'q', 'h', and 't'.")
+  off <- setdiff(c("l", "p", "q", "t", "h"), features)
+  if (length(off) > 0) {
+    off <- c(l = "linear=FALSE", p = "product=FALSE", q = "quadratic=FALSE",
+             t = "threshold=FALSE", h = "hinge=FALSE")[off]
+
+  }
+  off <- unname(off)
+  occ_by_species <- split(occ, occ[[species_column]])
+  bg_by_species <- split(bg, bg[[species_column]])
+  if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {
+    stop("The same set of species names must exist in occ and bg")
+  }
+  type <- switch(type, PI = "permutation.importance", PC = "contribution",
+                 stop("type must be either \"PI\" or \"PC\".", call. = FALSE))
+  args <- off
+  if (replicates > 1)
+    args <- c(args, paste0("replicates=", replicates))
+  if (isTRUE(response_curves))
+    args <- c(args, "responsecurves=TRUE")
+  if (isTRUE(logistic_format))
+    args <- c(args, "outputformat=logistic")
+  f <- function(name) {
+    if (!quiet)
+      message("\n\nDoing ", name)
+    name_ <- gsub(" ", "_", name)
+    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
+    swd <- swd[, -match(species_column, names(swd))]
+    if (ncol(swd) < k_thr)
+      stop("Initial number of variables < k_thr", call. = FALSE)
+    pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
+    vc <- usdm::vifcor(swd, maxobservations = nrow(swd),
+                       th = cor_thr)
+    vif <- methods::slot(vc, "results")
+    k <- nrow(vif)
+    exclude <- methods::slot(vc, "excluded")
+    if (!isTRUE(quiet) & length(exclude) > 0) {
+      message("Dropped due to collinearity: ", paste0(exclude,
+                                                      collapse = ", "))
+    }
+    if (k < k_thr)
+      stop(sprintf("Number of uncorrelated variables (%s) < k_thr (%s). %s",
+                   k, k_thr, "Reduce k_thr, increase cor_thr, or find alternative predictors."),
+           call. = FALSE)
+    swd_uncor <- swd[, as.character(vif$Variables)]
+    d <- file.path(path, name_, if (replicates > 1)
+      "xval"
+      else "full")
+    m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
+    if (isTRUE(save))
+      saveRDS(m, file.path(d, "maxent_fitted.rds"))
+    pct <- m@results[grep(type, rownames(m@results)), ,
+                     drop = FALSE]
+    pct <- pct[, ncol(pct)]
+    pct <- sort(pct)
+    names(pct) <- sub(paste0("\\.", type), "", names(pct))
+    if (min(pct) >= pct_thr || length(pct) == k_thr) {
+      if (replicates > 1) {
+        d <- file.path(path, name_, "full")
+        m <- dismo::maxent(swd_uncor, pa, args = grep("replicates",
+                                                      args, value = TRUE, invert = TRUE), path = d)
+      }
+      if (isTRUE(save)) {
+        saveRDS(m, file.path(d, "maxent_fitted.rds"))
+      }
+      return(m)
+    }
+    while (min(pct) < pct_thr && length(pct) > k_thr) {
+      candidates <- vif[vif$Variables %in% names(pct)[pct ==
+                                                        pct[1]], ]
+      drop <- as.character(candidates$Variables[which.max(candidates$VIF)])
+      message("Dropping ", drop)
+      swd_uncor <- swd_uncor[, -match(drop, colnames(swd_uncor))]
+      if (!quiet)
+        message(sprintf("%s variables: %s", ncol(swd_uncor),
+                        paste0(colnames(swd_uncor), collapse = ", ")))
+      m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
+      pct <- m@results[grep(type, rownames(m@results)),
+                       , drop = FALSE]
+      pct <- pct[, ncol(pct)]
+      pct <- sort(pct)
+      names(pct) <- sub(paste0("\\.", type), "", names(pct))
+    }
+    if (replicates > 1) {
+      d <- file.path(path, name_, "full")
+      m <- dismo::maxent(swd_uncor, pa, args = grep("replicates",
+                                                    args, value = TRUE, invert = TRUE), path = d)
+    }
+    if (isTRUE(save)) {
+      saveRDS(m, file.path(d, "maxent_fitted.rds"))
+    }
+    return(m)
+  }
+  lapply(names(occ_by_species), f)
 }
 
 

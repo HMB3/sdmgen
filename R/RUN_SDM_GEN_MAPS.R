@@ -65,7 +65,7 @@ list.data<-list()
 for (i in 1:length(list.filenames))
 
 {
-  message('load .rda for ', i)
+  #message('load .rda for ', i)
   list.data[[i]]<-load(list.filenames[i])
 }
 
@@ -264,12 +264,12 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 
 
 ## Rasterize a shapefile ----
-areal_unit_vec <- shapefile_vector_from_raster(shp_file = 'data/base/Contextual/SUA_2016_AUST.shp',
+areal_unit_vec <- shapefile_vector_from_raster(shp_file = SUA,
                                                prj      = ALB.CONICAL,
                                                sort_var = 'SUA_NAME16',
                                                agg_var  = 'SUA_CODE16',
                                                temp_ras = 'output/maxent/back_sel_models/Dobsonia_magna/full/Dobsonia_magna_current.tif',
-                                               targ_ras = './data/base/Contextual/SUA_2016_AUST.tif')
+                                               targ_ras = './data/SUA_2016_AUST.tif')
 
 
 ## This is a vector of all the cells that either are or aren't in the rasterized shapefile
@@ -297,8 +297,7 @@ tryCatch(
   ## If the species fails, write a fail message to file.
   error = function(cond) {
 
-    ## This will write the error message inside the text file,
-    ## but it won't include the species
+    ## This will write the error message inside the text file, but it won't include the species
     file.create(file.path(maxent_path, "output/maxent/back_sel_models/mapping_failed_2030.txt"))
     cat(cond$message, file=file.path(maxent_path, "output/maxent/back_sel_models/mapping_failed_2030.txt"))
     warning(cond$message)
