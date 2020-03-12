@@ -61,7 +61,7 @@ source('./R/SDM_GEN_MODEL_LISTS.R')
 list.filenames <- list.files(path = './data/', pattern = ".rda$", full.names = TRUE)
 list.data<-list()
 
-# create a loop to read in your data
+## See the global environemnt for a list of objects
 for (i in 1:length(list.filenames))
 
 {
@@ -94,6 +94,7 @@ download_ALA_all_species(species_list = bat.spp,
 
 ## :: Combine ALA data and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
+## Raster :: Error in .local(.Object, ...) :
 ALA.LAND = combine_ala_records(species_list      = bat.spp,
                                records_path      = "./data/ALA/",
                                records_extension = "_ALA_records.RData",
@@ -180,6 +181,7 @@ plot_range_histograms(coord_df     = COORD.CLEAN,
 
 ## This code creates the table for running SDMs in 'species with data', or SWD format.
 ## There is a switch in the function, that adds additional bg points from other taxa, if specified.
+## In this example for bats, we'll just use
 SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
                                     species_list    = unique(COORD.CLEAN$searchTaxon),
                                     sdm_table_vars  = sdm.table.vars,

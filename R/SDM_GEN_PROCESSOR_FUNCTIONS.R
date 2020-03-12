@@ -12,6 +12,7 @@
 ## Get a complete df ----
 #' @export
 completeFun <- function(data, desiredCols) {
+
   completeVec <- complete.cases(data[, desiredCols])
   return(data[completeVec, ])
 
