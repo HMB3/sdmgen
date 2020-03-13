@@ -57,7 +57,8 @@ source('./R/SDM_GEN_MODEL_LISTS.R')
 ## STEP 1 ======================================================================================================
 
 
-## Load in all the .rda files that are save with the package :: this is all the data needed to run an example analysis
+## Load in all the .rda files that are save with the package ::
+## this is all the data needed to run an example analysis
 list.filenames <- list.files(path = './data/', pattern = ".rda$", full.names = TRUE)
 list.data<-list()
 
@@ -71,7 +72,7 @@ for (i in 1:length(list.filenames))
 
 
 ## Create a list of species to analyse
-bat.spp <- aus.bats$Species[1:3] %>%
+bat.spp <- aus.bats$Species[1:2] %>%
   str_trim()
 
 

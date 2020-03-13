@@ -3,7 +3,14 @@
 
 
 ## This code reads in the vector and raster data that is used to create species distribution models 
+## Shapefiles don't need locations.
+## Rasters store the location as part of the file, so the actual data needs to be stored there too...
+## Need to check that the updated objects have the right file location in the slot 
 
+
+## Change these slots to be the project paths ::
+# template.raster.1km.84@file@name
+# str(world.grids.current[[1]]@file@name)
 
 
 
@@ -12,22 +19,22 @@
 
 
 ## Set coordinate system definitions
-CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
-CRS.MOL.SDM  <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
-CRS.WGS.84   <- CRS("+init=epsg:4326")
-CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
-ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
-sp_epsg54009 <- "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
+# CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
+# CRS.MOL.SDM  <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
+# CRS.WGS.84   <- CRS("+init=epsg:4326")
+# CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
+# ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
+# sp_epsg54009 <- "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
 
 
 ## Check how the Koppen zones were calculated
-Koppen_zones     = unique(readOGR('data/base/Contextual/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
-Koppen_shp       = readOGR('data/base/Contextual/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')
-Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
-AUS              = readRDS("./data/base/Contextual/aus_states.rds")
-LAND             = readRDS("./data/base/Contextual/LAND_world.rds")
-IBRA             = readRDS('./data/base/Contextual/IBRA7_SUB.rds')
-SUA              = readRDS('./data/base/Contextual/SUA_2016_AUST.rds')
+# Koppen_zones     = unique(readOGR('data/world_koppen/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
+# Koppen_shp       = readOGR('data/base/Contextual/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')
+# Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
+# AUS              = readRDS("./data/base/Contextual/aus_states.rds")
+# LAND             = readRDS("./data/base/Contextual/LAND_world.rds")
+# IBRA             = readRDS('./data/base/Contextual/IBRA7_SUB.rds')
+# SUA              = readRDS('./data/base/Contextual/SUA_2016_AUST.rds')
 
 
 ## Read in shapefiles like this
@@ -55,84 +62,15 @@ head(unique(IBRA$REG_NAME_7))
 
 
 ## These rasters could change, but the names in the projections, etc, would also need to change
-
-
-## Create the variables needed to access current environmental conditions + their names in the functions
-## Names of all the worldclim variables used to extract the raster data
-env.variables = c("Annual_mean_temp",
-                  "Mean_diurnal_range",
-                  "Isothermality",
-                  "Temp_seasonality",
-                  "Max_temp_warm_month",
-                  "Min_temp_cold_month",
-                  "Temp_annual_range",
-                  "Mean_temp_wet_qu",
-                  "Mean_temp_dry_qu",
-                  "Mean_temp_warm_qu",
-                  "Mean_temp_cold_qu",
-                  
-                  "Annual_precip",
-                  "Precip_wet_month",
-                  "Precip_dry_month",
-                  "Precip_seasonality",
-                  "Precip_wet_qu",
-                  "Precip_dry_qu",
-                  "Precip_warm_qu",
-                  "Precip_col_qu")
-
-bioclim.variables = c('bio_01',
-                      'bio_02',
-                      'bio_03',
-                      'bio_04',
-                      'bio_05',
-                      'bio_06',
-                      'bio_07',
-                      'bio_08',
-                      'bio_09',
-                      'bio_10',
-                      'bio_11',
-                      
-                      ## Rainfall
-                      'bio_12',
-                      'bio_13',
-                      'bio_14',
-                      'bio_15',
-                      'bio_16',
-                      'bio_17',
-                      'bio_18',
-                      'bio_19')
-
-
-## Names of the sdm data table ---
-sdm.table.vars <- c('searchTaxon', 'lon', 'lat', 'SOURCE', 'CC.OBS',
-                    
-                    'Annual_mean_temp',  'Mean_diurnal_range',  'Isothermality', 'Temp_seasonality', 
-                    'Max_temp_warm_month',  'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',
-                    'Mean_temp_dry_qu',     'Mean_temp_warm_qu',   'Mean_temp_cold_qu', 
-                    
-                    'Annual_precip',        'Precip_wet_month',    'Precip_dry_month',  'Precip_seasonality',   
-                    'Precip_wet_qu',        'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
-
-
-## Names of the best 15 worldclim predictors ----
-## i.e. 'backwards selected' predictors
-bs.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
-                   "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
-                   "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
-                   
-                   "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
-                   "Precip_wet_qu",       "Precip_dry_qu")
-
-
 ## Create a raster stack of current global environmental conditions
 world.grids.current = stack(
-  file.path('./data/base/worldclim/world/0.5/bio/current',
+  file.path('./data/worldclim/world/current',
             sprintf('bio_%02d', 1:19)))
 
 
 ## Create a raster stack of current Australian environmental conditions, and divide the current environmental grids by 10
 aus.grids.current <- stack(
-  file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./green_cities_sdm/data/base/worldclim/aus/1km/bio
+  file.path('./data/worldclim/aus/current',   ## ./green_cities_sdm/data/base/worldclim/aus/1km/bio
             sprintf('bio_%02d.tif', 1:19)))
 
 for(i in 1:11) {
@@ -142,6 +80,8 @@ for(i in 1:11) {
   aus.grids.current[[i]] <- aus.grids.current[[i]]/10
   
 }  
+
+
 
 
 
