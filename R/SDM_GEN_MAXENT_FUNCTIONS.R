@@ -4,7 +4,7 @@
 
 
 ## Below is a list of the functions used to run the SDM models
-## Need to check the functions work the whole way through
+## Need to check the functions work the whole way through..
 
 
 ## Run the SDM analysis ----
