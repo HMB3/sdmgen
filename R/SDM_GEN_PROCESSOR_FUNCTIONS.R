@@ -4,87 +4,7 @@
 
 
 ## Below is a list of the functions used to prepare the data for SDM analysis, and run the analysis
-
-
-## Get a complete df ----
-#' @export
-completeFun <- function(data, desiredCols) {
-
-  completeVec <- complete.cases(data[, desiredCols])
-  return(data[completeVec, ])
-
-}
-
-
-
-
-
-## Estiamte the niche from species records ----
-#' @export
-niche_estimate = function (DF,
-                           colname) {
-
-  ## R doesn't seem to have a built-in mode function
-  ## This doesn't really handel multiple modes, but it doesn't matter because mode was just calculated for Renee........
-  Mode <- function(x) {
-    ux <- unique(x)
-    ux[which.max(tabulate(match(x, ux)))]
-  }
-
-  ## Use ddply inside a function to create niche widths and medians for each species
-  ## This syntax is tricky, maybe ask John and Stu what they think
-
-  ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
-  summary = ddply(DF,
-                  .(searchTaxon),           ## currently grouping column only works hard-wired
-                  .fun = function (xx, col) {
-
-                    ## All the different columns
-                    min      = min(xx[[col]])
-                    max      = max(xx[[col]])
-
-                    q02      = quantile(xx[[col]], .02)
-                    q05      = quantile(xx[[col]], .05)
-                    q95      = quantile(xx[[col]], .95)
-                    q98      = quantile(xx[[col]], .98)
-
-                    median   = median(xx[[col]])
-                    mean     = mean(xx[[col]])
-                    mode     = Mode(xx[[col]])
-                    range    = max - min
-                    q95_q05  = (q95 - q05)
-                    q98_q02  = (q98 - q02)
-
-                    ## Then crunch them together
-                    c(min, max, median, mode, mean, range, q05, q95,  q95_q05, q98_q02)
-
-                  },
-
-                  colname
-
-  )
-
-  ## Concatenate output
-  ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
-  ## currently it only works hard-wired
-  colnames(summary) = c("searchTaxon",
-                        paste0(colname,  "_min"),
-                        paste0(colname,  "_max"),
-                        paste0(colname,  "_median"),
-                        paste0(colname,  "_mode"),
-                        paste0(colname,  "_mean"),
-                        paste0(colname,  "_range"),
-                        paste0(colname,  "_q05"),
-                        paste0(colname,  "_q95"),
-                        paste0(colname,  "_q95_q05"),
-                        paste0(colname,  "_q98_q02"))
-
-  ## return the summary of niche width and median
-  return (summary)
-
-}
-
-
+## Need to check the functions work the whole way through
 
 
 
@@ -241,47 +161,6 @@ download_ALA_all_species = function (species_list, path) {
 
 
 
-
-
-## Create vector of raster -----
-#' @export
-shapefile_vector_from_raster = function (shp_file,
-                                         prj,
-                                         sort_var,
-                                         agg_var,
-                                         temp_ras,
-                                         targ_ras) {
-
-  ## Read in shapefile
-  areal_unit = readOGR(shp_file) %>%
-    spTransform(prj)
-
-  ## Rasterize shapefile, insert 'sort_var'
-  message('Rasterizing shapefile')
-  areal_unit = areal_unit[order(areal_unit[[sort_var]]),]
-  #areal_unit = areal_unit[order(areal_unit$SUA_NAME16),]
-  f <- tempfile()
-
-  ## Write a temporary raster
-  writeOGR(areal_unit, tempdir(), basename(f), 'ESRI Shapefile')
-  template <- raster(temp_ras)
-
-  ## Rasterize the shapefile
-  areal_unit_rast <- gdalUtils::gdal_rasterize(
-    normalizePath(paste0(f, '.shp')),
-
-    ## The missing step is the .tiff, it was created somewhere else, in R or a GIS
-    ## so 'a' needs to match in this step, and the next
-    targ_ras, tr = res(template),
-    te = c(bbox(template)), a = agg_var, a_nodata = 0, init = 0, ot = 'UInt16', output_Raster = TRUE)
-
-  areal_unit_vec <- c(areal_unit_rast[])
-  summary(areal_unit_vec)
-
-  ## return the vector
-  return(areal_unit_vec)
-
-}
 
 
 ## Combining ALA records -----
@@ -1262,6 +1141,88 @@ calc_1km_niches = function(coord_df,
 
 
 
+## Get a complete df ----
+#' @export
+completeFun <- function(data, desiredCols) {
+
+  completeVec <- complete.cases(data[, desiredCols])
+  return(data[completeVec, ])
+
+}
+
+
+
+
+
+## Estiamte the niche from species records ----
+#' @export
+niche_estimate = function (DF,
+                           colname) {
+
+  ## R doesn't seem to have a built-in mode function
+  ## This doesn't really handel multiple modes, but it doesn't matter because mode was just calculated for Renee........
+  Mode <- function(x) {
+    ux <- unique(x)
+    ux[which.max(tabulate(match(x, ux)))]
+  }
+
+  ## Use ddply inside a function to create niche widths and medians for each species
+  ## This syntax is tricky, maybe ask John and Stu what they think
+
+  ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+  summary = ddply(DF,
+                  .(searchTaxon),           ## currently grouping column only works hard-wired
+                  .fun = function (xx, col) {
+
+                    ## All the different columns
+                    min      = min(xx[[col]])
+                    max      = max(xx[[col]])
+
+                    q02      = quantile(xx[[col]], .02)
+                    q05      = quantile(xx[[col]], .05)
+                    q95      = quantile(xx[[col]], .95)
+                    q98      = quantile(xx[[col]], .98)
+
+                    median   = median(xx[[col]])
+                    mean     = mean(xx[[col]])
+                    mode     = Mode(xx[[col]])
+                    range    = max - min
+                    q95_q05  = (q95 - q05)
+                    q98_q02  = (q98 - q02)
+
+                    ## Then crunch them together
+                    c(min, max, median, mode, mean, range, q05, q95,  q95_q05, q98_q02)
+
+                  },
+
+                  colname
+
+  )
+
+  ## Concatenate output
+  ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+  ## currently it only works hard-wired
+  colnames(summary) = c("searchTaxon",
+                        paste0(colname,  "_min"),
+                        paste0(colname,  "_max"),
+                        paste0(colname,  "_median"),
+                        paste0(colname,  "_mode"),
+                        paste0(colname,  "_mean"),
+                        paste0(colname,  "_range"),
+                        paste0(colname,  "_q05"),
+                        paste0(colname,  "_q95"),
+                        paste0(colname,  "_q95_q05"),
+                        paste0(colname,  "_q98_q02"))
+
+  ## return the summary of niche width and median
+  return (summary)
+
+}
+
+
+
+
+
 ## Plot histograms and convex hulls for selected taxa ----
 #' @export
 plot_range_histograms = function(coord_df,
@@ -1798,7 +1759,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
                                         # shp_path,
                                         aus_shp) {
 
-  ########################################################################
+  #####
   ## First, stop if the outdir file exists,
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
@@ -1827,7 +1788,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
   ## Create a buffer of xkm around the occurrence points
   buffer <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
 
-  #####################################################################
+  ##
   ## Get unique cell numbers for species occurrences
   cells <- cellFromXY(template.raster, occ)
 
@@ -1838,7 +1799,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
   cells     <- cells[not_dupes]
   message(nrow(occ), ' occurrence records (unique cells).')
 
-  #####################################################################
+  ##
   ## Skip species that have less than a minimum number of records: eg 20 species
   if(nrow(occ) < min_n) {
 
@@ -1848,7 +1809,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
 
   } else {
 
-    #####################################################################
+    ##
     ## Subset the background records to the 200km buffered polygon
     message(name, ' creating background cells')
     system.time(o <- over(bg, buffer))
@@ -1882,7 +1843,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     ## very different in the occurrence vs the bg records.
     ## This should be caused by the 200km / koppen restriction, etc.
 
-    #####################################################################
+    ##
     ## Reduce background sample, if it's larger than max_bg_size
     if (nrow(bg) > max_bg_size) {
 
@@ -1898,7 +1859,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
 
     }
 
-    #####################################################################
+    ##
     ## Now save an image of the background points
     ## This is useful to quality control the models
     save_name = gsub(' ', '_', name)
@@ -1931,7 +1892,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
 
     dev.off()
 
-    #####################################################################
+    ##
     ## Now save the buffer, the occ and bg points as shapefiles
     if(shapefiles) {
 
@@ -1951,7 +1912,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     saveRDS(bg.samp,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
     saveRDS(occ,      file.path(outdir_sp, paste0(save_name, '_occ.rds')))
 
-    #####################################################################
+    ##
     ## SWD = species with data. Now sample the environmental
     ## variables used in the model at all the occ and bg points
     swd_occ <- occ[, sdm.predictors]
@@ -1968,7 +1929,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
 
     }
 
-    #####################################################################
+    ##
     ## Now combine the occurrence and background data
     swd <- as.data.frame(rbind(swd_occ@data, swd_bg@data))
     saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
@@ -2024,7 +1985,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
 
     if (backwards_sel == "TRUE") {
 
-      #####################################################################
+      ##
       ## Coerce the "species with data" (SWD) files to regular data.frames
       ## This is needed to use the simplify function
       swd_occ     <- as.data.frame(swd_occ)
@@ -2038,7 +1999,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
       swd_occ$searchTaxon <- name
       swd_bg$searchTaxon  <- name
 
-      #####################################################################
+      ##
       ## Run simplify rmaxent::simplify
 
       # Given a candidate set of predictor variables, this function identifies
@@ -2076,7 +2037,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
       bs.model <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', bsdir,  save_name))
       identical(length(bs.model@presence$Annual_mean_temp), nrow(occ))
 
-      #####################################################################
+      ##
       ## Save the chart corrleation file too for the training data set
       par(mar   = c(3, 3, 5, 3),
           oma   = c(1.5, 1.5, 1.5, 1.5))
@@ -2514,12 +2475,12 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               novel_future <- mess_future$similarity_min < 0  ##   All novel environments are < 0
               novel_future[novel_future==0] <- NA             ##   0 values are NA
 
-              ####################################################################################
+
               ## Write out the future mess maps, for all variables
               writeRaster(mess_future$similarity_min, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_mess_", x),
                           overwrite = TRUE)
 
-              ####################################################################################
+
               ## Create a PNG file of all the future MESS output:
               ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
               ## raster_names = names(mess_current$similarity)   :: names of the rasters
@@ -2547,7 +2508,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               writeRaster(novel_future, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_",  x),
                           overwrite = TRUE)
 
-              ####################################################################################
+
               ## mask out future novel environments
               ## is.na(novel_future) is a binary layer showing
               ## not novel [=1] vs novel [=0],
@@ -2575,7 +2536,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
             novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
 
-            ###################################################################
+
             ## Create the MESS path and save shapefiles
             MESS_shp_path   = sprintf('%s%s/full/%s',
                                       maxent_path, species, 'MESS_output')
@@ -2625,7 +2586,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
                                 hatch(novel_current_poly, 50),
                                 hatch(novel_future_poly, 50))
 
-            ####################################################################################
+
             ## Now create a panel of PNG files for maxent projections and MESS maps
             ## All the projections and extents need to match
             empty_ras <- init(pred.current, function(x) NA)
@@ -2636,7 +2597,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## Assign the scenario name (to use in the plot below)
             scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))
 
-            ############################################################
+
             ## Use the 'levelplot' function to make a multipanel output: occurrence points, current raster and future raster
             current_mess_png = sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "mess_panel")
             if(!file.exists(current_mess_png)) {
@@ -2677,7 +2638,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 
           }
 
-          ##################################################################################
+
           ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY
           occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, species)) %>%
             spTransform(CRS.WGS.84)
@@ -2722,7 +2683,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             message('Global occurrence maps already created for ', species)
           }
 
-          ############################################################
+
           ## Create level plot of scenario x, including MESS
           future_mess_png = sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x)
 
@@ -2928,5 +2889,49 @@ local_simplify = function (occ, bg, path, species_column = "species", response_c
   }
   lapply(names(occ_by_species), f)
 }
+
+
+
+
+## Create vector of raster -----
+#' @export
+shapefile_vector_from_raster = function (shp_file,
+                                         prj,
+                                         sort_var,
+                                         agg_var,
+                                         temp_ras,
+                                         targ_ras) {
+
+  ## Read in shapefile
+  areal_unit <- shp_file %>%
+    spTransform(prj)
+
+  ## Rasterize shapefile, insert 'sort_var'
+  message('Rasterizing shapefile')
+  areal_unit = areal_unit[order(areal_unit[[sort_var]]),]
+  #areal_unit = areal_unit[order(areal_unit$SUA_NAME16),]
+  f <- tempfile()
+
+  ## Write a temporary raster
+  writeOGR(areal_unit, tempdir(), basename(f), 'ESRI Shapefile')
+  template <- raster(temp_ras)
+
+  ## Rasterize the shapefile
+  areal_unit_rast <- gdalUtils::gdal_rasterize(
+    normalizePath(paste0(f, '.shp')),
+
+    ## The missing step is the .tiff, it was created somewhere else, in R or a GIS
+    ## so 'a' needs to match in this step, and the next
+    targ_ras, tr = res(template),
+    te = c(bbox(template)), a = agg_var, a_nodata = 0, init = 0, ot = 'UInt16', output_Raster = TRUE)
+
+  areal_unit_vec <- c(areal_unit_rast[])
+  summary(areal_unit_vec)
+
+  ## return the vector
+  return(areal_unit_vec)
+
+}
+
 
 

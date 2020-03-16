@@ -1,11 +1,76 @@
-######################################## READ SPATIAL DATA FOR SDM MODELLING ############################################ 
+######################################## READ SPATIAL DATA FOR SDM MODELLING ############################################
 
 
 
-## This code reads in the vector and raster data that is used to create species distribution models 
+## This code reads in the vector and raster data that is used to create species distribution models
 ## Shapefiles don't need locations.
 ## Rasters store the location as part of the file, so the actual data needs to be stored there too...
-## Need to check that the updated objects have the right file location in the slot 
+## Need to check that the updated objects have the right file location in the slot
+## This can only be tested in another location :: ask Shawn to have a go
+
+
+## Upload to dropbox, etc, and ask Shawn/will to test
+
+
+## Change these slots to be the project paths ::
+# template.raster.1km.84@file@name        <- "\\data\\world_koppen\\template_1km_WGS84.tif"
+# world.grids.current[[1]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_01"
+# world.grids.current[[2]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_02"
+# world.grids.current[[3]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_03"
+# world.grids.current[[4]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_04"
+# world.grids.current[[5]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_05"
+# world.grids.current[[6]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_06"
+# world.grids.current[[7]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_07"
+# world.grids.current[[8]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_08"
+# world.grids.current[[9]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_09"
+# world.grids.current[[10]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_10"
+# world.grids.current[[11]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_11"
+# world.grids.current[[12]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_12"
+# world.grids.current[[13]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_13"
+# world.grids.current[[14]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_14"
+# world.grids.current[[15]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_15"
+# world.grids.current[[16]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_16"
+# world.grids.current[[17]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_17"
+# world.grids.current[[18]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_18"
+# world.grids.current[[19]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_19"
+
+
+
+# aus.grids.current[[1]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_01"
+# aus.grids.current[[2]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_02"
+# aus.grids.current[[3]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_03"
+# aus.grids.current[[4]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_04"
+# aus.grids.current[[5]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_05"
+# aus.grids.current[[6]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_06"
+# aus.grids.current[[7]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_07"
+# aus.grids.current[[8]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_08"
+# aus.grids.current[[9]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_09"
+# aus.grids.current[[10]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_10"
+# aus.grids.current[[11]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_11"
+# aus.grids.current[[12]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_12"
+# aus.grids.current[[13]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_13"
+# aus.grids.current[[14]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_14"
+# aus.grids.current[[15]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_15"
+# aus.grids.current[[16]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_16"
+# aus.grids.current[[17]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_17"
+# aus.grids.current[[18]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_18"
+# aus.grids.current[[19]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_19"
+
+
+
+
+
+
+# str(world.grids.current[[1]]@file@name) <-
+=======
+######################################## READ SPATIAL DATA FOR SDM MODELLING ############################################
+
+
+
+## This code reads in the vector and raster data that is used to create species distribution models
+## Shapefiles don't need locations.
+## Rasters store the location as part of the file, so the actual data needs to be stored there too...
+## Need to check that the updated objects have the right file location in the slot
 
 
 ## Change these slots to be the project paths ::
@@ -37,14 +102,26 @@
 # SUA              = readRDS('./data/base/Contextual/SUA_2016_AUST.rds')
 
 
+AUS_albers <- AUS %>%
+  spTransform(ALB.CONICAL)
+
+LAND_albers <- LAND %>%
+  spTransform(ALB.CONICAL)
+
+SUA_albers <- SUA %>%
+  spTransform(ALB.CONICAL)
+
+
+
+
 ## Read in shapefiles like this
 # IBRA       = readOGR('data/base/Contextual/IBRA7_subregions_states.shp')
 # saveRDS(IBRA, 'data/base/Contextual/IBRA7_SUB.rds')
 # SUA       = readOGR('data/base/Contextual/SUA_2016_AUST.shp')
 # saveRDS(SUA, 'data/base/Contextual/SUA_2016_AUST.rds')
 length(unique(IBRA$REG_NAME_7))
-length(unique(SUA$SUA_CODE16)) 
-head(unique(IBRA$REG_NAME_7))
+length(unique(SUA$SUA_CODE16))
+
 
 
 
@@ -74,12 +151,13 @@ aus.grids.current <- stack(
             sprintf('bio_%02d.tif', 1:19)))
 
 for(i in 1:11) {
-  
+
+
   ## simple loop
   message(i)
   aus.grids.current[[i]] <- aus.grids.current[[i]]/10
-  
-}  
+
+}
 
 
 
@@ -109,24 +187,44 @@ xres(template.raster.1km)
 
 
 ## Create the names for the GCMs by scraping the worldclim website
-h <- read_html('http://www.worldclim.org/cmip5_30s') 
-gcms <- h %>% 
-  html_node('table') %>% 
-  html_table(header = TRUE) %>% 
+h <- read_html('http://www.worldclim.org/cmip5_30s')
+gcms <- h %>%
+  html_node('table') %>%
+  html_table(header = TRUE) %>%
   filter(rcp85 != '')
 
-id.50 <- h %>% 
-  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
-  as.character %>% 
-  grep('85bi50', ., value = TRUE) %>% 
-  basename %>% 
+id.50 <- h %>%
+  html_nodes(xpath = "//a[text()='bi']/@href") %>%
+  as.character %>%
+  grep('85bi50', ., value = TRUE) %>%
+  basename %>%
   sub('\\.zip.', '', .)
 
-id.70 <- h %>% 
-  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
-  as.character %>% 
-  grep('85bi70', ., value = TRUE) %>% 
-  basename %>% 
+id.70 <- h %>%
+  html_nodes(xpath = "//a[text()='bi']/@href") %>%
+  as.character %>%
+  grep('85bi70', ., value = TRUE) %>%
+  basename %>%
+  sub('\\.zip.', '', .)
+
+h <- read_html('http://www.worldclim.org/cmip5_30s')
+gcms <- h %>%
+  html_node('table') %>%
+  html_table(header = TRUE) %>%
+  filter(rcp85 != '')
+
+id.50 <- h %>%
+  html_nodes(xpath = "//a[text()='bi']/@href") %>%
+  as.character %>%
+  grep('85bi50', ., value = TRUE) %>%
+  basename %>%
+  sub('\\.zip.', '', .)
+
+id.70 <- h %>%
+  html_nodes(xpath = "//a[text()='bi']/@href") %>%
+  as.character %>%
+  grep('85bi70', ., value = TRUE) %>%
+  basename %>%
   sub('\\.zip.', '', .)
 
 
@@ -142,7 +240,8 @@ gcms.50 <- cbind(gcms, id.50)
 gcms.50$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
 
 gcms.70 <- cbind(gcms, id.70)
-gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM) 
+gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
+gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
 
 
 ## Now create the scenario lists across which to loop
@@ -157,21 +256,27 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 
 
 ## Make a list of SDM columns needed ----
-results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code 
+results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
                     "Origin",             ## native/extoic : from Anthony Manea's spreadsheet, affected by taxonomy....
                     "Family",             ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
-                    
                     "Maxent_records",     ## No. records used in the SDM
                     "Aus_records",        ## No. AUS records     :: from the R workflow
                     "AOO",                ## Global Area of occurrence
-                    "KOP_count",          ## Number of koppen zones each species is found in...
-                    
+                    "KOP_count",          ## Number of koppen zones each species is found in...D
+
                     "Number_var",        ## No. maxent variables :: from Maxent code
-                    "Var_pcont",         ## Maxent Variable with highest permutation importance    
+                    "Var_pcont",         ## Maxent Variable with highest permutation importance
                     "Per_cont",          ## The permutaiton importance of that variable
-                    "Var_pimp",          ## Maxent Variable with highest permutation importance    
-                    "Perm_imp",          ## The permutaiton importance of that variable 
-                    "Iterations",               ## No. iterations                                                                    
+                    "Var_pimp",          ## Maxent Variable with highest permutation importance
+                    "Perm_imp",          ## The permutaiton importance of that variable
+                    "Iterations",               ## No. iterations
+
+                    "Number_var",        ## No. maxent variables :: from Maxent code
+                    "Var_pcont",         ## Maxent Variable with highest permutation importance
+                    "Per_cont",          ## The permutaiton importance of that variable
+                    "Var_pimp",          ## Maxent Variable with highest permutation importance
+                    "Perm_imp",          ## The permutaiton importance of that variable
+                    "Iterations",               ## No. iterations
                     "Training_AUC",             ## training AUC
                     "Max_tss",                  ## Maximium True skill statistic
                     "Number_background_points", ## No. background points
@@ -208,4 +313,4 @@ object.list <- c(ls()[sapply(ls(), function(i) class(get(i))) == "data.frame"],
 
 
 
-#####################################################  TBC ############################################################## 
+#####################################################  TBC ##############################################################
