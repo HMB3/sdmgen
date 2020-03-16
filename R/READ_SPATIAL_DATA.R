@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ######################################## READ SPATIAL DATA FOR SDM MODELLING ############################################
 
 
@@ -61,20 +60,19 @@
 
 # str(world.grids.current[[1]]@file@name) <-
 =======
-######################################## READ SPATIAL DATA FOR SDM MODELLING ############################################ 
+######################################## READ SPATIAL DATA FOR SDM MODELLING ############################################
 
 
 
-## This code reads in the vector and raster data that is used to create species distribution models 
+## This code reads in the vector and raster data that is used to create species distribution models
 ## Shapefiles don't need locations.
 ## Rasters store the location as part of the file, so the actual data needs to be stored there too...
-## Need to check that the updated objects have the right file location in the slot 
+## Need to check that the updated objects have the right file location in the slot
 
 
 ## Change these slots to be the project paths ::
 # template.raster.1km.84@file@name
 # str(world.grids.current[[1]]@file@name)
->>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
 
 
 
@@ -107,12 +105,8 @@
 # SUA       = readOGR('data/base/Contextual/SUA_2016_AUST.shp')
 # saveRDS(SUA, 'data/base/Contextual/SUA_2016_AUST.rds')
 length(unique(IBRA$REG_NAME_7))
-<<<<<<< HEAD
 length(unique(SUA$SUA_CODE16))
-=======
-length(unique(SUA$SUA_CODE16)) 
->>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
-head(unique(IBRA$REG_NAME_7))
+
 
 
 
@@ -142,21 +136,13 @@ aus.grids.current <- stack(
             sprintf('bio_%02d.tif', 1:19)))
 
 for(i in 1:11) {
-<<<<<<< HEAD
+
 
   ## simple loop
   message(i)
   aus.grids.current[[i]] <- aus.grids.current[[i]]/10
 
 }
-=======
-  
-  ## simple loop
-  message(i)
-  aus.grids.current[[i]] <- aus.grids.current[[i]]/10
-  
-}  
->>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
 
 
 
@@ -186,7 +172,6 @@ xres(template.raster.1km)
 
 
 ## Create the names for the GCMs by scraping the worldclim website
-<<<<<<< HEAD
 h <- read_html('http://www.worldclim.org/cmip5_30s')
 gcms <- h %>%
   html_node('table') %>%
@@ -205,26 +190,26 @@ id.70 <- h %>%
   as.character %>%
   grep('85bi70', ., value = TRUE) %>%
   basename %>%
-=======
-h <- read_html('http://www.worldclim.org/cmip5_30s') 
-gcms <- h %>% 
-  html_node('table') %>% 
-  html_table(header = TRUE) %>% 
-  filter(rcp85 != '')
-
-id.50 <- h %>% 
-  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
-  as.character %>% 
-  grep('85bi50', ., value = TRUE) %>% 
-  basename %>% 
   sub('\\.zip.', '', .)
 
-id.70 <- h %>% 
-  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
-  as.character %>% 
-  grep('85bi70', ., value = TRUE) %>% 
-  basename %>% 
->>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
+h <- read_html('http://www.worldclim.org/cmip5_30s')
+gcms <- h %>%
+  html_node('table') %>%
+  html_table(header = TRUE) %>%
+  filter(rcp85 != '')
+
+id.50 <- h %>%
+  html_nodes(xpath = "//a[text()='bi']/@href") %>%
+  as.character %>%
+  grep('85bi50', ., value = TRUE) %>%
+  basename %>%
+  sub('\\.zip.', '', .)
+
+id.70 <- h %>%
+  html_nodes(xpath = "//a[text()='bi']/@href") %>%
+  as.character %>%
+  grep('85bi70', ., value = TRUE) %>%
+  basename %>%
   sub('\\.zip.', '', .)
 
 
@@ -240,11 +225,8 @@ gcms.50 <- cbind(gcms, id.50)
 gcms.50$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
 
 gcms.70 <- cbind(gcms, id.70)
-<<<<<<< HEAD
 gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
-=======
-gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM) 
->>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
+gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
 
 
 ## Now create the scenario lists across which to loop
@@ -259,22 +241,13 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 
 
 ## Make a list of SDM columns needed ----
-<<<<<<< HEAD
 results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
                     "Origin",             ## native/extoic : from Anthony Manea's spreadsheet, affected by taxonomy....
                     "Family",             ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
-
-=======
-results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code 
-                    "Origin",             ## native/extoic : from Anthony Manea's spreadsheet, affected by taxonomy....
-                    "Family",             ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
-                    
->>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
                     "Maxent_records",     ## No. records used in the SDM
                     "Aus_records",        ## No. AUS records     :: from the R workflow
                     "AOO",                ## Global Area of occurrence
-                    "KOP_count",          ## Number of koppen zones each species is found in...
-<<<<<<< HEAD
+                    "KOP_count",          ## Number of koppen zones each species is found in...D
 
                     "Number_var",        ## No. maxent variables :: from Maxent code
                     "Var_pcont",         ## Maxent Variable with highest permutation importance
@@ -282,15 +255,13 @@ results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
                     "Var_pimp",          ## Maxent Variable with highest permutation importance
                     "Perm_imp",          ## The permutaiton importance of that variable
                     "Iterations",               ## No. iterations
-=======
-                    
+
                     "Number_var",        ## No. maxent variables :: from Maxent code
-                    "Var_pcont",         ## Maxent Variable with highest permutation importance    
+                    "Var_pcont",         ## Maxent Variable with highest permutation importance
                     "Per_cont",          ## The permutaiton importance of that variable
-                    "Var_pimp",          ## Maxent Variable with highest permutation importance    
-                    "Perm_imp",          ## The permutaiton importance of that variable 
-                    "Iterations",               ## No. iterations                                                                    
->>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
+                    "Var_pimp",          ## Maxent Variable with highest permutation importance
+                    "Perm_imp",          ## The permutaiton importance of that variable
+                    "Iterations",               ## No. iterations
                     "Training_AUC",             ## training AUC
                     "Max_tss",                  ## Maximium True skill statistic
                     "Number_background_points", ## No. background points
@@ -327,8 +298,4 @@ object.list <- c(ls()[sapply(ls(), function(i) class(get(i))) == "data.frame"],
 
 
 
-<<<<<<< HEAD
 #####################################################  TBC ##############################################################
-=======
-#####################################################  TBC ############################################################## 
->>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
