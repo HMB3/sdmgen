@@ -13,6 +13,12 @@
 ## The functions run over the folders, and they will be hard to replicate
 
 
+## Raster data is too big to push to github
+## Changing rasters to .rda + addresses may cause errors.
+## EG the plot raster doesn't work simply on the .rda.
+## So
+
+
 
 ## SETUP DATA & ENVIRONMENT ===========================================================================================
 
@@ -43,6 +49,8 @@ sapply(package.list, require, character.only = TRUE)
 
 ## Source functions, and set temporary directory
 source('./R/SDM_GEN_PROCESSOR_FUNCTIONS.R')
+source('./R/SDM_GEN_MAXENT_FUNCTIONS.R')
+source('./R/SDM_GEN_MAPPING_FUNCTIONS.R')
 source('./R/SDM_GEN_MODEL_LISTS.R')
 # source('./R/READ_SPATIAL_DATA.R')
 
@@ -57,7 +65,8 @@ source('./R/SDM_GEN_MODEL_LISTS.R')
 ## STEP 1 ======================================================================================================
 
 
-## Load in all the .rda files that are save with the package :: this is all the data needed to run an example analysis
+## Load in all the .rda files that are save with the package ::
+## this is all the data needed to run an example analysis
 list.filenames <- list.files(path = './data/', pattern = ".rda$", full.names = TRUE)
 list.data<-list()
 
@@ -65,13 +74,13 @@ list.data<-list()
 for (i in 1:length(list.filenames))
 
 {
-  message('load .rda for ', i)
+  #message('load .rda for ', i)
   list.data[[i]]<-load(list.filenames[i])
 }
 
 
 ## Create a list of species to analyse
-bat.spp <- aus.bats$Species[1:3] %>%
+bat.spp <- aus.bats$Species[1:2] %>%
   str_trim()
 
 
@@ -241,8 +250,8 @@ run_sdm_analysis(species_list            = bat.spp,
 ## This function will just aggregate the results for models that ran successfully
 MAXENT.RESULTS = compile_sdm_results(species_list = bat.spp,
                                      results_dir  = 'output/maxent/back_sel_models',
-                                     save_data    = "FALSE",
-                                     DATA_path    = "./data/ANALYSIS/",
+                                     save_data    = FALSE,
+                                     DATA_path    = "./output/results/",
                                      save_run     = "TEST_BATS")
 
 
@@ -263,44 +272,29 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 ## This could be any shapefile (e.g. the IBRA regions, etc.)
 
 
-## Rasterize a shapefile ----
-areal_unit_vec <- shapefile_vector_from_raster(shp_file = 'data/base/Contextual/SUA_2016_AUST.shp',
-                                               prj      = ALB.CONICAL,
-                                               sort_var = 'SUA_NAME16',
-                                               agg_var  = 'SUA_CODE16',
-                                               temp_ras = 'output/maxent/back_sel_models/Dobsonia_magna/full/Dobsonia_magna_current.tif',
-                                               targ_ras = './data/base/Contextual/SUA_2016_AUST.tif')
-
-
-## This is a vector of all the cells that either are or aren't in the rasterized shapefile
-summary(areal_unit_vec)
-
-
 ## Create 2030 sdm map projections ----
-## This step would need to change to run as a package
+## This step would need to change, to run as a package
 tryCatch(
-  project_maxent_grids_mess(shp_path      = "./data/base/Contextual/", ## Path for shapefile
-                            aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
-                            world_shp     = "LAND_world.rds",          ## World shapefile
+  project_maxent_grids_mess(aus_shp       = AUS,          ## Shapefile, e.g. Australian states
+                            world_shp     = LAND,         ## World shapefile
 
-                            scen_list     = scen_2030,              ## List of climate scenarios
-                            species_list  = map_spp,                ## List of species folders with maxent models
-                            maxent_path   = 'output/maxent/back_sel_models/',                   ## Output folder
-                            climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                            scen_list     = scen_2030,                 ## List of climate scenarios
+                            species_list  = map_spp,                   ## List of species folders with maxent models
+                            maxent_path   = './output/maxent/back_sel_models/',    ## Output folder
+                            climate_path  = './data/worldclim/aus/',             ## Future climate data
 
                             grid_names    = env.variables,             ## Names of all variables
                             time_slice    = 30,                        ## Time period
-                            current_grids = aus.grids.current,         ## predictor grids - this must include soil variables too
-                            create_mess   = "TRUE",
+                            current_grids = aus.grids.current,         ## predictor grids
+                            create_mess   = TRUE,
                             nclust        = 1),
 
   ## If the species fails, write a fail message to file.
   error = function(cond) {
 
-    ## This will write the error message inside the text file,
-    ## but it won't include the species
-    file.create(file.path(maxent_path, "output/maxent/back_sel_models/mapping_failed_2030.txt"))
-    cat(cond$message, file=file.path(maxent_path, "output/maxent/back_sel_models/mapping_failed_2030.txt"))
+    ## This will write the error message inside the text file, but it won't include the species
+    file.create(file.path("output/maxent/back_sel_models/mapping_failed_2030.txt"))
+    cat(cond$message, file = file.path("output/maxent/back_sel_models/mapping_failed_2030.txt"))
     warning(cond$message)
 
   })
@@ -313,26 +307,37 @@ tryCatch(
 
 
 
-#########################################################################################################################
-## Combine GCM predictions and calculate gain and loss for 2030
-## Here we can add the mask of novel environments to SUA aggregation
+## Rasterize a shapefile ----
+areal_unit_vec <- shapefile_vector_from_raster(shp_file = SUA,
+                                               prj      = ALB.CONICAL,
+                                               sort_var = 'SUA_NAME16',
+                                               agg_var  = 'SUA_CODE16',
+                                               temp_ras = aus.grids.current[[1]],
+                                               targ_ras = './data/SUA_2016_AUST.tif')
 
 
+## This is a vector of all the cells that either are or aren't in the rasterized shapefile
+summary(areal_unit_vec)
+
+
+
+
+## Combine GCM predictions and calculate gain and loss for 2030 ----
 ## Then loop over the species folders and climate scenarios
-tryCatch(mapply(area_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
-                unit_path     = "./data/base/Contextual/",       ## Data path for the spatial unit of analysis
-                unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
-                unit_vec      = areal_unit_vec,                ## Vector of rasterized unit cells
+tryCatch(mapply(area_cell_count,                                 ## Function aggreagating GCM predictions by spatial unit
+                #unit_path     = "./data/base/Contextual/",      ## Data path for the spatial unit of analysis
+                unit_shp      = SUA, #"SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
+                unit_vec      = areal_unit_vec,                  ## Vector of rasterized unit cells
                 sort_var      = "SUA_NAME16",
                 code_var      = "SUA_CODE16",
-                world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
-                aus_shp       = "aus_states.rds",                ## Polygon for World maps
+                world_shp     = LAND, #"LAND_world.rds",         ## Polygon for AUS maps
+                aus_shp       = AUS, #"aus_states.rds",          ## Polygon for World maps
 
-                DIR_list      = sdm.results.dir[1],                 ## List of directories with rasters
-                species_list  = map_spp[1],                      ## List of species' directories
+                DIR_list      = sdm.results.dir,                 ## List of directories with rasters
+                species_list  = map_spp,                         ## List of species' directories
                 number_gcms   = 6,
                 maxent_path   = 'output/maxent/back_sel_models/', ## Directory of maxent results
-                thresholds    = percent.10.log[1],                   ## List of maxent thresholds
+                thresholds    = percent.10.log,                   ## List of maxent thresholds
                 time_slice    = 30,                               ## Time period, eg 2030
                 write_rasters = TRUE),
 
