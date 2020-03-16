@@ -308,6 +308,7 @@ tryCatch(
 
 
 ## Rasterize a shapefile ----
+## Can't use the .rda, must use the file path
 areal_unit_vec <- shapefile_vector_from_raster(shp_file = SUA,
                                                prj      = ALB.CONICAL,
                                                sort_var = 'SUA_NAME16',
@@ -324,9 +325,10 @@ summary(areal_unit_vec)
 
 ## Combine GCM predictions and calculate gain and loss for 2030 ----
 ## Then loop over the species folders and climate scenarios
+## Why doesn't using the
 tryCatch(mapply(area_cell_count,                                 ## Function aggreagating GCM predictions by spatial unit
                 #unit_path     = "./data/base/Contextual/",      ## Data path for the spatial unit of analysis
-                unit_shp      = SUA, #"SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
+                unit_shp      = SUA, #"SUA_2016_AUST.rds",       ## Spatial unit of analysis - E.G. SUAs
                 unit_vec      = areal_unit_vec,                  ## Vector of rasterized unit cells
                 sort_var      = "SUA_NAME16",
                 code_var      = "SUA_CODE16",

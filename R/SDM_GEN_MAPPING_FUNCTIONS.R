@@ -639,6 +639,12 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
                            time_slice, write_rasters) {
 
   ## Read in shapefiles: clunky, but how else can you read in shapefiles as arguments?
+  # aus_poly   <- aus_shp %>%
+  #   spTransform(ALB.CONICAL)
+  #
+  # world_poly <- world_shp %>%
+  #   spTransform(CRS.WGS.84)
+
   areal_unit <- unit_shp %>%
     spTransform(ALB.CONICAL)
 
