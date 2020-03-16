@@ -272,6 +272,22 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 ## This could be any shapefile (e.g. the IBRA regions, etc.)
 
 
+<<<<<<< HEAD
+=======
+## Rasterize a shapefile ----
+areal_unit_vec <- shapefile_vector_from_raster(shp_file = SUA,
+                                               prj      = ALB.CONICAL,
+                                               sort_var = 'SUA_NAME16',
+                                               agg_var  = 'SUA_CODE16',
+                                               temp_ras = 'output/maxent/back_sel_models/Dobsonia_magna/full/Dobsonia_magna_current.tif',
+                                               targ_ras = './data/SUA_2016_AUST.tif')
+
+
+## This is a vector of all the cells that either are or aren't in the rasterized shapefile
+summary(areal_unit_vec)
+
+
+>>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
 ## Create 2030 sdm map projections ----
 ## This step would need to change, to run as a package
 tryCatch(
@@ -293,8 +309,13 @@ tryCatch(
   error = function(cond) {
 
     ## This will write the error message inside the text file, but it won't include the species
+<<<<<<< HEAD
     file.create(file.path("output/maxent/back_sel_models/mapping_failed_2030.txt"))
     cat(cond$message, file = file.path("output/maxent/back_sel_models/mapping_failed_2030.txt"))
+=======
+    file.create(file.path(maxent_path, "output/maxent/back_sel_models/mapping_failed_2030.txt"))
+    cat(cond$message, file=file.path(maxent_path, "output/maxent/back_sel_models/mapping_failed_2030.txt"))
+>>>>>>> a7097c4ef5e4d0b06c2698b3ff6aff8e04a589cf
     warning(cond$message)
 
   })
