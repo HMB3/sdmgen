@@ -1515,15 +1515,15 @@ prepare_sdm_table = function(coord_df,
 
   ## FILTER DATA TO REMOVE SPATIAL OUTLIERS
   ## Join data :: Best to use the 'OBS' column here
-  identical(nrow(SDM.COORDS), nrow(SPAT.OUT))
-  identical(SDM.DATA.ALL$searchTaxon, SPAT.OUT$searchTaxon)
+  message('Is the order or records identical before joining?', identical(nrow(SDM.COORDS), nrow(SPAT.OUT)))
+  message('Is the order or records identical after joining?', identical(SDM.DATA.ALL$searchTaxon, SPAT.OUT$searchTaxon))
   length(unique(SPAT.OUT$searchTaxon))
 
   ## This explicit join is required. Check the species have been analysed in exactly the same order
   SPAT.FLAG <- join(as.data.frame(SDM.DATA.ALL), SPAT.OUT,
                     by = c("SPOUT.OBS", "searchTaxon") ,
                     type = "left", match = "first")
-  identical(SDM.DATA.ALL$searchTaxon, SPAT.FLAG$searchTaxon)
+  message('Is the order or records identical after joining?',identical(SDM.DATA.ALL$searchTaxon, SPAT.FLAG$searchTaxon))
 
   ## Check the join is working
   message('Checking spatial flags for ', length(unique(SPAT.FLAG$searchTaxon)), ' species in the set ', "'", save_run, "'")
@@ -1596,8 +1596,12 @@ prepare_sdm_table = function(coord_df,
 
   }
 
-  ## Now bind on the background points
+  ## Now select the final columns needed
   message(length(unique(SDM.SPAT.OCC.BG$searchTaxon)), ' Species in occurrence and BG data')
+  drops <- c('CC.OBS', 'SPOUT.OBS')
+  sdm_cols <- names(select(SDM.SPAT.OCC.BG@data, searchTaxon, lon, lat, SOURCE, everything()))
+  SDM.SPAT.OCC.BG <- SDM.SPAT.OCC.BG[,!(names(SDM.SPAT.OCC.BG) %in% drops)]
+  #SDM.SPAT.OCC.BG <- SDM.SPAT.OCC.BG[,(names(SDM.SPAT.OCC.BG) %in% sdm_cols)]
 
   ## save data
   if(save_data == "TRUE") {

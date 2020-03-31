@@ -7,6 +7,7 @@
 ## This code runs an SDM work flow, for a subset of species (e.g. whichever you supply)
 ## See (Burley et al 2019) for more details on the method ::
 ## https://www.sciencedirect.com/science/article/pii/S0048969719323289
+## Also see the Markdown file
 
 
 ## When run as a package, the addresses wouldn't be the same...
@@ -16,7 +17,7 @@
 ## Raster data is too big to push to github
 ## Changing rasters to .rda + addresses may cause errors.
 ## EG the plot raster doesn't work simply on the .rda.
-## So
+## So we can't access the rasters using data files
 
 
 
@@ -68,7 +69,7 @@ source('./R/SDM_GEN_MODEL_LISTS.R')
 ## Load in all the .rda files that are save with the package ::
 ## this is all the data needed to run an example analysis
 list.filenames <- list.files(path = './data/', pattern = ".rda$", full.names = TRUE)
-list.data<-list()
+list.data <-list()
 
 ## See the global environemnt for a list of objects
 for (i in 1:length(list.filenames))
@@ -80,7 +81,7 @@ for (i in 1:length(list.filenames))
 
 
 ## Create a list of species to analyse
-bat.spp <- aus.bats$Species[1:2] %>%
+bat.spp <- aus.bats$Species[3:4] %>%
   str_trim()
 
 
@@ -103,7 +104,7 @@ download_ALA_all_species(species_list = bat.spp,
 
 ## :: Combine ALA data and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
-## Raster :: Error in .local(.Object, ...) :
+## Raster :: Error in .local(.Object, ...) : does not like having the file slot changed....
 ALA.LAND = combine_ala_records(species_list      = bat.spp,
                                records_path      = "./data/ALA/",
                                records_extension = "_ALA_records.RData",
@@ -176,7 +177,7 @@ GLOB.NICHE = calc_1km_niches(coord_df     = COORD.CLEAN,
                              save_data    = "FALSE")
 
 
-## Step 4d :: plot species ranges using histograms and convex hulls
+## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
 plot_range_histograms(coord_df     = COORD.CLEAN,
                       species_list = bat.spp,
                       range_path = './data/GBIF/')
@@ -185,7 +186,7 @@ plot_range_histograms(coord_df     = COORD.CLEAN,
 
 
 
-## STEP 6 :: Flag spatial outliers ===============================================================================================
+## STEP 6 :: Flag spatial outliers ==============================================================================
 
 
 ## This code creates the table for running SDMs in 'species with data', or SWD format.
@@ -204,7 +205,7 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
 
 
 
-## STEP 7 ::: run SDMs ======================================================================================================
+## STEP 7 ::: run SDMs ============================================================================================
 ## Run SDMs across all taxa, but don't show extra loops, etc.
 
 
@@ -215,6 +216,9 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
 
 ## Here we can read in a file saved earlier
 #SDM.SPAT.OCC.BG <- readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_ALL_BATS.rds")
+
+
+## Up the here...........................................
 
 
 ## Run the SDMs for a set of taxa ----
@@ -243,7 +247,7 @@ run_sdm_analysis(species_list            = bat.spp,
 
 
 
-## STEP 8 ::: project SDMs ======================================================================================================
+## STEP 8 ::: project SDMs =========================================================================================
 
 
 ## Create a table of maxent results ----
@@ -303,7 +307,7 @@ tryCatch(
 
 
 
-## STEP 9 ::: project SDMs ======================================================================================================
+## STEP 9 ::: project SDMs ==========================================================================================
 
 
 

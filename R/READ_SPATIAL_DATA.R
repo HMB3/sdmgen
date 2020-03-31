@@ -61,8 +61,7 @@
 
 
 
-# str(world.grids.current[[1]]@file@name) <-
-=======
+# str(world.grids.current[[1]]@file@name)
 ######################################## READ SPATIAL DATA FOR SDM MODELLING ############################################
 
 
@@ -140,6 +139,8 @@ length(unique(SUA$SUA_CODE16))
 
 ## These rasters could change, but the names in the projections, etc, would also need to change
 ## Create a raster stack of current global environmental conditions
+## Turn this into a function
+
 world.grids.current = stack(
   file.path('./data/worldclim/world/current',
             sprintf('bio_%02d', 1:19)))
@@ -186,62 +187,63 @@ template.raster.1km.84 = raster("./data/world_koppen/template_1km_WGS84.tif")
 xres(template.raster.1km)
 
 
+## this website has changed :: https://www.worldclim.org/data/index.html
 ## Create the names for the GCMs by scraping the worldclim website
-h <- read_html('http://www.worldclim.org/cmip5_30s')
-gcms <- h %>%
-  html_node('table') %>%
-  html_table(header = TRUE) %>%
-  filter(rcp85 != '')
-
-id.50 <- h %>%
-  html_nodes(xpath = "//a[text()='bi']/@href") %>%
-  as.character %>%
-  grep('85bi50', ., value = TRUE) %>%
-  basename %>%
-  sub('\\.zip.', '', .)
-
-id.70 <- h %>%
-  html_nodes(xpath = "//a[text()='bi']/@href") %>%
-  as.character %>%
-  grep('85bi70', ., value = TRUE) %>%
-  basename %>%
-  sub('\\.zip.', '', .)
-
-h <- read_html('http://www.worldclim.org/cmip5_30s')
-gcms <- h %>%
-  html_node('table') %>%
-  html_table(header = TRUE) %>%
-  filter(rcp85 != '')
-
-id.50 <- h %>%
-  html_nodes(xpath = "//a[text()='bi']/@href") %>%
-  as.character %>%
-  grep('85bi50', ., value = TRUE) %>%
-  basename %>%
-  sub('\\.zip.', '', .)
-
-id.70 <- h %>%
-  html_nodes(xpath = "//a[text()='bi']/@href") %>%
-  as.character %>%
-  grep('85bi70', ., value = TRUE) %>%
-  basename %>%
-  sub('\\.zip.', '', .)
+# h <- read_html('http://www.worldclim.org/cmip5_30s')
+# gcms <- h %>%
+#   html_node('table') %>%
+#   html_table(header = TRUE) %>%
+#   filter(rcp85 != '')
+#
+# id.50 <- h %>%
+#   html_nodes(xpath = "//a[text()='bi']/@href") %>%
+#   as.character %>%
+#   grep('85bi50', ., value = TRUE) %>%
+#   basename %>%
+#   sub('\\.zip.', '', .)
+#
+# id.70 <- h %>%
+#   html_nodes(xpath = "//a[text()='bi']/@href") %>%
+#   as.character %>%
+#   grep('85bi70', ., value = TRUE) %>%
+#   basename %>%
+#   sub('\\.zip.', '', .)
+#
+# h <- read_html('http://www.worldclim.org/cmip5_30s')
+# gcms <- h %>%
+#   html_node('table') %>%
+#   html_table(header = TRUE) %>%
+#   filter(rcp85 != '')
+#
+# id.50 <- h %>%
+#   html_nodes(xpath = "//a[text()='bi']/@href") %>%
+#   as.character %>%
+#   grep('85bi50', ., value = TRUE) %>%
+#   basename %>%
+#   sub('\\.zip.', '', .)
+#
+# id.70 <- h %>%
+#   html_nodes(xpath = "//a[text()='bi']/@href") %>%
+#   as.character %>%
+#   grep('85bi70', ., value = TRUE) %>%
+#   basename %>%
+#   sub('\\.zip.', '', .)
 
 
 ## Create the IDs : A work around because the 2030 data comes from the climate change in Australia website, not worldclim
-id.30 = gsub("50", "30", id.50)
+#id.30 = gsub("50", "30", id.50)
 
 
 ## Create the IDs
-gcms.30 <- cbind(gcms, id.30)
-gcms.30$GCM = sub(" \\(#\\)", "", gcms$GCM)
-
-gcms.50 <- cbind(gcms, id.50)
-gcms.50$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
-
-gcms.70 <- cbind(gcms, id.70)
-gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
-gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
+# gcms.30 <- cbind(gcms, id.30)
+# gcms.30$GCM = sub(" \\(#\\)", "", gcms$GCM)
+#
+# gcms.50 <- cbind(gcms, id.50)
+# gcms.50$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
+#
+# gcms.70 <- cbind(gcms, id.70)
+# gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
+# gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
 
 
 ## Now create the scenario lists across which to loop
