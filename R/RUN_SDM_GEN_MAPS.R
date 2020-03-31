@@ -218,7 +218,7 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
 #SDM.SPAT.OCC.BG <- readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_ALL_BATS.rds")
 
 
-## Up the here...........................................
+## Up to here...........................................
 
 
 ## Run the SDMs for a set of taxa ----
