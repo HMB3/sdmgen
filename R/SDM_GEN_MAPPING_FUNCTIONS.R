@@ -787,7 +787,7 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
         ## Try subbing (!!sort_var) for REG_CODE_7
         message ("group by, ", code_var)
         d3 <- d2 %>%
-          group_by_(.dots = code_var) %>%
+          group_by(.dots = code_var) %>%
 
           summarize(CURRENT_SUITABLE = sum(current, na.rm = TRUE),
                     FUTURE_SUITABLE  = sum(future,  na.rm = TRUE),
