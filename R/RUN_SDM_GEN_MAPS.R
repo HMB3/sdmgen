@@ -179,18 +179,18 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 ## Step 4b :: Flag spatial outliers
 SPATIAL.CLEAN = check_spatial_outliers(all_df      = COORD.CLEAN,
                                        land_shp    = LAND,
-                                       urban_df    = TI.XY,
+                                       urban_df    = URBAN.RASTER.CONVERT,
                                        clean_path  = './data/GBIF/',
                                        spatial_mult = 10)
 
 
 ## Step 4c ::Estima ecliate niches usign pecies records
-GLOB.NICHE = calc_1km_niches(coord_df     = COORD.CLEAN,  ## try SPATIAL.CLEAN
+GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## replace COORD.CLEAN
                              aus_shp      = AUS,
                              world_shp    = LAND,
                              kop_shp      = Koppen_shp,
                              ibra_shp     = IBRA,
-                             species_list = bat.spp,
+                             species_list = stoten.spp[1:2],
                              env_vars     = env.variables,
                              cell_size    = 2,
                              save_run     = "TEST_BATS",

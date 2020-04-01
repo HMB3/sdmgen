@@ -1016,22 +1016,6 @@ check_spatial_outliers = function(all_df,
   dim(SPAT.FLAG)
 
 
-  ## Could add the species in urban records in here
-  if(urban_df != 'NONE') {
-
-    message('Combine urban data wiht the Spatially cleaned data' )
-    urban_cols  <- intersect(names(SPAT.FLAG), names(urban_df))
-    urban_df    <- as.data.frame(urban_df) %>% select(., urban_cols)
-
-    SPAT.FLAG   <- bind_rows(SPAT.FLAG, urban_df)
-    SPAT.FLAG   <- SpatialPointsDataFrame(coords      = SPAT.FLAG[c("lon", "lat")],
-                                          data        = SPAT.FLAG,
-                                          proj4string = CRS.WGS.84)
-
-  } else {
-    message('Dont add urban data' )
-  }
-
   ## Try plotting the points which are outliers for a subset of spp and label them
   ## Get the first 10 spp
   ## spp = plot.taxa[1]
@@ -1076,7 +1060,26 @@ check_spatial_outliers = function(all_df,
 
   }
 
-  return(SPAT.FLAG)
+  ## Could add the species in urban records in here
+  if(urban_df != 'NONE') {
+
+    ##
+    message('Combinethe Spatially cleaned data with the Urban data' )
+    urban_cols  <- intersect(names(SPAT.FLAG), names(urban_df)) %>% intersect(., names(all_df))
+    # urban_df    <- as.data.frame(urban_df) %>%
+    #   select(., urban_cols)
+
+    SPAT.TRUE <- SPAT.FLAG %>%
+      filter(SPAT_OUT == "TRUE")
+    SPAT.TRUE <- SpatialPointsDataFrame(coords      = SPAT.TRUE[c("lon", "lat")],
+                                        data        = SPAT.TRUE,
+                                        proj4string = CRS.WGS.84)
+
+  } else {
+    message('Dont add urban data' )
+  }
+
+  return(SPAT.TRUE)
 
 }
 
@@ -1100,7 +1103,8 @@ calc_1km_niches = function(coord_df,
   message('Estimating global niches for ', length(species_list), ' species across ',
           length(env_vars), ' climate variables')
 
-  NICHE.1KM    <- coord_df %>% filter(coord_summary == "TRUE")
+  NICHE.1KM    <- coord_df %>% as.data.frame () %>%
+    filter(coord_summary == "TRUE")
   NICHE.1KM.84 <- SpatialPointsDataFrame(coords      = NICHE.1KM[c("lon", "lat")],
                                          data        = NICHE.1KM,
                                          proj4string = CRS.WGS.84)
