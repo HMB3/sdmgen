@@ -997,11 +997,11 @@ check_spatial_outliers = function(all_df,
                          value   = "flagged",
                          verbose = "TRUE")
 
-      ## Now add attache column for spp, and the flag for each record
+      ## Now add attach column for spp, and the flag for each record
       d = cbind(searchTaxon = x,
                 SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "CC.OBS")]
 
-      ## Remeber to explicitly return the df at the end of loop, so we can bind
+      ## Remember to explicitly return the df at the end of loop, so we can bind
       return(d)
 
     }) %>%
@@ -1015,26 +1015,24 @@ check_spatial_outliers = function(all_df,
   SPAT.FLAG = join(as.data.frame(test.geo), SPAT.OUT)    ## Join means the skipped spp are left out
   dim(SPAT.FLAG)
 
-  ## Try plotting the points which are outliers for a subset of spp and label them
-  SPAT.FLAG = SpatialPointsDataFrame(coords      = SPAT.FLAG[c("lon", "lat")],
-                                     data        = SPAT.FLAG,
-                                     proj4string = CRS.WGS.84)
 
   ## Could add the species in urban records in here
   if(urban_df != 'NONE') {
 
     message('Combine urban data wiht the Spatially cleaned data' )
     urban_cols  <- intersect(names(SPAT.FLAG), names(urban_df))
-    urban_df    <- select(urban_df, urban_cols)
-    urban_df    <- SpatialPointsDataFrame(coords      = urban_df[c("lon", "lat")],
-                                          data        = urban_df,
+    urban_df    <- as.data.frame(urban_df) %>% select(., urban_cols)
+
+    SPAT.FLAG   <- bind_rows(SPAT.FLAG, urban_df)
+    SPAT.FLAG   <- SpatialPointsDataFrame(coords      = SPAT.FLAG[c("lon", "lat")],
+                                          data        = SPAT.FLAG,
                                           proj4string = CRS.WGS.84)
-    SPAT.FLAG   <- rbind(SPAT.FLAG, urban_df)
 
   } else {
     message('Dont add urban data' )
   }
 
+  ## Try plotting the points which are outliers for a subset of spp and label them
   ## Get the first 10 spp
   ## spp = plot.taxa[1]
   plot.taxa <- as.character(unique(SPAT.FLAG$searchTaxon))
