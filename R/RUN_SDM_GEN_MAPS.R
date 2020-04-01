@@ -250,7 +250,7 @@ run_sdm_analysis(species_list            = bat.spp,
 ## STEP 8 ::: project SDMs =========================================================================================
 
 
-## Create a table of maxent results ----
+## Create a table of maxent results -----
 ## This function will just aggregate the results for models that ran successfully
 MAXENT.RESULTS = compile_sdm_results(species_list = bat.spp,
                                      results_dir  = 'output/maxent/back_sel_models',
