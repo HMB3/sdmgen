@@ -83,6 +83,8 @@ for (i in 1:length(list.filenames))
 ## Create a list of species to analyse
 bat.spp <- aus.bats$Species[3:4] %>%
   str_trim()
+bat.spp <- aus.bats$Species[3:4] %>%
+  str_trim()
 
 
 
@@ -105,7 +107,7 @@ download_ALA_all_species(species_list = bat.spp,
 ## :: Combine ALA data and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
 ## Raster :: Error in .local(.Object, ...) : does not like having the file slot changed....
-ALA.LAND = combine_ala_records(species_list      = bat.spp,
+ALA.LAND = combine_ala_records(species_list      = stoten.spp[1:2],
                                records_path      = "./data/ALA/",
                                records_extension = "_ALA_records.RData",
                                record_type       = "ALA",
@@ -114,7 +116,7 @@ ALA.LAND = combine_ala_records(species_list      = bat.spp,
 
 
 ## :: Combine GBIF data and filter to records on land taken > 1950
-GBIF.LAND = combine_gbif_records(species_list      = bat.spp,
+GBIF.LAND = combine_gbif_records(species_list      = stoten.spp[1:2],
                                  records_path      = "./data/GBIF/",
                                  records_extension = "_GBIF_records.RData",
                                  record_type       = "GBIF",
@@ -132,15 +134,32 @@ GBIF.LAND = combine_gbif_records(species_list      = bat.spp,
 ## Create messages for this
 COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                gbif_df         = GBIF.LAND,
+                                               urban_df        = TI.XY,
+                                               thin_records    = TRUE,
                                                template_raster = template.raster.1km.84,
                                                world_raster    = world.grids.current,
                                                projection      = CRS.WGS.84,
-                                               species_list    = bat.spp,
+                                               species_list    = stoten.spp[1:2],
                                                biocl_vars      = bioclim.variables,
                                                env_vars        = env.variables,
                                                worldclim_grids = "TRUE",
                                                save_data       = "FALSE",
                                                save_run        = "TEST_BATS")
+
+
+## If needed, extract urban data
+## Do we want
+URBAN.RASTER.CONVERT = urban_records_extract(urban_df        = TI.XY,
+                                             template_raster = template.raster.1km.84,
+                                             world_raster    = world.grids.current,
+                                             projection      = CRS.WGS.84,
+                                             species_list    = stoten.spp,
+                                             thin_records    = TRUE,
+                                             biocl_vars      = bioclim.variables,
+                                             env_vars        = env.variables,
+                                             worldclim_grids = "TRUE",
+                                             save_data       = "FALSE",
+                                             save_run        = "TEST_URBAN")
 
 
 

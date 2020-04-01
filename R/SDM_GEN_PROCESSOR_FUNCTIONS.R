@@ -538,8 +538,11 @@ combine_gbif_records = function(species_list, records_path, records_extension, r
 #' @export
 combine_records_extract = function(ala_df,
                                    gbif_df,
+                                   urban_df,
+                                   add_urban,
                                    species_list,
                                    template_raster,
+                                   thin_records,
                                    world_raster,
                                    projection,
                                    biocl_vars,
@@ -557,6 +560,16 @@ combine_records_extract = function(ala_df,
   message(length(unique(GBIF.ALA.COMBO$searchTaxon)))
   length(unique(GBIF.ALA.COMBO$scientificName))
 
+  ## If Urban = TRUE
+  if(urban_df != 'NONE') {
+
+    urban_cols     <- intersect(names(GBIF.ALA.COMBO), names(urban_df))
+    urban_df       <- select(urban_df, urban_cols)
+    GBIF.ALA.COMBO <- bind_rows(GBIF.ALA.COMBO, urban_df)
+
+  } else {
+    message('Dont add urban data' )
+  }
 
   ## CHECK TAXONOMY RETURNED BY ALA USING TAXONSTAND
   GBIF.ALA.MATCH = GBIF.ALA.COMBO
@@ -566,6 +579,8 @@ combine_records_extract = function(ala_df,
                                          data        = GBIF.ALA.MATCH,
                                          proj4string = projection)
 
+  if(thin_records == TRUE) {
+
   ## The length needs to be the same
   length(unique(GBIF.ALA.84$searchTaxon))
   GBIF.ALA.84.SPLIT.ALL <- split(GBIF.ALA.84, GBIF.ALA.84$searchTaxon)
@@ -574,7 +589,7 @@ combine_records_extract = function(ala_df,
   ## Check with a message, but could check with a fail
   message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', length(species_list), ' species')
 
-  ## Now get just one record within each 10*10km cell.
+  ## Now get just one record within each 1*1km cell.
   GBIF.ALA.84.1KM <- mapply(function(x, cells) {
     x[!duplicated(cells), ]
   }, GBIF.ALA.84.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
@@ -585,6 +600,11 @@ combine_records_extract = function(ala_df,
   ## Create points: the 'over' function seems to need geographic coordinates for this data...
   COMBO.POINTS   = GBIF.ALA.84.1KM[c("lon", "lat")]
 
+  } else {
+    message('dont thin the records out' )
+    COMBO.POINTS = GBIF.ALA.84
+  }
+
   ## Bioclim variables
   ## Extract raster data
   message('Extracting raster values for ', length(species_list), ' species in the set ', "'", save_run, "'")
@@ -594,6 +614,113 @@ combine_records_extract = function(ala_df,
   ## Extract the raster values
   COMBO.RASTER <- raster::extract(world_raster, COMBO.POINTS) %>%
     cbind(as.data.frame(GBIF.ALA.84.1KM), .)
+
+  ## Group rename the columns
+  setnames(COMBO.RASTER, old = biocl_vars, new = env_vars)
+  COMBO.RASTER <- COMBO.RASTER %>% select(-lat.1, -lon.1)
+
+  ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion.
+  ## All worldclim temperature variables were multiplied by 10, so then divide by 10 to reverse it.
+  if (worldclim_grids == "TRUE") {
+
+    ## Convert the worldclim grids
+    message('Processing worldclim 1.0 data, divide the rasters by 10')
+
+    COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)
+    COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x)
+      x / 10 ), .SDcols = env.variables [c(1:11)]]
+    COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)
+
+  } else {
+
+    message('Not rocessing worldclim data, dont divide the rasters')
+    COMBO.RASTER.CONVERT = COMBO.RASTER
+  }
+
+  ## Print the dataframe dimensions to screen :: format to recognise millions, hundreds of thousands, etc.
+  COMBO.RASTER.CONVERT = completeFun(COMBO.RASTER.CONVERT, env_vars[1])
+
+  message(length(unique(COMBO.RASTER.CONVERT$searchTaxon)),
+          ' species processed of ', length(species_list), ' original species')
+
+  ## save data
+  if(save_data == "TRUE") {
+
+    ## save .rds file for the next session
+    saveRDS(COMBO.RASTER.CONVERT, paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
+
+  } else {
+
+    return(COMBO.RASTER.CONVERT)
+
+  }
+  ## get rid of some memory
+  gc()
+}
+
+
+
+
+## Extract environmental values for urban occurrence records -----
+#' @export
+urban_records_extract = function(urban_df,
+                                 species_list,
+                                 thin_records,
+                                 template_raster,
+                                 world_raster,
+                                 projection,
+                                 biocl_vars,
+                                 env_vars,
+                                 worldclim_grids,
+                                 save_data,
+                                 save_run) {
+
+  ## Get just the species list
+  URBAN.XY = urban_df[urban_df$searchTaxon %in% species_list, ]
+  message('Extracting raster values for ',
+          length(unique(URBAN.XY$searchTaxon)), ' urban species across ',
+          length(unique(URBAN.XY$INVENTORY)),   ' Councils ')
+
+  ## Create points: the 'over' function seems to need geographic coordinates for this data...
+  URBAN.XY   = SpatialPointsDataFrame(coords      = URBAN.XY[c("lon", "lat")],
+                                      data        = URBAN.XY,
+                                      proj4string = projection)
+
+  if(thin_records == TRUE) {
+
+  ## The length needs to be the same
+  length(unique(URBAN.XY$searchTaxon))
+  URBAN.XY.SPLIT.ALL <- split(URBAN.XY, URBAN.XY$searchTaxon)
+  occurrence_cells_all  <- lapply(URBAN.XY.SPLIT.ALL, function(x) cellFromXY(template_raster, x))
+
+  ## Check with a message, but could check with a fail
+  message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', length(species_list), ' species')
+
+  ## Now get just one record within each 10*10km cell.
+  URBAN.XY.1KM <- mapply(function(x, cells) {
+    x[!duplicated(cells), ]
+  }, URBAN.XY.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
+
+  ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
+  message(round(nrow(URBAN.XY.1KM)/nrow(URBAN.XY)*100, 2), " % records retained at 1km resolution")
+
+  ## Create points: the 'over' function seems to need geographic coordinates for this data...
+  COMBO.POINTS = URBAN.XY.1KM[c("lon", "lat")]
+
+  } else {
+    message('dont thin the records out' )
+    COMBO.POINTS = URBAN.XY
+  }
+
+  ## Bioclim variables
+  ## Extract raster data
+  message('Extracting raster values for ', length(species_list), ' species in the set ', "'", save_run, "'")
+  message(projection(COMBO.POINTS));message(projection(world_raster))
+  dim(COMBO.POINTS);dim(URBAN.XY.1KM)
+
+  ## Extract the raster values
+  COMBO.RASTER <- raster::extract(world_raster, COMBO.POINTS) %>%
+    cbind(as.data.frame(URBAN.XY.1KM), .)
 
   ## Group rename the columns
   setnames(COMBO.RASTER, old = biocl_vars, new = env_vars)
