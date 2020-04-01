@@ -581,24 +581,24 @@ combine_records_extract = function(ala_df,
 
   if(thin_records == TRUE) {
 
-  ## The length needs to be the same
-  length(unique(GBIF.ALA.84$searchTaxon))
-  GBIF.ALA.84.SPLIT.ALL <- split(GBIF.ALA.84, GBIF.ALA.84$searchTaxon)
-  occurrence_cells_all  <- lapply(GBIF.ALA.84.SPLIT.ALL, function(x) cellFromXY(template_raster, x))
+    ## The length needs to be the same
+    length(unique(GBIF.ALA.84$searchTaxon))
+    GBIF.ALA.84.SPLIT.ALL <- split(GBIF.ALA.84, GBIF.ALA.84$searchTaxon)
+    occurrence_cells_all  <- lapply(GBIF.ALA.84.SPLIT.ALL, function(x) cellFromXY(template_raster, x))
 
-  ## Check with a message, but could check with a fail
-  message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', length(species_list), ' species')
+    ## Check with a message, but could check with a fail
+    message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', length(species_list), ' species')
 
-  ## Now get just one record within each 1*1km cell.
-  GBIF.ALA.84.1KM <- mapply(function(x, cells) {
-    x[!duplicated(cells), ]
-  }, GBIF.ALA.84.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
+    ## Now get just one record within each 1*1km cell.
+    GBIF.ALA.84.1KM <- mapply(function(x, cells) {
+      x[!duplicated(cells), ]
+    }, GBIF.ALA.84.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
 
-  ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
-  message(round(nrow(GBIF.ALA.84.1KM)/nrow(GBIF.ALA.84)*100, 2), " % records retained at 1km resolution")
+    ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
+    message(round(nrow(GBIF.ALA.84.1KM)/nrow(GBIF.ALA.84)*100, 2), " % records retained at 1km resolution")
 
-  ## Create points: the 'over' function seems to need geographic coordinates for this data...
-  COMBO.POINTS   = GBIF.ALA.84.1KM[c("lon", "lat")]
+    ## Create points: the 'over' function seems to need geographic coordinates for this data...
+    COMBO.POINTS   = GBIF.ALA.84.1KM[c("lon", "lat")]
 
   } else {
     message('dont thin the records out' )
@@ -688,24 +688,24 @@ urban_records_extract = function(urban_df,
 
   if(thin_records == TRUE) {
 
-  ## The length needs to be the same
-  length(unique(URBAN.XY$searchTaxon))
-  URBAN.XY.SPLIT.ALL <- split(URBAN.XY, URBAN.XY$searchTaxon)
-  occurrence_cells_all  <- lapply(URBAN.XY.SPLIT.ALL, function(x) cellFromXY(template_raster, x))
+    ## The length needs to be the same
+    length(unique(URBAN.XY$searchTaxon))
+    URBAN.XY.SPLIT.ALL <- split(URBAN.XY, URBAN.XY$searchTaxon)
+    occurrence_cells_all  <- lapply(URBAN.XY.SPLIT.ALL, function(x) cellFromXY(template_raster, x))
 
-  ## Check with a message, but could check with a fail
-  message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', length(species_list), ' species')
+    ## Check with a message, but could check with a fail
+    message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', length(species_list), ' species')
 
-  ## Now get just one record within each 10*10km cell.
-  URBAN.XY.1KM <- mapply(function(x, cells) {
-    x[!duplicated(cells), ]
-  }, URBAN.XY.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
+    ## Now get just one record within each 10*10km cell.
+    URBAN.XY.1KM <- mapply(function(x, cells) {
+      x[!duplicated(cells), ]
+    }, URBAN.XY.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
 
-  ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
-  message(round(nrow(URBAN.XY.1KM)/nrow(URBAN.XY)*100, 2), " % records retained at 1km resolution")
+    ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
+    message(round(nrow(URBAN.XY.1KM)/nrow(URBAN.XY)*100, 2), " % records retained at 1km resolution")
 
-  ## Create points: the 'over' function seems to need geographic coordinates for this data...
-  COMBO.POINTS = URBAN.XY.1KM[c("lon", "lat")]
+    ## Create points: the 'over' function seems to need geographic coordinates for this data...
+    COMBO.POINTS = URBAN.XY.1KM[c("lon", "lat")]
 
   } else {
     message('dont thin the records out' )
@@ -868,6 +868,7 @@ coord_clean_records = function(records,
 ## Save spatial outliers to file ----
 #' @export
 check_spatial_outliers = function(all_df,
+                                  urban_df,
                                   land_shp,
                                   clean_path,
                                   spatial_mult) {
@@ -1019,6 +1020,21 @@ check_spatial_outliers = function(all_df,
                                      data        = SPAT.FLAG,
                                      proj4string = CRS.WGS.84)
 
+  ## Could add the species in urban records in here
+  if(urban_df != 'NONE') {
+
+    message('Combine urban data wiht the Spatially cleaned data' )
+    urban_cols  <- intersect(names(SPAT.FLAG), names(urban_df))
+    urban_df    <- select(urban_df, urban_cols)
+    urban_df    <- SpatialPointsDataFrame(coords      = urban_df[c("lon", "lat")],
+                                          data        = urban_df,
+                                          proj4string = CRS.WGS.84)
+    SPAT.FLAG   <- rbind(SPAT.FLAG, urban_df)
+
+  } else {
+    message('Dont add urban data' )
+  }
+
   ## Get the first 10 spp
   ## spp = plot.taxa[1]
   plot.taxa <- as.character(unique(SPAT.FLAG$searchTaxon))
@@ -1061,6 +1077,8 @@ check_spatial_outliers = function(all_df,
     dev.off()
 
   }
+
+  return(SPAT.FLAG)
 
 }
 

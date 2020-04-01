@@ -134,7 +134,7 @@ GBIF.LAND = combine_gbif_records(species_list      = stoten.spp[1:2],
 ## Create messages for this
 COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                gbif_df         = GBIF.LAND,
-                                               urban_df        = TI.XY,
+                                               urban_df        = 'NONE',
                                                thin_records    = TRUE,
                                                template_raster = template.raster.1km.84,
                                                world_raster    = world.grids.current,
@@ -153,7 +153,7 @@ URBAN.RASTER.CONVERT = urban_records_extract(urban_df        = TI.XY,
                                              template_raster = template.raster.1km.84,
                                              world_raster    = world.grids.current,
                                              projection      = CRS.WGS.84,
-                                             species_list    = stoten.spp,
+                                             species_list    = stoten.spp[1:2],
                                              thin_records    = TRUE,
                                              biocl_vars      = bioclim.variables,
                                              env_vars        = env.variables,
@@ -177,14 +177,15 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 
 
 ## Step 4b :: Flag spatial outliers
-check_spatial_outliers(all_df      = COORD.CLEAN,
-                       land_shp    = LAND,
-                       clean_path  = './data/GBIF/',
-                       spatial_mult = 10)
+SPATIAL.CLEAN = check_spatial_outliers(all_df      = COORD.CLEAN,
+                                       land_shp    = LAND,
+                                       urban_df    = TI.XY,
+                                       clean_path  = './data/GBIF/',
+                                       spatial_mult = 10)
 
 
 ## Step 4c ::Estima ecliate niches usign pecies records
-GLOB.NICHE = calc_1km_niches(coord_df     = COORD.CLEAN,
+GLOB.NICHE = calc_1km_niches(coord_df     = COORD.CLEAN,  ## try SPATIAL.CLEAN
                              aus_shp      = AUS,
                              world_shp    = LAND,
                              kop_shp      = Koppen_shp,
