@@ -142,7 +142,6 @@ stoten.spp = read.csv('./data/MAXENT_SUMMARY_SUA_ANALYSIS_NATIVE_GOOD_1502_2019.
 ## These rasters could change, but the names in the projections, etc, would also need to change
 ## Create a raster stack of current global environmental conditions
 ## Turn this into a function
-
 world.grids.current = stack(
   file.path('./data/worldclim/world/current',
             sprintf('bio_%02d', 1:19)))

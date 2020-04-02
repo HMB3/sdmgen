@@ -89,11 +89,11 @@ bat.spp <- aus.bats$Species[3:4] %>%
 
 
 ## :: Download GBIF and ALA data
-download_GBIF_all_species(species_list = bat.spp,
+download_GBIF_all_species(species_list = stoten.spp[30:35],
                           path         = "./data/GBIF/")
 
 
-download_ALA_all_species(species_list = bat.spp,
+download_ALA_all_species(species_list = stoten.spp[30:35],
                          path         = "./data/ALA/")
 
 
@@ -107,7 +107,7 @@ download_ALA_all_species(species_list = bat.spp,
 ## :: Combine ALA data and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
 ## Raster :: Error in .local(.Object, ...) : does not like having the file slot changed....
-ALA.LAND = combine_ala_records(species_list      = stoten.spp[1:2],
+ALA.LAND = combine_ala_records(species_list      = stoten.spp[30:60],
                                records_path      = "./data/ALA/",
                                records_extension = "_ALA_records.RData",
                                record_type       = "ALA",
@@ -116,7 +116,7 @@ ALA.LAND = combine_ala_records(species_list      = stoten.spp[1:2],
 
 
 ## :: Combine GBIF data and filter to records on land taken > 1950
-GBIF.LAND = combine_gbif_records(species_list      = stoten.spp[1:2],
+GBIF.LAND = combine_gbif_records(species_list      = stoten.spp[30:60],
                                  records_path      = "./data/GBIF/",
                                  records_extension = "_GBIF_records.RData",
                                  record_type       = "GBIF",
@@ -139,7 +139,7 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                template_raster = template.raster.1km.84,
                                                world_raster    = world.grids.current,
                                                projection      = CRS.WGS.84,
-                                               species_list    = stoten.spp[1:2],
+                                               species_list    = stoten.spp[30:60],
                                                biocl_vars      = bioclim.variables,
                                                env_vars        = env.variables,
                                                worldclim_grids = "TRUE",
@@ -153,7 +153,7 @@ URBAN.RASTER.CONVERT = urban_records_extract(urban_df        = TI.XY,
                                              template_raster = template.raster.1km.84,
                                              world_raster    = world.grids.current,
                                              projection      = CRS.WGS.84,
-                                             species_list    = stoten.spp[1:2],
+                                             species_list    = stoten.spp[30:60],
                                              thin_records    = TRUE,
                                              biocl_vars      = bioclim.variables,
                                              env_vars        = env.variables,
@@ -190,7 +190,7 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## replace COORD.CLE
                              world_shp    = LAND,
                              kop_shp      = Koppen_shp,
                              ibra_shp     = IBRA,
-                             species_list = stoten.spp[1:2],
+                             species_list = stoten.spp[30:60],
                              env_vars     = env.variables,
                              cell_size    = 2,
                              save_run     = "TEST_BATS",
@@ -198,8 +198,9 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## replace COORD.CLE
 
 
 ## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
+##  make GUTI color light grey,  GBIF cyan and ALA another color-blind friendly contrasting color
 plot_range_histograms(coord_df     = COORD.CLEAN,
-                      species_list = bat.spp,
+                      species_list = stoten.spp[30:60],
                       range_path = './data/GBIF/')
 
 
