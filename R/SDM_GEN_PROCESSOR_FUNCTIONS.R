@@ -1480,7 +1480,7 @@ plot_range_histograms = function(coord_df,
       if(!file.exists(temp.box.png)) {
         message('Writing global temp boxplots for ', spp)
         png(sprintf("%s%s_%s", range_path, spp, "temp_niche_boxplots_1km_records.png"),
-            16, 10, units = 'in', res = 500)
+            10, 14, units = 'in', res = 500)
 
         ## Use the 'SOURCE' column to create a histogram for each source.
         temp.box = ggboxplot(coord_df,
@@ -1495,15 +1495,15 @@ plot_range_histograms = function(coord_df,
                x = '') +
 
           ## Add themes
-          theme(axis.title.x     = element_text(colour = 'black', size = 12),
+          theme(axis.title.x     = element_text(colour = 'black', size = 25),
                 axis.text.x      = element_blank(),
 
-                axis.title.y     = element_text(colour = 'black', size = 12),
-                axis.text.y      = element_text(size = 12),
+                axis.title.y     = element_text(colour = 'black', size = 35),
+                axis.text.y      = element_text(size = 25),
 
                 panel.border     = element_rect(colour = 'black', fill = NA, size = 1.2),
-                plot.title       = element_text(size   = 12, face = 'bold'),
-                legend.text      = element_text(size   = 12),
+                plot.title       = element_text(size   = 25, face = 'bold'),
+                legend.text      = element_text(size   = 20),
                 legend.title     = element_blank(),
                 legend.key.size  = unit(1.5, 'cm'))
 
@@ -1570,7 +1570,7 @@ plot_range_histograms = function(coord_df,
       if(!file.exists(rain.box.png)) {
         message('Writing global rain boxplots for ', spp)
         png(sprintf("%s%s_%s", range_path, spp, "rain_niche_boxplots_1km_records.png"),
-            16, 10, units = 'in', res = 500)
+            10, 14, units = 'in', res = 500)
 
         ## Use the 'SOURCE' column to create a histogram for each source.
         rain.box = ggboxplot(coord_df,
@@ -1585,15 +1585,15 @@ plot_range_histograms = function(coord_df,
                x = '') +
 
           ## Add themes
-          theme(axis.title.x     = element_text(colour = 'black', size = 12),
+          theme(axis.title.x     = element_text(colour = 'black', size = 25),
                 axis.text.x      = element_blank(),
 
-                axis.title.y     = element_text(colour = 'black', size = 12),
-                axis.text.y      = element_text(size = 12),
+                axis.title.y     = element_text(colour = 'black', size = 35),
+                axis.text.y      = element_text(size = 25),
 
                 panel.border     = element_rect(colour = 'black', fill = NA, size = 1.2),
-                plot.title       = element_text(size   = 12, face = 'bold'),
-                legend.text      = element_text(size   = 12),
+                plot.title       = element_text(size   = 25, face = 'bold'),
+                legend.text      = element_text(size   = 20),
                 legend.title     = element_blank(),
                 legend.key.size  = unit(1.5, 'cm'))
 

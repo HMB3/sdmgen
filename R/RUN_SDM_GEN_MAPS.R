@@ -107,7 +107,7 @@ download_ALA_all_species(species_list = stoten.spp[30:35],
 ## :: Combine ALA data and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
 ## Raster :: Error in .local(.Object, ...) : does not like having the file slot changed....
-ALA.LAND = combine_ala_records(species_list      = stoten.spp[30:35],
+ALA.LAND = combine_ala_records(species_list      = stoten.spp,
                                records_path      = "./data/ALA/",
                                records_extension = "_ALA_records.RData",
                                record_type       = "ALA",
@@ -116,7 +116,7 @@ ALA.LAND = combine_ala_records(species_list      = stoten.spp[30:35],
 
 
 ## :: Combine GBIF data and filter to records on land taken > 1950
-GBIF.LAND = combine_gbif_records(species_list      = stoten.spp[30:35],
+GBIF.LAND = combine_gbif_records(species_list      = stoten.spp,
                                  records_path      = "./data/GBIF/",
                                  records_extension = "_GBIF_records.RData",
                                  record_type       = "GBIF",
@@ -193,13 +193,13 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLE
                              species_list = stoten.spp[30:35],
                              env_vars     = env.variables,
                              cell_size    = 2,
-                             save_run     = "TEST_BATS",
-                             save_data    = "FALSE")
+                             save_run     = "Stoten_EG",
+                             save_data    = "TRUE")
 
 
 ## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
 ##  make GUTI color light grey,  GBIF cyan and ALA another color-blind friendly contrasting color
-plot_range_histograms(coord_df     = COORD.CLEAN,
+plot_range_histograms(coord_df     = SPATIAL.CLEAN,
                       species_list = stoten.spp[30:35],
                       range_path = './data/GBIF/')
 
