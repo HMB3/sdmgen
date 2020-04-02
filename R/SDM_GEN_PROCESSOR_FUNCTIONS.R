@@ -1012,7 +1012,7 @@ check_spatial_outliers = function(all_df,
   gc()
 
   ## Join the data back on
-  SPAT.FLAG = join(as.data.frame(test.geo), SPAT.OUT)    ## Join means the skipped spp are left out
+  SPAT.FLAG = join(as.data.frame(test.geo), SPAT.OUT) ## Join means the skipped spp are left out
   dim(SPAT.FLAG)
 
   ## Try plotting the points which are outliers for a subset of spp and label them
@@ -1060,17 +1060,16 @@ check_spatial_outliers = function(all_df,
   }
 
   ## Could add the species in urban records in here
-  if(urban_df != 'NONE') {
+  if(!(missing(urban_df ))) {
 
     ##
-    message('Combinethe Spatially cleaned data with the Urban data' )
+    message('Combine the Spatially cleaned data with the Urban data' )
+    SPAT.FLAG   <- SPAT.FLAG %>% filter(SPAT_OUT == "TRUE")
     SPAT.FLAG   <- bind_rows(SPAT.FLAG, urban_df)
-
-    SPAT.TRUE <- SPAT.FLAG %>%
-      filter(SPAT_OUT == "TRUE")
-    SPAT.TRUE <- SpatialPointsDataFrame(coords      = SPAT.TRUE[c("lon", "lat")],
-                                        data        = SPAT.TRUE,
-                                        proj4string = CRS.WGS.84)
+    SPAT.TRUE   <- SpatialPointsDataFrame(coords      = SPAT.FLAG[c("lon", "lat")],
+                                          data        = SPAT.FLAG,
+                                          proj4string = CRS.WGS.84)
+    message('Cleaned ', paste0(unique(SPAT.TRUE$SOURCE), sep = ' '), ' records')
 
   } else {
     message('Dont add urban data' )
@@ -1079,6 +1078,7 @@ check_spatial_outliers = function(all_df,
   return(SPAT.TRUE)
 
 }
+
 
 
 
@@ -1375,20 +1375,20 @@ plot_range_histograms = function(coord_df,
 
   ## Subset the occurrence data to that used by maxent
   message('Plotting global environmental ranges for ', length(species_list), ' species')
-  CLEAN.TRUE <- coord_df %>%
-    as.data.frame() %>%
-    filter(coord_summary == "TRUE")
+  coord_df <- coord_df %>%
+    as.data.frame()
 
   ## Plot histograms of temperature and rainfall
   ## spp = species_list[1]
-  spp.plot = as.character(unique(CLEAN.TRUE$searchTaxon))
+  spp.plot = as.character(unique(coord_df$searchTaxon))
   for (spp in spp.plot) {
 
     ## Subset the spatial dataframe into records for each spp
     ## Creat a new field RANGE, which is either URBAN or NATURAL
     DF       <- coord_df[coord_df$searchTaxon %in% spp , ]
     DF.OCC   <- subset(coord_df, searchTaxon == spp & SOURCE != "INVENTORY")
-    coord_df <- coord_df %>% mutate(RANGE = ifelse(SOURCE != "INVENTORY", "NATURAL", "URBAN"))
+    coord_df <- coord_df %>%
+      mutate(RANGE = ifelse(SOURCE != "INVENTORY", "NATURAL", "URBAN"))
 
     ## Plot convex Hull
     ## Check if the file exists
@@ -1572,34 +1572,34 @@ plot_range_histograms = function(coord_df,
         png(sprintf("%s%s_%s", range_path, spp, "rain_niche_boxplots_1km_records.png"),
             16, 10, units = 'in', res = 500)
 
-      ## Use the 'SOURCE' column to create a histogram for each source.
-      rain.box = ggboxplot(coord_df,
-                           x    = 'RANGE',
-                           y    = 'Annual_precip',
-                           fill = 'RANGE',
-                           palette = c('coral2', 'gainsboro'), size = 0.6) +
+        ## Use the 'SOURCE' column to create a histogram for each source.
+        rain.box = ggboxplot(coord_df,
+                             x    = 'RANGE',
+                             y    = 'Annual_precip',
+                             fill = 'RANGE',
+                             palette = c('coral2', 'gainsboro'), size = 0.6) +
 
-        ## Use the classic theme
-        theme_classic() +
-        labs(y = 'Annual Precipitation (mm)',
-             x = '') +
+          ## Use the classic theme
+          theme_classic() +
+          labs(y = 'Annual Precipitation (mm)',
+               x = '') +
 
-        ## Add themes
-        theme(axis.title.x     = element_text(colour = 'black', size = 12),
-              axis.text.x      = element_blank(),
+          ## Add themes
+          theme(axis.title.x     = element_text(colour = 'black', size = 12),
+                axis.text.x      = element_blank(),
 
-              axis.title.y     = element_text(colour = 'black', size = 12),
-              axis.text.y      = element_text(size = 12),
+                axis.title.y     = element_text(colour = 'black', size = 12),
+                axis.text.y      = element_text(size = 12),
 
-              panel.border     = element_rect(colour = 'black', fill = NA, size = 1.2),
-              plot.title       = element_text(size   = 12, face = 'bold'),
-              legend.text      = element_text(size   = 12),
-              legend.title     = element_blank(),
-              legend.key.size  = unit(1.5, 'cm'))
+                panel.border     = element_rect(colour = 'black', fill = NA, size = 1.2),
+                plot.title       = element_text(size   = 12, face = 'bold'),
+                legend.text      = element_text(size   = 12),
+                legend.title     = element_blank(),
+                legend.key.size  = unit(1.5, 'cm'))
 
-      ## Print the plot and close the device
-      print(rain.box + ggtitle(paste0("Worldclim rain niches for ", spp)))
-      dev.off()
+        ## Print the plot and close the device
+        print(rain.box + ggtitle(paste0("Worldclim rain niches for ", spp)))
+        dev.off()
 
       } else {
         message('Rain boxplot already created for ', spp)

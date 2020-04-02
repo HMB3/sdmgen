@@ -107,7 +107,7 @@ download_ALA_all_species(species_list = stoten.spp[30:35],
 ## :: Combine ALA data and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
 ## Raster :: Error in .local(.Object, ...) : does not like having the file slot changed....
-ALA.LAND = combine_ala_records(species_list      = stoten.spp[30:60],
+ALA.LAND = combine_ala_records(species_list      = stoten.spp[30:35],
                                records_path      = "./data/ALA/",
                                records_extension = "_ALA_records.RData",
                                record_type       = "ALA",
@@ -116,7 +116,7 @@ ALA.LAND = combine_ala_records(species_list      = stoten.spp[30:60],
 
 
 ## :: Combine GBIF data and filter to records on land taken > 1950
-GBIF.LAND = combine_gbif_records(species_list      = stoten.spp[30:60],
+GBIF.LAND = combine_gbif_records(species_list      = stoten.spp[30:35],
                                  records_path      = "./data/GBIF/",
                                  records_extension = "_GBIF_records.RData",
                                  record_type       = "GBIF",
@@ -139,7 +139,7 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                template_raster = template.raster.1km.84,
                                                world_raster    = world.grids.current,
                                                projection      = CRS.WGS.84,
-                                               species_list    = stoten.spp[30:60],
+                                               species_list    = stoten.spp[30:35],
                                                biocl_vars      = bioclim.variables,
                                                env_vars        = env.variables,
                                                worldclim_grids = "TRUE",
@@ -153,7 +153,7 @@ URBAN.RASTER.CONVERT = urban_records_extract(urban_df        = TI.XY,
                                              template_raster = template.raster.1km.84,
                                              world_raster    = world.grids.current,
                                              projection      = CRS.WGS.84,
-                                             species_list    = stoten.spp[30:60],
+                                             species_list    = stoten.spp[30:35],
                                              thin_records    = TRUE,
                                              biocl_vars      = bioclim.variables,
                                              env_vars        = env.variables,
@@ -177,20 +177,20 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 
 
 ## Step 4b :: Flag spatial outliers
-SPATIAL.CLEAN = check_spatial_outliers(all_df      = COORD.CLEAN,
-                                       land_shp    = LAND,
-                                       urban_df    = URBAN.RASTER.CONVERT,
-                                       clean_path  = './data/GBIF/',
+SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
+                                       land_shp     = LAND,
+                                       urban_df     = URBAN.RASTER.CONVERT,
+                                       clean_path   = './data/GBIF/',
                                        spatial_mult = 10)
 
 
 ## Step 4c ::Estima ecliate niches usign pecies records
-GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## replace COORD.CLEAN
+GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLEAN
                              aus_shp      = AUS,
                              world_shp    = LAND,
                              kop_shp      = Koppen_shp,
                              ibra_shp     = IBRA,
-                             species_list = stoten.spp[30:60],
+                             species_list = stoten.spp[30:35],
                              env_vars     = env.variables,
                              cell_size    = 2,
                              save_run     = "TEST_BATS",
@@ -200,7 +200,7 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## replace COORD.CLE
 ## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
 ##  make GUTI color light grey,  GBIF cyan and ALA another color-blind friendly contrasting color
 plot_range_histograms(coord_df     = COORD.CLEAN,
-                      species_list = stoten.spp[30:60],
+                      species_list = stoten.spp[30:35],
                       range_path = './data/GBIF/')
 
 
