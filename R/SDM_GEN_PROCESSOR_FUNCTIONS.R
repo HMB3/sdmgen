@@ -1388,22 +1388,17 @@ plot_range_histograms = function(coord_df,
   for (spp in spp.plot) {
 
     ## Subset the spatial dataframe into records for each spp
-    ## Creat a new field RANGE, which is either URBAN or NATURAL
     DF       <- coord_df[coord_df$searchTaxon %in% spp , ]
     DF.OCC   <- subset(coord_df, searchTaxon == spp & SOURCE != "INVENTORY")
 
-
-    coord_df <- coord_df %>%
+    ## Create a new field RANGE, which is either URBAN or NATURAL
+    coord_spp <- coord_df %>%
+      filter(searchTaxon == spp) %>%
       mutate(RANGE = ifelse(SOURCE != "INVENTORY", "NATURAL", "URBAN"))
-
-    coord_df_nat <- coord_df %>% filter(RANGE == "NATURAL")
-    coord_df_urb <- coord_df %>% filter(RANGE == "URBAN")
-
-    ## Plot convex Hull
 
     ## Start PNG device
     message('Writing global convex hulls for ', spp)
-    png(sprintf("%s%s_%s", range_path, spp, "_1km_convex_hull.png"), 16, 10, units = 'in', res = 500)
+    png(sprintf("%s%s_%s", range_path, spp, "1km_convex_hull.png"), 16, 10, units = 'in', res = 500)
 
     ## Create convex hull and plot
     find_hull <- function(DF) DF[chull(DF$Annual_mean_temp, DF$Annual_precip), ]
@@ -1433,29 +1428,27 @@ plot_range_histograms = function(coord_df,
     ## close device
     dev.off()
 
-
     ## Check if file exists
     message('Writing global temp histograms for ', spp)
     png(sprintf("%s%s_%s", range_path, spp, "temp_niche_histograms_1km_records.png"),
         16, 10, units = 'in', res = 500)
 
     ## Use the 'SOURCE' column to create a histogram for each source.
-    temp.hist <- ggplot(coord_df, aes(x = Annual_mean_temp, group = RANGE, fill = RANGE)) +
+    temp.hist <- ggplot(coord_spp, aes(x = Annual_mean_temp, group = RANGE, fill = RANGE)) +
 
-      geom_histogram(position = "identity", alpha = 0.8, binwidth = 0.25,
-                     aes(y =..density..)
-                     )  +
-      geom_density(aes(x = Annual_mean_temp, y =..count../sum(..count..), fill = RANGE),
-                   color = 'black', alpha = 0.8) +
+      # geom_histogram(position = "identity", alpha = 1, binwidth = 0.25,
+      #                aes(y =..density..))  +
+      geom_density(aes(x = Annual_mean_temp, y = ..scaled.., fill = RANGE),
+                   color = 'black', alpha = 1) +
 
       ## Change the colors
       scale_fill_manual(values = c('NATURAL' = 'coral2',
                                    'Mayor'   = 'gainsboro'), na.value = "grey") +
 
       ## Add some median lines : overall, ALA and GBIF
-      # geom_vline(aes(xintercept = median(coord_df_nat$Annual_mean_temp)),
+      # geom_vline(aes(xintercept = median(coord_spp_nat$Annual_mean_temp)),
       #            col = 'blue', size = 1) +
-      # geom_vline(aes(xintercept = median(coord_df_urb$Annual_mean_temp)),
+      # geom_vline(aes(xintercept = median(coord_spp_urb$Annual_mean_temp)),
       #            col = 'red', size = 1) +
 
       ggtitle(paste0("Worldclim temp niches for ", spp)) +
@@ -1483,7 +1476,7 @@ plot_range_histograms = function(coord_df,
         10, 14, units = 'in', res = 500)
 
     ## Use the 'SOURCE' column to create a histogram for each source.
-    temp.box = ggboxplot(coord_df,
+    temp.box = ggboxplot(coord_spp,
                          x    = 'RANGE',
                          y    = 'Annual_mean_temp',
                          fill = 'RANGE',
@@ -1518,10 +1511,10 @@ plot_range_histograms = function(coord_df,
         16, 10, units = 'in', res = 500)
 
     ## Use the 'SOURCE' column to create a histogram for each source.
-    rain.hist = ggplot(coord_df, aes(x = Annual_precip, group = RANGE, fill = RANGE)) +
+    rain.hist = ggplot(coord_spp, aes(x = Annual_precip, group = RANGE, fill = RANGE)) +
 
-      geom_histogram(position = "identity", alpha = 0.8, binwidth = 15,
-                     aes(y =..density..))  +
+      # geom_histogram(position = "identity", alpha = 0.8, binwidth = 15,
+      #                aes(y =..density..))  +
       geom_density(aes(x = Annual_precip, y = ..scaled.., fill = RANGE),
                    color = 'black', alpha = 0.8) +
 
@@ -1555,7 +1548,7 @@ plot_range_histograms = function(coord_df,
         10, 14, units = 'in', res = 500)
 
     ## Use the 'SOURCE' column to create a histogram for each source.
-    rain.box = ggboxplot(coord_df,
+    rain.box = ggboxplot(coord_spp,
                          x    = 'RANGE',
                          y    = 'Annual_precip',
                          fill = 'RANGE',

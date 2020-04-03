@@ -184,7 +184,7 @@ SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
                                        land_shp     = LAND,
                                        urban_df     = URBAN.RASTER.CONVERT,
                                        clean_path   = './data/GBIF/',
-                                       data_path    = "./output/results/",
+                                       #data_path    = "./output/results/",
                                        spatial_mult = 10)
 
 
