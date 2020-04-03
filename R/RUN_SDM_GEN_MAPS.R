@@ -81,19 +81,20 @@ for (i in 1:length(list.filenames))
 
 
 ## Create a list of species to analyse
-bat.spp <- aus.bats$Species[3:4] %>%
+bat.spp <- aus.bats$Species[1:2] %>%
   str_trim()
-bat.spp <- aus.bats$Species[3:4] %>%
+bat.spp <- aus.bats$Species[1:2] %>%
   str_trim()
 
 
 
 ## :: Download GBIF and ALA data
-download_GBIF_all_species(species_list = stoten.spp[29:31],
+analysis.spp <- bat.spp
+download_GBIF_all_species(species_list = analysis.spp,
                           path         = "./data/GBIF/")
 
 
-download_ALA_all_species(species_list = stoten.spp[29:31],
+download_ALA_all_species(species_list = analysis.spp,
                          path         = "./data/ALA/")
 
 
@@ -103,11 +104,10 @@ download_ALA_all_species(species_list = stoten.spp[29:31],
 ## STEP 2 ======================================================================================================
 
 
-
 ## :: Combine ALA data and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
 ## Raster :: Error in .local(.Object, ...) : does not like having the file slot changed....
-ALA.LAND = combine_ala_records(species_list      = stoten.spp[29:31],
+ALA.LAND = combine_ala_records(species_list      = analysis.spp,
                                records_path      = "./data/ALA/",
                                records_extension = "_ALA_records.RData",
                                record_type       = "ALA",
@@ -116,7 +116,7 @@ ALA.LAND = combine_ala_records(species_list      = stoten.spp[29:31],
 
 
 ## :: Combine GBIF data and filter to records on land taken > 1950
-GBIF.LAND = combine_gbif_records(species_list      = stoten.spp[29:31],
+GBIF.LAND = combine_gbif_records(species_list      = analysis.spp,
                                  records_path      = "./data/GBIF/",
                                  records_extension = "_GBIF_records.RData",
                                  record_type       = "GBIF",
@@ -139,28 +139,28 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                template_raster = template.raster.1km.84,
                                                world_raster    = world.grids.current,
                                                projection      = CRS.WGS.84,
-                                               species_list    = stoten.spp[29:31],
+                                               species_list    = analysis.spp,
                                                biocl_vars      = bioclim.variables,
                                                env_vars        = env.variables,
                                                worldclim_grids = "TRUE",
                                                save_data       = "FALSE",
-                                               data_path    = "./output/results/",
+                                               #data_path    = "./output/results/",
                                                save_run        = "TEST_BATS")
 
 
 ## If needed, extract urban data
-## Do we want
+## This needs to be separate, so that the urban records aren't removed by spatial cleaning
 URBAN.RASTER.CONVERT = urban_records_extract(urban_df        = TI.XY,
                                              template_raster = template.raster.1km.84,
                                              world_raster    = world.grids.current,
                                              projection      = CRS.WGS.84,
-                                             species_list    = stoten.spp[29:31],
+                                             species_list    = analysis.spp,
                                              thin_records    = TRUE,
                                              biocl_vars      = bioclim.variables,
                                              env_vars        = env.variables,
                                              worldclim_grids = "TRUE",
                                              save_data       = "FALSE",
-                                             data_path    = "./output/results/",
+                                             #data_path    = "./output/results/",
                                              save_run        = "TEST_URBAN")
 
 
@@ -175,7 +175,7 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
                                   capitals   = 10000,  ## Remove records within 10km  of capitals
                                   centroids  = 5000,   ## Remove records within 5km of country centroids
                                   save_run   = "TEST_BATS",
-                                  data_path    = "./output/results/",
+                                  #data_path    = "./output/results/",
                                   save_data  = "FALSE")
 
 
@@ -183,8 +183,7 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
                                        land_shp     = LAND,
                                        urban_df     = URBAN.RASTER.CONVERT,
-                                       clean_path   = './data/GBIF/',
-                                       #data_path    = "./output/results/",
+                                       clean_path   = './data/GBIF/Check_plots/',
                                        spatial_mult = 10)
 
 
@@ -194,18 +193,18 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLE
                              world_shp    = LAND,
                              kop_shp      = Koppen_shp,
                              ibra_shp     = IBRA,
-                             species_list = stoten.spp,
+                             species_list = analysis.spp,
                              env_vars     = env.variables,
                              cell_size    = 2,
                              save_run     = "Stoten_EG",
                              data_path    = "./output/results/",
-                             save_data    = "TRUE")
+                             save_data    = "FALSE")
 
 
 ## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
 ##  make GUTI color light grey,  GBIF cyan and ALA another color-blind friendly contrasting color
 plot_range_histograms(coord_df     = SPATIAL.CLEAN,
-                      species_list = stoten.spp[29:31],
+                      species_list = analysis.spp,
                       range_path = './data/GBIF/Check_plots/')
 
 
@@ -311,7 +310,7 @@ tryCatch(
                             scen_list     = scen_2030,                 ## List of climate scenarios
                             species_list  = map_spp,                   ## List of species folders with maxent models
                             maxent_path   = './output/maxent/back_sel_models/',    ## Output folder
-                            climate_path  = './data/worldclim/aus/',             ## Future climate data
+                            climate_path  = './data/worldclim/aus/',               ## Future climate data
 
                             grid_names    = env.variables,             ## Names of all variables
                             time_slice    = 30,                        ## Time period
@@ -336,7 +335,6 @@ tryCatch(
 ## STEP 9 ::: project SDMs ==========================================================================================
 
 
-
 ## Rasterize a shapefile ----
 ## Can't use the .rda, must use the file path
 areal_unit_vec <- shapefile_vector_from_raster(shp_file = SUA,
@@ -352,8 +350,11 @@ areal_unit_vec <- shapefile_vector_from_raster(shp_file = SUA,
 summary(areal_unit_vec)
 
 
-## This error was introduced by changing the shapefiles to being supplied as objects
-## And removing the ordering of the shapefile
+## This error was introduced by changing the shapefiles to being supplied as objects,
+## rather than read in using file paths as before, and also be removing the ordering of the shapefile.
+
+## Also, check that it works inside the loop, but not outside...
+## It does appear to work inside the loop
 
 # Running summary of SDM predictions within SUAs for Dobsonia_magna using  shapefile
 # Combining SDM prediction for 6 GCMS for 2030
