@@ -1400,9 +1400,6 @@ plot_range_histograms = function(coord_df,
     coord_df_urb <- coord_df %>% filter(RANGE == "URBAN")
 
     ## Plot convex Hull
-    ## Check if the file exists
-    convex.png = sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "_1km_convex_hull.png")
-    # if(!file.exists(convex.png)) {
 
     ## Start PNG device
     message('Writing global convex hulls for ', spp)
@@ -1436,26 +1433,20 @@ plot_range_histograms = function(coord_df,
     ## close device
     dev.off()
 
-    # } else {
-    #   message('Convex hull already created for ', spp)
-    # }
-
-    ## Plot temperature histograms
-    temp.png = sprintf("%s%s_%s", range_path, spp, "temp_niche_histograms_1km_records.png")
 
     ## Check if file exists
-    # if(!file.exists(temp.png)) {
     message('Writing global temp histograms for ', spp)
     png(sprintf("%s%s_%s", range_path, spp, "temp_niche_histograms_1km_records.png"),
         16, 10, units = 'in', res = 500)
 
     ## Use the 'SOURCE' column to create a histogram for each source.
-    temp.hist = ggplot(coord_df, aes(x = Annual_mean_temp, group = RANGE, fill = RANGE)) +
+    temp.hist <- ggplot(coord_df, aes(x = Annual_mean_temp, group = RANGE, fill = RANGE)) +
 
-      geom_histogram(position = "identity", alpha = 0.5, binwidth = 0.25,
-                     aes(y =..density..))  +
-      geom_density(aes(x = Annual_mean_temp, y = ..scaled.., fill = RANGE),
-                   col = 4, alpha = 0.5) +
+      geom_histogram(position = "identity", alpha = 0.8, binwidth = 0.25,
+                     aes(y =..density..)
+                     )  +
+      geom_density(aes(x = Annual_mean_temp, y =..count../sum(..count..), fill = RANGE),
+                   color = 'black', alpha = 0.8) +
 
       ## Change the colors
       scale_fill_manual(values = c('NATURAL' = 'coral2',
@@ -1487,12 +1478,7 @@ plot_range_histograms = function(coord_df,
     print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", spp)))
     dev.off()
 
-    ## Plot temperature histograms
-    temp.box.png = sprintf("%s%s_%s", range_path, spp, "temp_niche_boxplots_1km_records.png")
-
     ## Check if file exists
-    # if(!file.exists(temp.box.png)) {
-    #   message('Writing global temp boxplots for ', spp)
     png(sprintf("%s%s_%s", range_path, spp, "temp_niche_boxplots_1km_records.png"),
         10, 14, units = 'in', res = 500)
 
@@ -1525,17 +1511,8 @@ plot_range_histograms = function(coord_df,
     print(temp.box + ggtitle(paste0("Worldclim temp niches for ", spp)))
     dev.off()
 
-    # } else {
-    #   message('Temp boxplot already created for ', spp)
-    # }
-
-    ## Plot rainfall histograms
-    rain.png = sprintf("%s%s_%s", range_path, spp, "rain_niche_histograms_1km_records.png")
 
     ## Check if file exists
-    #if(!file.exists(rain.png)) {
-    message('Writing global rain histograms for ', spp)
-
     message('Writing global rain histograms for ', spp)
     png(sprintf("%s%s_%s", range_path, spp, "rain_niche_histograms_1km_records.png"),
         16, 10, units = 'in', res = 500)
@@ -1543,20 +1520,14 @@ plot_range_histograms = function(coord_df,
     ## Use the 'SOURCE' column to create a histogram for each source.
     rain.hist = ggplot(coord_df, aes(x = Annual_precip, group = RANGE, fill = RANGE)) +
 
-      geom_histogram(position = "identity", alpha = 0.5, binwidth = 15,
+      geom_histogram(position = "identity", alpha = 0.8, binwidth = 15,
                      aes(y =..density..))  +
-      geom_density(aes(x = Annual_mean_temp, y = ..scaled.., fill = RANGE),
-                   col = 4, alpha = 0.5) +
+      geom_density(aes(x = Annual_precip, y = ..scaled.., fill = RANGE),
+                   color = 'black', alpha = 0.8) +
 
       ## Change the colors
       scale_fill_manual(values = c('NATURAL' = 'coral2',
                                    'URBAN'   = 'gainsboro'), na.value = "grey") +
-
-      ## Add some median lines : overall, ALA and GBIF
-      # geom_vline(aes(xintercept = median(coord_df_urb$Annual_precip)),
-      #            col = 'black', size = 1) +
-      # geom_vline(aes(xintercept = median(coord_df_nat$Annual_precip)),
-      #            col = 'red', size = 1) +
 
       ggtitle(paste0("Worldclim rain niches for ", spp)) +
 
@@ -1578,15 +1549,7 @@ plot_range_histograms = function(coord_df,
     print(rain.hist + ggtitle(paste0("Worldclim rain niches for ", spp)))
     dev.off()
 
-    # } else {
-    #   message('Rain histogram already created for ', spp)
-    # }
-
-    ## Plot temperature histograms
-    rain.box.png = sprintf("%s%s_%s", range_path, spp, "rain_niche_boxplots_1km_records.png")
-
     ## Check if file exists
-    #if(!file.exists(rain.box.png)) {
     message('Writing global rain boxplots for ', spp)
     png(sprintf("%s%s_%s", range_path, spp, "rain_niche_boxplots_1km_records.png"),
         10, 14, units = 'in', res = 500)
@@ -1620,9 +1583,6 @@ plot_range_histograms = function(coord_df,
     print(rain.box + ggtitle(paste0("Worldclim rain niches for ", spp)))
     dev.off()
 
-    # } else {
-    #   message('Rain boxplot already created for ', spp)
-    # }
   }
 
 }
@@ -3186,7 +3146,6 @@ shapefile_vector_from_raster = function (shp_file,
 
 }
 
-}
 
 
 
