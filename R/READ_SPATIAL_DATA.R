@@ -101,19 +101,19 @@
 # SUA              = readRDS('./data/base/Contextual/SUA_2016_AUST.rds')
 
 
-AUS_albers <- AUS %>%
-  spTransform(ALB.CONICAL)
-
-LAND_albers <- LAND %>%
-  spTransform(ALB.CONICAL)
-
-SUA_albers <- SUA %>%
-  spTransform(ALB.CONICAL)
-
-
-saveRDS(LAND_albers, 'data/LAND_albers.rds')
-saveRDS(SUA_albers,  'data/SUA_albers.rds')
-saveRDS(AUS_albers,  'data/AUS_albers.rds')
+# AUS_albers <- AUS %>%
+#   spTransform(ALB.CONICAL)
+#
+# LAND_albers <- LAND %>%
+#   spTransform(ALB.CONICAL)
+#
+# SUA_albers <- SUA %>%
+#   spTransform(ALB.CONICAL)
+#
+#
+# saveRDS(LAND_albers, 'data/LAND_albers.rds')
+# saveRDS(SUA_albers,  'data/SUA_albers.rds')
+# saveRDS(AUS_albers,  'data/AUS_albers.rds')
 
 
 ## Read in shapefiles like this

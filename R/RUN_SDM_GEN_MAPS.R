@@ -88,7 +88,7 @@ bat.spp <- aus.bats$Species[1:2] %>%
 
 
 ## :: Download GBIF and ALA data
-analysis.spp <- bat.spp
+analysis.spp <- stoten.spp
 download_GBIF_all_species(species_list = analysis.spp,
                           path         = "./data/GBIF/")
 
@@ -197,7 +197,7 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLE
                              cell_size    = 2,
                              save_run     = "Stoten_EG",
                              data_path    = "./output/results/",
-                             save_data    = "FALSE")
+                             save_data    = "TRUE")
 
 
 ## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
