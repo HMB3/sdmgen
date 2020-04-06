@@ -14,48 +14,6 @@
 
 ## Change these slots to be the project paths ::
 # template.raster.1km.84@file@name        <- "\\data\\world_koppen\\template_1km_WGS84.tif"
-# world.grids.current[[1]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_01"
-# world.grids.current[[2]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_02"
-# world.grids.current[[3]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_03"
-# world.grids.current[[4]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_04"
-# world.grids.current[[5]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_05"
-# world.grids.current[[6]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_06"
-# world.grids.current[[7]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_07"
-# world.grids.current[[8]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_08"
-# world.grids.current[[9]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_09"
-# world.grids.current[[10]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_10"
-# world.grids.current[[11]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_11"
-# world.grids.current[[12]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_12"
-# world.grids.current[[13]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_13"
-# world.grids.current[[14]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_14"
-# world.grids.current[[15]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_15"
-# world.grids.current[[16]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_16"
-# world.grids.current[[17]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_17"
-# world.grids.current[[18]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_18"
-# world.grids.current[[19]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_19"
-
-
-
-# aus.grids.current[[1]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_01"
-# aus.grids.current[[2]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_02"
-# aus.grids.current[[3]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_03"
-# aus.grids.current[[4]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_04"
-# aus.grids.current[[5]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_05"
-# aus.grids.current[[6]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_06"
-# aus.grids.current[[7]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_07"
-# aus.grids.current[[8]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_08"
-# aus.grids.current[[9]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_09"
-# aus.grids.current[[10]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_10"
-# aus.grids.current[[11]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_11"
-# aus.grids.current[[12]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_12"
-# aus.grids.current[[13]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_13"
-# aus.grids.current[[14]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_14"
-# aus.grids.current[[15]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_15"
-# aus.grids.current[[16]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_16"
-# aus.grids.current[[17]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_17"
-# aus.grids.current[[18]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_18"
-# aus.grids.current[[19]]@file@name      <- "\\data\\worldclim\\world\\current\\bio_19"
-
 
 
 

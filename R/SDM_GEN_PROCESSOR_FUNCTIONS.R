@@ -1204,8 +1204,6 @@ calc_1km_niches = function(coord_df,
     as.data.frame
 
   ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-  ## Remove duplicate Taxon columns and check the output
-  ## Remove duplicate Taxon columns and check the output
   AUS.NICHE <- GLOB.NICHE %>% select(-contains("."))
   message('Calculated Australia niches for ', names(AUS.NICHE), ' variables')
 
@@ -1276,7 +1274,7 @@ calc_1km_niches = function(coord_df,
 
     ## save .rds file for the next session
     message('Writing 1km resolution niche and raster data for ', length(species_list), ' species in the set ', "'", save_run, "'")
-    saveRDS(GLOB.NICHE, paste0(data_path, 'GLOBAL_BAT_NICHE_',  save_run, '.rds'))
+    saveRDS(GLOB.NICHE, paste0(data_path, 'GLOBAL_NICHES_',  save_run, '.rds'))
 
   } else {
 
@@ -1286,6 +1284,8 @@ calc_1km_niches = function(coord_df,
   }
 
 }
+
+
 
 
 

@@ -114,6 +114,9 @@ ALA.LAND = combine_ala_records(species_list      = analysis.spp,
                                world_raster      = world.grids.current)
 
 
+
+
+
 ## :: Combine GBIF data and filter to records on land taken > 1950
 GBIF.LAND = combine_gbif_records(species_list      = analysis.spp,
                                  records_path      = "./data/GBIF/",
@@ -145,6 +148,9 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                save_data       = "FALSE",
                                                #data_path    = "./output/results/",
                                                save_run        = "TEST_BATS")
+
+
+
 
 
 ## If needed, extract urban data
