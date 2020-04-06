@@ -811,7 +811,8 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
           ## Then calculate change between current and future
           mutate(CHANGE    = FUTURE_SUITABLE - CURRENT_SUITABLE,
                  GAIN_LOSS = ifelse(CHANGE < 0, 'LOSS', ifelse(CHANGE > 0, 'GAIN', 'STABLE')),
-                 GAIN_LOSS = ifelse(CURRENT_SUITABLE == 0 & FUTURE_SUITABLE == 0, 'NEVER', GAIN_LOSS))
+                 GAIN_LOSS = ifelse(CURRENT_SUITABLE == 0 &
+                                      FUTURE_SUITABLE == 0, 'NEVER', GAIN_LOSS))
         dim(d3)
 
         ## Add the species column
