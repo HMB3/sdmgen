@@ -629,20 +629,20 @@ polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
 }
 
 
-unit_shp      = SUA_albers                       ## Spatial unit of analysis - E.G. SUAs in Australian Albers
-unit_vec      = areal_unit_vec                   ## Vector of rasterized unit cells
-sort_var      = "SUA_NAME16"
-code_var      = "SUA_CODE16"
-world_shp     = LAND_albers          ## Polygon for AUS maps
-aus_shp       = AUS_albers           ## Polygon for World maps
-
-DIR_list      = sdm.results.dir                 ## List of directories with rasters
-species_list  = map_spp                         ## List of species' directories
-number_gcms   = 6
-maxent_path   = 'output/maxent/back_sel_models/' ## Directory of maxent results
-thresholds    = percent.10.log                   ## List of maxent thresholds
-time_slice    = 30                               ## Time period eg 2030
-write_rasters = TRUE
+# unit_shp      = './data/SUA_albers.rds'                     ## Spatial unit of analysis - E.G. SUAs in Australian Albers
+# unit_vec      = areal_unit_vec                   ## Vector of rasterized unit cells
+# sort_var      = "SUA_NAME16"
+# code_var      = "SUA_CODE16"
+# world_shp     = './data/LAND_albers.rds'         ## Polygon for AUS maps
+# aus_shp       = './data/AUS_albers.rds'          ## Polygon for World maps
+#
+# DIR_list      = sdm.results.dir                  ## List of directories with rasters
+# species_list  = map_spp                          ## List of species' directories
+# number_gcms   = 6
+# maxent_path   = 'output/maxent/back_sel_models/' ## Directory of maxent results
+# thresholds    = percent.10.log                   ## List of maxent thresholds
+# time_slice    = 30                               ## Time period eg 2030
+# write_rasters = TRUE
 
 
 
@@ -655,9 +655,9 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
                            time_slice, write_rasters) {
 
   ## Read in shapefiles
-  areal_unit <- unit_shp
-  aus_poly   <- aus_shp
-  world_poly <- world_shp
+  areal_unit <- readRDS(unit_shp)
+  aus_poly   <- readRDS(aus_shp)
+  world_poly <- readRDS(world_shp)
 
   ## Change this so it's not hard wired to a particular field name
   ## areal_unit      = areal_unit[order(areal_unit$SUA_NAME16),]

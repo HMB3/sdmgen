@@ -111,13 +111,18 @@ SUA_albers <- SUA %>%
   spTransform(ALB.CONICAL)
 
 
+saveRDS(LAND_albers, 'data/LAND_albers.rds')
+saveRDS(SUA_albers,  'data/SUA_albers.rds')
+saveRDS(AUS_albers,  'data/AUS_albers.rds')
 
 
 ## Read in shapefiles like this
 # IBRA       = readOGR('data/base/Contextual/IBRA7_subregions_states.shp')
 # saveRDS(IBRA, 'data/base/Contextual/IBRA7_SUB.rds')
 # SUA       = readOGR('data/base/Contextual/SUA_2016_AUST.shp')
-# saveRDS(SUA, 'data/base/Contextual/SUA_2016_AUST.rds')
+# saveRDS(SUA, 'data/SUA_2016_AUST.rds')
+
+
 length(unique(IBRA$REG_NAME_7))
 length(unique(SUA$SUA_CODE16))
 

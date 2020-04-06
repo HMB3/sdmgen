@@ -87,7 +87,6 @@ bat.spp <- aus.bats$Species[1:2] %>%
   str_trim()
 
 
-
 ## :: Download GBIF and ALA data
 analysis.spp <- bat.spp
 download_GBIF_all_species(species_list = analysis.spp,
@@ -374,15 +373,15 @@ summary(areal_unit_vec)
 ## Then loop over the species folders and climate scenarios
 ## Why doesn't using the
 tryCatch(mapply(area_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
-                unit_shp      = SUA_albers,                       ## Spatial unit of analysis - E.G. SUAs, in Australian Albers
+                unit_shp      = './data/SUA_albers.rds',          ## Spatial unit of analysis - E.G. SUAs, in Australian Albers
                 unit_vec      = areal_unit_vec,                   ## Vector of rasterized unit cells
                 sort_var      = "SUA_NAME16",
                 code_var      = "SUA_CODE16",
-                world_shp     = LAND_albers,          ## Polygon for AUS maps
-                aus_shp       = AUS_albers,           ## Polygon for World maps
+                world_shp     = './data/LAND_albers.rds',         ## Polygon for AUS maps
+                aus_shp       = './data/AUS_albers.rds',          ## Polygon for World maps
 
-                DIR_list      = sdm.results.dir,                 ## List of directories with rasters
-                species_list  = map_spp,                         ## List of species' directories
+                DIR_list      = sdm.results.dir,                  ## List of directories with rasters
+                species_list  = map_spp,                          ## List of species' directories
                 number_gcms   = 6,
                 maxent_path   = 'output/maxent/back_sel_models/', ## Directory of maxent results
                 thresholds    = percent.10.log,                   ## List of maxent thresholds
@@ -404,6 +403,13 @@ tryCatch(mapply(area_cell_count,                                  ## Function ag
 
 
 
+## STEP 10 ::: Aggregate SDM results ===================================================================================
+
+
+## Summarise the SDM results as per the Stoten publication
+## Create a function which aggregates the SDM results and plots them vs. temp
+
+
 #########################################################################################################################
 ## THINGS TO CHANGE FOR BAT MODELLING ::
 #########################################################################################################################
@@ -413,9 +419,9 @@ tryCatch(mapply(area_cell_count,                                  ## Function ag
 ## 1). Update all the functions for bats
 
 ##     - Test the whole code for bats
-##     - Check the SUA cell count section
-##     - Need to reproduce the data and code in a drive
-##     -
+##     - Check the SUA cell count section: read RDS does the trick
+##     - Need to reproduce the data and code in the package
+##     - Add a step 10 which plots data as per Stoten publication
 ##     -
 
 
