@@ -4,7 +4,7 @@
 
 
 ## Below is a list of the functions used to project the SDM models
-## Need to check the functions work the whole way through..
+## Some are custom versions of those found in John Baumgartner's rmaxent, as well as gists (probably now published).
 
 
 ## Project maxent files ----
@@ -495,71 +495,93 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
 
 
 ## Plot a rasterVis::levelplot with a colour ramp diverging around zero ----
+## Written by John Baumgartner for the x package, adpated here locally
 #' @export
 diverge0 <- function(p, ramp) {
-  # p: a trellis object resulting from rasterVis::levelplot
-  # ramp: the name of an RColorBrewer palette (as character), a character
-  #       vector of colour names to interpolate, or a colorRampPalette.
-  require(RColorBrewer)
-  require(rasterVis)
+
+  ## p: a trellis object resulting from rasterVis::levelplot
+  ## ramp: the name of an RColorBrewer palette (as character), a character
+  ##       vector of colour names to interpolate, or a colorRampPalette.
   if(length(ramp)==1 && is.character(ramp) && ramp %in%
      row.names(brewer.pal.info)) {
+
     ramp <- suppressWarnings(colorRampPalette(brewer.pal(11, ramp)))
+
   } else if(length(ramp) > 1 && is.character(ramp) && all(ramp %in% colors())) {
+
     ramp <- colorRampPalette(ramp)
+
   } else if(!is.function(ramp))
+
     stop('ramp should be either the name of a RColorBrewer palette, ',
          'a vector of colours to be interpolated, or a colorRampPalette.')
+
+  ##
   rng <- range(p$legend[[1]]$args$key$at)
-  s <- seq(-max(abs(rng)), max(abs(rng)), len=1001)
-  i <- findInterval(rng[which.min(abs(rng))], s)
+  s   <- seq(-max(abs(rng)), max(abs(rng)), len=1001)
+  i   <- findInterval(rng[which.min(abs(rng))], s)
+
+  ##
   zlim <- switch(which.min(abs(rng)), `1`=i:(1000+1), `2`=1:(i+1))
   p$legend[[1]]$args$key$at <- s[zlim]
   p[[grep('^legend', names(p))]][[1]]$args$key$col <- ramp(1000)[zlim[-length(zlim)]]
   p$panel.args.common$col.regions <- ramp(1000)[zlim[-length(zlim)]]
   p
+
 }
 
 
 
 
 
-## Create hatching ----
+## Create hatching on a shapefile ----
+## Written by John Baumgartner
 #' @export
 hatch <- function(x, density) {
-  # x: polygon object (SpatialPolgyons* or sf)
-  # density: approx number of lines to plot
-  require(sp)
-  require(raster)
-  e <- extent(x)
-  w <- diff(e[1:2])
-  x1 <- seq(xmin(e), xmax(e)+w, length.out=floor(density*2))
-  x0 <- seq(xmin(e)-w, xmax(e), length.out=floor(density*2))
-  y0 <- rep(ymin(e), floor(density*2))
-  y1 <- rep(ymax(e), floor(density*2))
+
+  ## x: polygon object (SpatialPolgyons* or sf)
+  ## density: approx number of lines to plot
+  e  <- extent(x)
+  w  <- diff(e[1:2])
+  x1 <- seq(xmin(e),   xmax(e)+w, length.out = floor(density*2))
+  x0 <- seq(xmin(e)-w, xmax(e),   length.out = floor(density*2))
+  y0 <- rep(ymin(e),   floor(density*2))
+  y1 <- rep(ymax(e),   floor(density*2))
+
   ll <- spLines(mapply(function(x0, y0, x1, y1) {
+
     rbind(c(x0, y0), c(x1, y1))
   }, x0, y0, x1, y1,
-  SIMPLIFY=FALSE))
+
+  SIMPLIFY = FALSE))
+
   if(is(x, 'sf')) {
+
     require(sf)
     ll <- st_as_sf(ll)
     st_crs(ll) <- st_crs(x)
     st_intersection(ll, x)
+
   } else {
+
     proj4string(ll) <- proj4string(x)
     raster::intersect(ll, x)
+
   }
+
 }
 
 
 
 
 
-## This function turns a raster into a polygon - Windows version
+## Function to convert a raster into a polygon ----
+## Written by John Baumgartner, change the .bat location to make it work on a Linux cluster
+#' @export
 polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
                                 fillholes=FALSE, aggregate=FALSE,
                                 quietish=TRUE) {
+
   # x: an R Raster layer, or the file path to a raster file recognised by GDAL
   # outshape: the path to the output shapefile (if NULL, a temporary file will
   #           be created)
@@ -574,6 +596,7 @@ polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
   if (isTRUE(readpoly) || isTRUE(fillholes)) require(rgdal)
   if (isTRUE(aggregate)) require(rgeos)
   if (is.null(pypath)) {
+
     cmd <- Sys.which('C:/OSGeo4W64/OSGeo4W.bat')
     pypath <- 'gdal_polygonize'
     if(cmd=='') {
@@ -581,22 +604,31 @@ polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
       pypath <- Sys.which('gdal_polygonize.py')
       if (!file.exists(pypath))
         stop("Could not find gdal_polygonize.py or OSGeo4W on your system.")
+
     }
+
   }
   if (!is.null(outshape)) {
+
     outshape <- sub('\\.shp$', '', outshape)
     f.exists <- file.exists(paste(outshape, c('shp', 'shx', 'dbf'), sep='.'))
     if (any(f.exists))
       stop(sprintf('File already exists: %s',
                    toString(paste(outshape, c('shp', 'shx', 'dbf'),
                                   sep='.')[f.exists])), call.=FALSE)
+
   } else outshape <- tempfile()
+
   if (is(x, 'Raster')) {
+
     require(raster)
     writeRaster(x, {f <- tempfile(fileext='.tif')})
     rastpath <- normalizePath(f)
+
   } else if (is.character(x)) {
+
     rastpath <- normalizePath(x)
+
   } else stop('x must be a file path (character string), or a Raster object.')
 
   system2(cmd, args=(
@@ -604,28 +636,40 @@ polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
             pypath, rastpath, ifelse(quietish, '-q ', ''), outshape)))
 
   if(isTRUE(aggregate)||isTRUE(readpoly)||isTRUE(fillholes)) {
+
     shp <- readOGR(dirname(outshape), layer=basename(outshape),
                    verbose=!quietish)
+
   } else return(NULL)
 
   if (isTRUE(fillholes)) {
+
     poly_noholes <- lapply(shp@polygons, function(x) {
+
       Filter(function(p) p@ringDir==1, x@Polygons)[[1]]
     })
+
     pp <- SpatialPolygons(mapply(function(x, id) {
+
       list(Polygons(list(x), ID=id))
     }, poly_noholes, row.names(shp)), proj4string=CRS(proj4string(shp)))
+
     shp <- SpatialPolygonsDataFrame(pp, shp@data)
     if(isTRUE(aggregate)) shp <- aggregate(shp, names(shp))
     writeOGR(shp, dirname(outshape), basename(outshape),
              'ESRI Shapefile', overwrite=TRUE)
   }
+
   if(isTRUE(aggregate) & !isTRUE(fillholes)) {
+
     shp <- aggregate(shp, names(shp))
     writeOGR(shp, dirname(outshape), basename(outshape),
              'ESRI Shapefile', overwrite=TRUE)
+
   }
+
   ifelse(isTRUE(readpoly), return(shp), return(NULL))
+
 }
 
 
@@ -640,7 +684,8 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
                            maxent_path, thresholds,
                            time_slice, write_rasters) {
 
-  ## Read in shapefiles
+  ## Read in shapefiles as .RDS files
+  ## This solves the problem
   areal_unit <- readRDS(unit_shp)
   aus_poly   <- readRDS(aus_shp)
   world_poly <- readRDS(world_shp)
@@ -649,15 +694,18 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
   ## DIR = DIR_list[1]
   lapply(DIR_list, function(DIR) {
 
-    ## And each species - although we don't want all possible combinations. use mapply in the function call
+    ## And each species - although we don't want all possible
+    ## combinations. use mapply in the function call
     ## species = species_list[1]
     lapply(species_list, function(species) {
 
-      ## Then, create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
+      ## Then, create rasters that meet habitat suitability criteria
+      ## thresholds, determined by the rmaxent function
       ## thresh = thresholds[1]
       for (thresh in thresholds) {
 
-        ## Create a list of the rasters in each species directory for each time period, then take the mean
+        ## Create a list of the rasters in each species directory for
+        ## each time period, then take the mean
         message('Running summary of SDM predictions within SUAs for ',
                 species, ' using ', names(areal_unit)[1], " shapefile")
 
@@ -928,7 +976,11 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
         } else {
           message(' skip raster writing')
         }
+
       }
+
     })
+
   })
+
 }

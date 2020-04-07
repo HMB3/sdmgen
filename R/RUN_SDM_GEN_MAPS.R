@@ -80,6 +80,10 @@ for (i in 1:length(list.filenames))
 }
 
 
+## The species list to be analyzed ----
+analysis.spp <- stoten.spp
+
+
 ## Create a list of species to analyse
 bat.spp <- aus.bats$Species[1:2] %>%
   str_trim()
@@ -88,7 +92,6 @@ bat.spp <- aus.bats$Species[1:2] %>%
 
 
 ## :: Download GBIF and ALA data
-analysis.spp <- stoten.spp
 download_GBIF_all_species(species_list = analysis.spp,
                           path         = "./data/GBIF/")
 
@@ -112,9 +115,6 @@ ALA.LAND = combine_ala_records(species_list      = analysis.spp,
                                record_type       = "ALA",
                                keep_cols         = ALA.keep,
                                world_raster      = world.grids.current)
-
-
-
 
 
 ## :: Combine GBIF data and filter to records on land taken > 1950
@@ -148,9 +148,6 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                save_data       = "FALSE",
                                                #data_path    = "./output/results/",
                                                save_run        = "TEST_BATS")
-
-
-
 
 
 ## If needed, extract urban data
@@ -414,6 +411,13 @@ tryCatch(mapply(area_cell_count,                                  ## Function ag
 
 ## Summarise the SDM results as per the Stoten publication
 ## Create a function which aggregates the SDM results and plots them vs. temp
+
+
+## The figure code steps start with 'AGG_SDM_results'. The output of that, 'SUA.PLOT' was combined with Linda's
+## manual calculation of new species gain (ideally, that would be caluclate too) to create 'turover'.
+## Make a function which ignores the columns N.spp	N.spp.loss	N.spp.gain	N.spp.stable. These could be added to
+## later.
+
 
 
 #########################################################################################################################
