@@ -266,8 +266,8 @@ run_sdm_analysis(species_list            = bat.spp,
                  features                = 'lpq',         ## Maxent features to use
                  replicates              = 5,             ## Number of replicates
                  responsecurves          = TRUE,          ## Save response curves?
-                 # shp_path                = "./data/base/Contextual/", ## Path for shapefile, eg Australia's border
                  aus_shp                 = AUS,
+                 Koppen_zones            = Koppen_zones,
                  Koppen                  = Koppen_1975_1km)
 
 

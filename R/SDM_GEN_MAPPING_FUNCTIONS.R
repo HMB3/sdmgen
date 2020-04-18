@@ -688,6 +688,50 @@ polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
 
 
 
+## Create vector of raster -----
+#' @export
+shapefile_vector_from_raster = function (shp_file,
+                                         prj,
+                                         sort_var,
+                                         agg_var,
+                                         temp_ras,
+                                         targ_ras) {
+
+  ## Read in shapefile
+  areal_unit <- shp_file %>%
+    spTransform(prj)
+
+  ## Rasterize shapefile, insert 'sort_var'
+  message('Rasterizing shapefile')
+  areal_unit = areal_unit[order(areal_unit[[sort_var]]),]
+  #areal_unit = areal_unit[order(areal_unit$SUA_NAME16),]
+  f <- tempfile()
+
+  ## Write a temporary raster
+  writeOGR(areal_unit, tempdir(), basename(f), 'ESRI Shapefile')
+  template <- raster(temp_ras)
+
+  ## Rasterize the shapefile
+  areal_unit_rast <- gdalUtils::gdal_rasterize(
+    normalizePath(paste0(f, '.shp')),
+
+    ## The missing step is the .tiff, it was created somewhere else, in R or a GIS
+    ## so 'a' needs to match in this step, and the next
+    targ_ras, tr = res(template),
+    te = c(bbox(template)), a = agg_var, a_nodata = 0, init = 0, ot = 'UInt16', output_Raster = TRUE)
+
+  areal_unit_vec <- c(areal_unit_rast[])
+  summary(areal_unit_vec)
+
+  ## return the vector
+  return(areal_unit_vec)
+
+}
+
+
+
+
+
 ## Function to aggregate sdm predictions ----
 #' @export
 area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
@@ -996,3 +1040,10 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
   })
 
 }
+
+
+
+
+#########################################################################################################################
+######################################  MAPPING FUNCTIONS FOR SDM ANALYSIS ---- #########################################
+#########################################################################################################################

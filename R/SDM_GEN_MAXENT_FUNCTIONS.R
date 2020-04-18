@@ -4,16 +4,43 @@
 
 
 ## Below is a list of the functions used to run the SDM models
-## Need to check the functions work the whole way through..
 
 
 ## Run the SDM analysis ----
+
+
+#' This function takes a data frame of all species records,
+#' and runs a specialised maxent analysis for each species.
+#' It uses the rmaxent package https://github.com/johnbaums/rmaxent
+#' It assumes that the input df is that returned by the prepare_sdm_table function
+#' @param species_list       Character string - the species to run maxent models for
+#' @param sdm_df             SpatialPointsDataFrame. Spdf of all species records returned by the 'prepare_sdm_table' function
+#' @param sdm_predictors     Character string - Vector of enviro conditions that you want to include
+#' @param maxent_dir         Character string - The file path used for saving the maxent output
+#' @param bs_dir             Character string - The file path used for saving the backwards selection maxent output
+#' @param backwards_sel      Logical - Run backwards selection using the maxent models (T/F)?
+#' @param cor_thr            Numeric - The max allowable pairwise correlation between predictor variables
+#' @param pct_thr            Numeric - The min allowable percent variable contribution
+#' @param k_thr              Numeric - The min number of variables to be kept in the model
+#' @param min_n              Numeric - The min number of records for running maxent
+#' @param max_bg_size        Numeric - The max number of background points to keep
+#' @param background_buffer_width Numeric - The max distance (km) from occ points that BG points should be selected?
+#' @param shapefiles         Logical - Save shapefiles of the occ and bg data (T/F)?
+#' @param features           Character string - Which features should be used? (e.g. linear, product, quadratic 'lpq')
+#' @param replicates         Numeric - The number of replicates to use
+#' @param responsecurves     Logical - Save response curves of the maxent models (T/F)?
+#' @param aus_shp            .Rds object - SpatialPolygonsDataFrame of Australia for mapping maxent points
+#' @param Koppen             RasterLayer of global koppen zones, in Mollweide54009 projection
+#' @param Koppen_zones       Dataframe of global koppen zones, with columns : GRIDCODE, Koppen
 #' @export
-run_sdm_analysis = function(sdm_df,
-                            species_list,
-                            sdm.predictors,
+
+
+
+#' @export
+run_sdm_analysis = function(species_list,
+                            sdm_df,
+                            sdm_predictors,
                             maxent_dir,
-                            #maxent_path,
                             bs_dir,
                             backwards_sel,
                             cor_thr,
@@ -27,7 +54,7 @@ run_sdm_analysis = function(sdm_df,
                             replicates,
                             responsecurves,
                             Koppen,
-                            shp_path,
+                            Koppen_zones,
                             aus_shp) {
 
   ## Loop over all the species
@@ -67,7 +94,7 @@ run_sdm_analysis = function(sdm_df,
       tryCatch(
         fit_maxent_targ_bg_back_sel(occ                     = occurrence,    ## name from the .rmd CV doc
                                     bg                      = background,    ## name from the .rmd CV doc
-                                    sdm.predictors          = bs.predictors,
+                                    sdm_predictors          = bs.predictors,
                                     name                    = species,
                                     outdir                  = maxent_dir,
                                     bsdir                   = bs_dir,
@@ -101,10 +128,8 @@ run_sdm_analysis = function(sdm_df,
         })
 
     } else {
-
       message(species, ' skipped - no data.')         ## This condition ignores species which have no data...
       file.create(file.path(dir_name, "completed.txt"))
-
     }
 
     ## now add a file to the dir to denote that it has completed
@@ -118,12 +143,40 @@ run_sdm_analysis = function(sdm_df,
 
 
 
+
 ## Run maxent with backwards selection ----
+
+
+#' This function takes a data frame of all species records,
+#' and runs a specialised maxent analysis for each species.
+#' It uses the rmaxent package https://github.com/johnbaums/rmaxent
+#' It assumes that the input df is that returned by the prepare_sdm_table function
+#' @param occ                SpatialPointsDataFrame. Spdf of all species records returned by the 'prepare_sdm_table' function
+#' @param sdm_predictors     Character string - Vector of enviro conditions that you want to include
+#' @param maxent_dir         Character string - The file path used for saving the maxent output
+#' @param bs_dir             Character string - The file path used for saving the backwards selection maxent output
+#' @param backwards_sel      Logical - Run backwards selection using the maxent models (T/F)?
+#' @param cor_thr            Numeric - The max allowable pairwise correlation between predictor variables
+#' @param pct_thr            Numeric - The min allowable percent variable contribution
+#' @param k_thr              Numeric - The min number of variables to be kept in the model
+#' @param min_n              Numeric - The min number of records for running maxent
+#' @param max_bg_size        Numeric - The max number of background points to keep
+#' @param background_buffer_width Numeric - The max distance (km) from occ points that BG points should be selected?
+#' @param shapefiles         Logical - Save shapefiles of the occ and bg data (T/F)?
+#' @param features           Character string - Which features should be used? (e.g. linear, product, quadratic 'lpq')
+#' @param replicates         Numeric - The number of replicates to use
+#' @param responsecurves     Logical - Save response curves of the maxent models (T/F)?
+#' @param aus_shp            .Rds object - SpatialPolygonsDataFrame of Australia for mapping maxent points
+#' @param Koppen             RasterLayer of global koppen zones, in Mollweide54009 projection
+#' @param Koppen_zones       Dataframe of global koppen zones, with columns : GRIDCODE, Koppen
+#' @export
+
+
 #' @export
 fit_maxent_targ_bg_back_sel <- function(occ,
                                         bg, # A Spatial points data frame (SPDF) of candidate background points
                                         sdm.predictors,
-                                        # sdm.predictors is a vector of enviro conditions that you want to include
+                                        # sdm_predictors is a vector of enviro conditions that you want to include
                                         name,
                                         outdir,
                                         bsdir,
@@ -297,10 +350,10 @@ fit_maxent_targ_bg_back_sel <- function(occ,
 
     ## SWD = species with data. Now sample the environmental
     ## variables used in the model at all the occ and bg points
-    swd_occ <- occ[, sdm.predictors]
+    swd_occ <- occ[, sdm_predictors]
     saveRDS(swd_occ, file.path(outdir_sp, paste0(save_name,'_occ_swd.rds')))
 
-    swd_bg <- bg.samp[, sdm.predictors]
+    swd_bg <- bg.samp[, sdm_predictors]
     saveRDS(swd_bg, file.path(outdir_sp, paste0(save_name, '_bg_swd.rds')))
 
     ## Save the SWD tables as shapefiles
