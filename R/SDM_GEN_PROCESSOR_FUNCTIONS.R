@@ -7,21 +7,30 @@
 ## Need to check the functions work the whole way through
 
 
-
 ## GBIF download ----
+
+
+#' Download species occurrence files from GBIF
+#'
+#' This function downloads species occurrence files from GBIF (https://www.gbif.org/).
+#' It assumes that the species list supplied is taxonomically correct.
+#' It downloads the species without returning anything
+#'
+#' @param species_list   List of species to download
+#' @param downlpad_path  File path for species downloads
+#' @param download_limit How many records can be downloaded at one time? Set by server
 #' @export
-download_GBIF_all_species = function (species_list, path) {
+download_GBIF_all_species = function(species_list, downlpad_path, download_limit) {
 
   ## create variables
-  skip.spp.list       = list()
-  GBIF.download.limit = 200000
+  GBIF.download.limit = download_limit
 
   ## for every species in the list
   for(sp.n in species_list){
 
-    ## 1). First, check if the f*&%$*# file exists
+    ## First, check if the f*&%$*# file exists
     ## data\base\HIA_LIST\GBIF\SPECIES
-    file_name = paste0(path, sp.n, "_GBIF_records.RData")
+    file_name = paste0(downlpad_path, sp.n, "_GBIF_records.RData")
 
     ## If it's already downloaded, skip
     if (file.exists (file_name)) {
@@ -30,11 +39,12 @@ download_GBIF_all_species = function (species_list, path) {
       next
 
     }
-    #  create a dummy file
+
+    ## create a dummy file
     dummy = data.frame()
     save (dummy, file = file_name)
 
-    ## 2). Then check the spelling...incorrect nomenclature will return NULL result
+    ## Then check the spelling...incorrect nomenclature will return NULL result
     if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
 
       ## now append the species which had incorrect nomenclature to the skipped list
@@ -46,7 +56,7 @@ download_GBIF_all_species = function (species_list, path) {
 
     }
 
-    ## 3). Skip species with no records
+    ## Skip species with no records
     if (occ_search(scientificName = sp.n)$meta$count <= 2) {
 
       ## now append the species which had no records to the skipped list
@@ -57,7 +67,7 @@ download_GBIF_all_species = function (species_list, path) {
 
     }
 
-    ## 4). Check how many records there are, and skip if there are over 200k
+    ## Check how many records there are, and skip if there are over 200k
     if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
 
       ## now append the species which had > 200k records to the skipped list
@@ -66,7 +76,7 @@ download_GBIF_all_species = function (species_list, path) {
 
     } else {
 
-      ## 5). Download ALL records from GBIF
+      ## Download ALL records from GBIF
       message("Downloading GBIF records for ", sp.n, " using rgbif :: occ_data")
       key <- name_backbone(name = sp.n, rank = 'species')$usageKey
 
@@ -80,7 +90,7 @@ download_GBIF_all_species = function (species_list, path) {
       ## Could also only use the key searched, but that could knock out a lot of species
       message(dim(GBIF[1]), " Records returned for ", sp.n)
 
-      ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
+      ## Save records to .Rdata file
       save(GBIF, file = file_name)
 
     }
@@ -94,12 +104,21 @@ download_GBIF_all_species = function (species_list, path) {
 
 
 ## ALA download ----
+
+#' Download species occurrence files from GBIF
+#'
+#' This function downloads species occurrence files from GBIF (https://www.gbif.org/).
+#' It assumes that the species list supplied is taxonomically correct.
+#' It downloads the species without returning anything
+#'
+#' @param species_list   List of species to download
+#' @param downlpad_path  File path for species downloads
+#' @param download_limit How many records can be downloaded at one time? Set by server
 #' @export
-download_ALA_all_species = function (species_list, path) {
+download_ALA_all_species = function (species_list, downlpad_path, download_limit) {
 
   ## create variables
-  skip.spp.list       = list()
-  #ALA.download.limit  = 200000
+  download_limit  = 200000
 
   ## for every species in the list
   for(sp.n in species_list){
@@ -107,8 +126,8 @@ download_ALA_all_species = function (species_list, path) {
     ## Get the ID?
     lsid <- ALA4R::specieslist(sp.n)$taxonConceptLsid
 
-    ## 1). First, check if the f*&%$*# file exists
-    file_name = paste0(path, sp.n, "_ALA_records.RData")
+    ## First, check if the f*&%$*# file exists
+    file_name = paste0(downlpad_path, sp.n, "_ALA_records.RData")
 
     ## If it's already downloaded, skip
     if (file.exists (file_name)) {
@@ -117,11 +136,11 @@ download_ALA_all_species = function (species_list, path) {
       next
 
     }
-    #  create a dummy file
+    ## create a dummy file
     dummy = data.frame()
     save (dummy, file = file_name)
 
-    ## 2). Then check the spelling...incorrect nomenclature will return NULL result
+    ## Then check the spelling...incorrect nomenclature will return NULL result
     if (is.null(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""),
                                    download_reason_id = 7)$data) == TRUE) {
 
@@ -133,7 +152,7 @@ download_ALA_all_species = function (species_list, path) {
 
     }
 
-    ## 3). Skip species with no records
+    ## Skip species with no records
     if (nrow(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""), download_reason_id = 7)$data) <= 2) {
 
       ## now append the species which had no records to the skipped list
@@ -164,6 +183,21 @@ download_ALA_all_species = function (species_list, path) {
 
 
 ## Combining ALA records -----
+
+
+#' Combine all ala records into one file
+#'
+#' This function combines all occurrence files from ALA into.
+#' There are slight differences between ALA and GBIF, so separate functions are useful.
+#' It assumes that all the files come from the previous downloads function.
+#' Although you can download all the records for in one go, this is better for
+#' Doing small runs of species, or where you want to re-run them constantly
+#' @param species_list       List of species already downloaded
+#' @param records_path       File path for downloaded species
+#' @param records_extension  Which R file type? RDS or RDA
+#' @param record_type        Adds a column to the data frame for the data source, EG ALA
+#' @param keep_cols          The columns we want to keep - a character list created by you
+#' @param world_raster       An Raster file of the enviro conditions used (assumed to be global)
 #' @export
 combine_ala_records = function(species_list, records_path, records_extension, record_type, keep_cols, world_raster) {
 
@@ -373,6 +407,18 @@ combine_ala_records = function(species_list, records_path, records_extension, re
 
 
 ## Combining GBIF records -----
+
+#' This function combines all occurrence files from GBIF into one table.
+#' There are slight differences between ALA and GBIF, so separate functions are useful.
+#' It assumes that all the files come from the previous GBIF downloads function.
+#' Although you can download all the records for in one go, this is better for
+#' Doing small runs of species, or where you want to re-run them constantly
+#' @param species_list       List of species already downloaded
+#' @param records_path       File path for downloaded species
+#' @param records_extension  Which R file type? RDS or RDA
+#' @param record_type        Adds a column to the data frame for the data source, EG ALA
+#' @param keep_cols          The columns we want to keep - a character list created by you
+#' @param world_raster       An Raster file of the enviro conditions used (assumed to be global)
 #' @export
 combine_gbif_records = function(species_list, records_path, records_extension, record_type, keep_cols, world_raster) {
 
@@ -535,7 +581,27 @@ combine_gbif_records = function(species_list, records_path, records_extension, r
 
 
 ## Extract environmental values for occurrence records -----
+
+
+#' This function combines occurrence files from ALA and GBIF into one table, and extracts enviro values.
+#' It assumes that both files come from the previous GBIF/ALA combine function.
+#' @param ala_df             Data frame of ALA records
+#' @param gbif_df            Data frame of GBIF records
+#' @param urban_df           Data frame of Urban records (only used if you have urban data, e.g. I-naturalist)
+#' @param species_list       List of species analysed, used to cut the dataframe down
+#' @param thin_records       Do you want to thin the records out? If so, it will be 1 record per 1km*1km grid cell
+#' @param template_raster    A global R Raster used to thin records to 1 record per 1km grid cell
+#' @param world_raster       An global R Raster of the enviro conditions used to extract values for all records
+#' @param projection         The projection system used. Currently, needs to be WGS84
+#' @param biocl_vars         The variables used - eg the standard bioclim names (https://www.worldclim.org/).
+#' @param env_vars           The actual variable names (e.g. bio1 = rainfall, etc.) Only needed for worldlcim
+#' @param worldclim_grids    Are you using worldclim stored as long intergers? If so, divide by 10.
+#' @param save_data          Do you want to save the data frame?
+#' @param data_path          The file path used for saving the data frame
+#' @param save_run           A run name to append to the data frame (e.g. bat species, etc.). Useful for multiple runs.
+#' @return                   Data frame of all ALA/GBIF records, with global enviro conditions for each record location (i.e. lat/lon)
 #' @export
+
 combine_records_extract = function(ala_df,
                                    gbif_df,
                                    urban_df,
@@ -663,6 +729,26 @@ combine_records_extract = function(ala_df,
 
 
 ## Extract environmental values for urban occurrence records -----
+
+
+#' This function takes a data frame from Ubran sources (e.g. I-naturalist), and extracts enviro values.
+#' It assumes that the urban dataframe has these columns : species, lat, lon, Country, INVENTORY, SOURCE
+#' @param urban_df           Data frame of Urban records (only used if you have urban data, e.g. I-naturalist)
+#' @param species_list       List of species analysed, used to cut the dataframe down
+#' @param template_raster    A global R Raster used to thin records to 1 record per 1km grid cell
+#' @param world_raster       An global R Raster of the enviro conditions used to extract values for all records
+#' @param projection         The projection system used. Currently, needs to be WGS84
+#' @param biocl_vars         The variables used - eg the standard bioclim names (https://www.worldclim.org/).
+#' @param env_vars           The actual anmes of the variables (e.g. bio1 = rainfall, etc.) Only needed for worldlcim
+#' @param worldclim_grids    Are you using worldclim stored as long intergers? If so, divide by 10.
+#' @param save_data          Do you want to save the data frame?
+#' @param data_path          The file path used for saving the data frame
+#' @param save_run           A run name to append to the data frame (e.g. bat species, etc.). Useful for multiple runs.
+#' @return                   Data frame of all urban records, with global enviro conditions for each record location (i.e. lat/lon)
+#' @export
+
+
+
 #' @export
 urban_records_extract = function(urban_df,
                                  species_list,
