@@ -1,5 +1,5 @@
 #########################################################################################################################
-######################################  MAPPING FUNCTIONS FOR SDM ANALYSIS ---- #########################################
+###################################  FUNCTIONS FOR RUNNING SDM ANALYSIS ---- ############################################
 #########################################################################################################################
 
 
@@ -151,8 +151,8 @@ run_sdm_analysis = function(species_list,
 #' and runs a specialised maxent analysis for each species.
 #' It uses the rmaxent package https://github.com/johnbaums/rmaxent
 #' It assumes that the input df is that returned by the prepare_sdm_table function
-#' @param occ                SpatialPointsDataFrame. Spdf of all species records returned by the 'prepare_sdm_table' function
-#' @param sdm_predictors     Character string - Vector of enviro conditions that you want to include
+#' @param occ                SpatialPointsDataFrame - Spdf of all species records returned by the 'prepare_sdm_table' function
+#' @param bg                 SpatialPointsDataFrame - Spdf of all species records not being being analysed
 #' @param maxent_dir         Character string - The file path used for saving the maxent output
 #' @param bs_dir             Character string - The file path used for saving the backwards selection maxent output
 #' @param backwards_sel      Logical - Run backwards selection using the maxent models (T/F)?
@@ -489,9 +489,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
       dev.off()
 
     } else {
-
       message("Don't run backwards selection")
-
     }
 
   }
@@ -807,3 +805,11 @@ compile_sdm_results = function(species_list,
   }
 
 }
+
+
+
+
+
+#########################################################################################################################
+####################################################  TBC  ##############################################################
+#########################################################################################################################
