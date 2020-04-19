@@ -10,7 +10,7 @@
 
 
 ## GBIF columns to keep ----
-gbif.keep <- c(## TAXONOMY
+gbif_keep <- c(## TAXONOMY
   "searchTaxon",
   "species",
   "scientificName",
@@ -54,7 +54,7 @@ gbif.keep <- c(## TAXONOMY
 
 
 ## ALA columns to keep ----
-ALA.keep <- c(## TAXONOMY
+ALA_keep <- c(## TAXONOMY
   "searchTaxon",
   "scientificName",
   "scientificNameOriginal",
@@ -118,7 +118,7 @@ ALA.keep <- c(## TAXONOMY
 
 ## Create the variables needed to access current environmental conditions + their names in the functions
 ## Names of all the worldclim variables used to extract the raster data
-env.variables = c("Annual_mean_temp",
+env_variables = c("Annual_mean_temp",
                   "Mean_diurnal_range",
                   "Isothermality",
                   "Temp_seasonality",
@@ -139,7 +139,7 @@ env.variables = c("Annual_mean_temp",
                   "Precip_warm_qu",
                   "Precip_col_qu")
 
-bioclim.variables = c('bio_01',
+bioclim_variables = c('bio_01',
                       'bio_02',
                       'bio_03',
                       'bio_04',
@@ -163,7 +163,7 @@ bioclim.variables = c('bio_01',
 
 
 ## Names of the sdm data table ---
-sdm.table.vars <- c('searchTaxon', 'lon', 'lat', 'SOURCE', 'CC.OBS',
+sdm_table_vars <- c('searchTaxon', 'lon', 'lat', 'SOURCE', 'CC.OBS',
 
                     'Annual_mean_temp',  'Mean_diurnal_range',  'Isothermality', 'Temp_seasonality',
                     'Max_temp_warm_month',  'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',
@@ -175,7 +175,7 @@ sdm.table.vars <- c('searchTaxon', 'lon', 'lat', 'SOURCE', 'CC.OBS',
 
 ## Names of the best 15 worldclim predictors ----
 ## i.e. 'backwards selected' predictors
-bs.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",
+bs_predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",
                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",
                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",
 
@@ -193,7 +193,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 
 
 ## Make a list of SDM columns needed ----
-results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
+results_columns = c("searchTaxon",        ## From the ALA/ GBIF download code
                     "Origin",             ## native/extoic : from Anthony Manea's spreadsheet, affected by taxonomy....
                     "Family",             ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
 

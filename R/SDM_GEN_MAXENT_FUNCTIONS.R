@@ -19,6 +19,7 @@
 #' @param maxent_dir         Character string - The file path used for saving the maxent output
 #' @param bs_dir             Character string - The file path used for saving the backwards selection maxent output
 #' @param backwards_sel      Logical - Run backwards selection using the maxent models (T/F)?
+#' @param template_raster    RasterLayer - Empty raster with analysis extent (global), res (1km) and projection (Mollweide, EPSG 54009)
 #' @param cor_thr            Numeric - The max allowable pairwise correlation between predictor variables
 #' @param pct_thr            Numeric - The min allowable percent variable contribution
 #' @param k_thr              Numeric - The min number of variables to be kept in the model
@@ -30,7 +31,7 @@
 #' @param replicates         Numeric - The number of replicates to use
 #' @param responsecurves     Logical - Save response curves of the maxent models (T/F)?
 #' @param aus_shp            .Rds object - SpatialPolygonsDataFrame of Australia for mapping maxent points
-#' @param Koppen             RasterLayer of global koppen zones, in Mollweide54009 projection
+#' @param Koppen_raster      RasterLayer of global koppen zones, in Mollweide54009 projection
 #' @param Koppen_zones       Dataframe of global koppen zones, with columns : GRIDCODE, Koppen
 #' @export
 
@@ -43,6 +44,7 @@ run_sdm_analysis = function(species_list,
                             maxent_dir,
                             bs_dir,
                             backwards_sel,
+                            template_raster,
                             cor_thr,
                             pct_thr,
                             k_thr,
@@ -53,7 +55,7 @@ run_sdm_analysis = function(species_list,
                             features,
                             replicates,
                             responsecurves,
-                            Koppen,
+                            Koppen_raster,
                             Koppen_zones,
                             aus_shp) {
 
@@ -92,9 +94,9 @@ run_sdm_analysis = function(species_list,
 
       ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
       tryCatch(
-        fit_maxent_targ_bg_back_sel(occ                     = occurrence,    ## name from the .rmd CV doc
-                                    bg                      = background,    ## name from the .rmd CV doc
-                                    sdm_predictors          = bs.predictors,
+        fit_maxent_targ_bg_back_sel(occ                     = occurrence,
+                                    bg                      = background,
+                                    sdm_predictors          = sdm_predictors,
                                     name                    = species,
                                     outdir                  = maxent_dir,
                                     bsdir                   = bs_dir,
@@ -103,10 +105,10 @@ run_sdm_analysis = function(species_list,
                                     pct_thr                 = pct_thr,
                                     k_thr                   = k_thr,
 
-                                    template.raster         = template.raster.1km,
+                                    template_raster         = template_raster,
                                     min_n                   = min_n,
                                     max_bg_size             = max_bg_size,
-                                    Koppen                  = Koppen,
+                                    Koppen_raster           = Koppen_raster,
                                     background_buffer_width = background_buffer_width,
                                     shapefiles              = shapefiles,
                                     features                = features,
@@ -128,7 +130,7 @@ run_sdm_analysis = function(species_list,
         })
 
     } else {
-      message(species, ' skipped - no data.')         ## This condition ignores species which have no data...
+      message(species, ' skipped - no data.') ## This condition ignores species which have no data...
       file.create(file.path(dir_name, "completed.txt"))
     }
 
@@ -136,7 +138,6 @@ run_sdm_analysis = function(species_list,
     file.create(file.path(dir_name, "completed.txt"))
 
   })
-
 
 }
 
@@ -152,10 +153,12 @@ run_sdm_analysis = function(species_list,
 #' It uses the rmaxent package https://github.com/johnbaums/rmaxent
 #' It assumes that the input df is that returned by the prepare_sdm_table function
 #' @param occ                SpatialPointsDataFrame - Spdf of all species records returned by the 'prepare_sdm_table' function
-#' @param bg                 SpatialPointsDataFrame - Spdf of all species records not being being analysed
-#' @param maxent_dir         Character string - The file path used for saving the maxent output
-#' @param bs_dir             Character string - The file path used for saving the backwards selection maxent output
+#' @param bg                 SpatialPointsDataFrame - Spdf of of candidate background points
+#' @param sdm_predictors     Character string - Vector of enviro conditions that you want to include
+#' @param outdir             Character string - The file path used for saving the maxent output
+#' @param bsdir              Character string - The file path used for saving the backwards selection maxent output
 #' @param backwards_sel      Logical - Run backwards selection using the maxent models (T/F)?
+#' @param template_raster    RasterLayer -  Empty raster with analysis extent (global), res (1km) and projection (Mollweide, EPSG 54009)
 #' @param cor_thr            Numeric - The max allowable pairwise correlation between predictor variables
 #' @param pct_thr            Numeric - The min allowable percent variable contribution
 #' @param k_thr              Numeric - The min number of variables to be kept in the model
@@ -167,16 +170,15 @@ run_sdm_analysis = function(species_list,
 #' @param replicates         Numeric - The number of replicates to use
 #' @param responsecurves     Logical - Save response curves of the maxent models (T/F)?
 #' @param aus_shp            .Rds object - SpatialPolygonsDataFrame of Australia for mapping maxent points
-#' @param Koppen             RasterLayer of global koppen zones, in Mollweide54009 projection
-#' @param Koppen_zones       Dataframe of global koppen zones, with columns : GRIDCODE, Koppen
+#' @param rep_args             RasterLayer of global koppen zones, in Mollweide54009 projection
+#' @param full_args          Dataframe of global koppen zones, with columns : GRIDCODE, Koppen
 #' @export
 
 
 #' @export
 fit_maxent_targ_bg_back_sel <- function(occ,
-                                        bg, # A Spatial points data frame (SPDF) of candidate background points
-                                        sdm.predictors,
-                                        # sdm_predictors is a vector of enviro conditions that you want to include
+                                        bg,
+                                        sdm_predictors,
                                         name,
                                         outdir,
                                         bsdir,
@@ -184,21 +186,15 @@ fit_maxent_targ_bg_back_sel <- function(occ,
                                         pct_thr,
                                         k_thr,
                                         backwards_sel,
-                                        template.raster,
-                                        # template.raster is an empty raster with extent, res and projection
-                                        # of final output rasters. It is used to reduce
-                                        # occurrences to a single point per cell.
+                                        template_raster,
                                         min_n,
                                         max_bg_size,
                                         background_buffer_width,
-                                        Koppen,
+                                        Koppen_raster,
                                         shapefiles,
                                         features,
                                         replicates,
                                         responsecurves,
-                                        rep_args,
-                                        full_args,
-                                        # shp_path,
                                         aus_shp) {
 
 
@@ -207,9 +203,9 @@ fit_maxent_targ_bg_back_sel <- function(occ,
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
   bsdir_sp  <- file.path(bsdir,  gsub(' ', '_', name))
 
-  if(!missing('Koppen')) {
-    if(!is(Koppen, 'RasterLayer'))
-      stop('Koppen must be a RasterLayer, and should be in the same coordinate system as template.raster')
+  if(!missing('Koppen_raster')) {
+    if(!is(Koppen_raster, 'RasterLayer'))
+      stop('Koppen must be a RasterLayer, and should be in the same coordinate system as template_raster')
   }
 
   ## If the file doesn't exist, split out the features
@@ -231,7 +227,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
   buffer <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
 
   ## Get unique cell numbers for species occurrences
-  cells <- cellFromXY(template.raster, occ)
+  cells <- cellFromXY(template_raster, occ)
 
   ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
   ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns, etc.
@@ -253,7 +249,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     message(name, ' creating background cells')
     system.time(o <- over(bg, buffer))
     bg <- bg[which(!is.na(o)), ]
-    bg_cells <- cellFromXY(template.raster, bg)
+    bg_cells <- cellFromXY(template_raster, bg)
 
     ## Clean out duplicates and NAs (including points outside extent of predictor data)
     bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells))
@@ -263,19 +259,19 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     ## Find which of these cells fall within the Koppen-Geiger zones that the species occupies
     ## Crop the Kopppen raster to the extent of the occurrences, and snap it
     message(name, ' intersecting background cells with Koppen zones')
-    Koppen_crop <- crop(Koppen, occ, snap = 'out')
+    Koppen_crop <- crop(Koppen_raster, occ, snap = 'out')
 
     ## Only extract and match those cells that overlap between the ::
     ## 1). cropped koppen zone,
     ## 2). occurrences and
     ## 3). background points
-    message(xres(template.raster), ' metre cell size for template raster')
-    message(xres(Koppen), ' metre cell size for Koppen raster')
+    message(xres(template_raster), ' metre cell size for template raster')
+    message(xres(Koppen_raster), ' metre cell size for Koppen raster')
     zones               <- raster::extract(Koppen_crop, occ)
     cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
-    cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
+    cells_in_zones      <- cellFromXY(Koppen_raster, xyFromCell(Koppen_crop, cells_in_zones_crop))
     bg_cells            <- intersect(bg_cells, cells_in_zones)  ## this is 0 for 5km
-    i                   <- cellFromXY(template.raster, bg)
+    i                   <- cellFromXY(template_raster, bg)
     bg                  <- bg[which(i %in% bg_cells), ]
 
     ## For some species, we have the problem that the proportion of ALA/INV data is
@@ -309,12 +305,12 @@ fit_maxent_targ_bg_back_sel <- function(occ,
       spTransform(projection(buffer))
 
     ## Print the koppen zones, occurrences and points to screen
-    plot(Koppen_crop, legend = FALSE,
-         main = paste0('Occurence SDM records for ', name))
-
-    plot(aus.mol, add = TRUE)
-    plot(buffer,  add = TRUE, col = "red")
-    plot(occ.mol, add = TRUE, col = "blue")
+    # plot(Koppen_crop, legend = FALSE,
+    #      main = paste0('Occurence SDM records for ', name))
+    #
+    # plot(aus.mol, add = TRUE)
+    # plot(buffer,  add = TRUE, col = "red")
+    # plot(occ.mol, add = TRUE, col = "blue")
 
     ## Then save the occurrence points
     png(sprintf('%s/%s/%s_%s.png', outdir, save_name, save_name, "buffer_occ"),
@@ -386,7 +382,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     ## Run the replicates
     if(replicates > 1) {
 
-      #if(missing(rep_args))
+      ## Only use rep_args & full_args if not using replicates
       rep_args <- NULL
 
       ## Run MAXENT for cross validation data splits of swd : so 5 replicaes, 0-4
@@ -402,7 +398,6 @@ fit_maxent_targ_bg_back_sel <- function(occ,
 
     ## Run the full maxent model - using all the data in swd
     ## This uses DISMO to output standard files, but the names can't be altered
-    #if(missing(full_args))
     full_args <- NULL
     message(name, ' running full maxent')
     me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'),
@@ -491,15 +486,35 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     } else {
       message("Don't run backwards selection")
     }
-
   }
-
 }
 
 
 
 
+
 ## Simplify the maxent models ----
+
+
+#' This is a local version of rmaxent::simplify (https://github.com/johnbaums/rmaxent)
+#' Given a candidate set of predictor variables, this function identifies
+#' a subset that meets specified multicollinearity criteria. Subsequently,
+#' backward stepwise variable selection is used to iteratively drop the variable
+#' that contributes least to the model, until the contribution of each variable
+#' meets a specified minimum, or until a predetermined minimum number of predictors remains.
+#' It assumes that the input df is that returned by the fit_maxent_targ_bg_back_sel function
+#' @param occ                SpatialPointsDataFrame - Spdf of all species records returned by the 'prepare_sdm_table' function
+#' @param bg                 SpatialPointsDataFrame - Spdf of of candidate background points
+#' @param path               Character string - Vector of enviro conditions that you want to include
+#' @param species_column     Character string - Vector of enviro conditions that you want to include
+#' @param cor_thr            Numeric - The max allowable pairwise correlation between predictor variables
+#' @param pct_thr            Numeric - The min allowable percent variable contribution
+#' @param k_thr              Numeric - The min number of variables to be kept in the model
+#' @param features           Character string - Which features should be used? (e.g. linear, product, quadratic 'lpq')
+#' @param replicates         Numeric - The number of replicates to use
+#' @param type               The variable contribution metric to use when dropping variables
+#' @param logistic_format    Logical value indicating whether maxentResults.csv should report logistic value thresholds
+#' @param responsecurves     Logical - Save response curves of the maxent models (T/F)?
 #' @export
 local_simplify = function (occ, bg, path, species_column = "species", response_curves = TRUE,
                            logistic_format = TRUE, type = "PI", cor_thr, pct_thr, k_thr,
@@ -510,17 +525,17 @@ local_simplify = function (occ, bg, path, species_column = "species", response_c
     stop(species_column, " is not a column of `occ`", call. = FALSE)
   if (!species_column %in% colnames(bg))
     stop(species_column, " is not a column of `bg`", call. = FALSE)
+
   if (missing(path)) {
     save <- FALSE
     path <- tempdir()
-
   }
 
   else save <- TRUE
   features <- unlist(strsplit(gsub("\\s", "", features), ""))
   if (length(setdiff(features, c("l", "p", "q", "h", "t"))) >
       1)
-    stop("features must be a vector of one or more of ',\n         'l', 'p', 'q', 'h', and 't'.")
+    stop("features must be a vector of one or more of ',\n  'l', 'p', 'q', 'h', and 't'.")
   off <- setdiff(c("l", "p", "q", "t", "h"), features)
   if (length(off) > 0) {
     off <- c(l = "linear=FALSE", p = "product=FALSE", q = "quadratic=FALSE",
@@ -533,65 +548,84 @@ local_simplify = function (occ, bg, path, species_column = "species", response_c
   if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {
     stop("The same set of species names must exist in occ and bg")
   }
+
   type <- switch(type, PI = "permutation.importance", PC = "contribution",
                  stop("type must be either \"PI\" or \"PC\".", call. = FALSE))
   args <- off
+
   if (replicates > 1)
     args <- c(args, paste0("replicates=", replicates))
   if (isTRUE(response_curves))
     args <- c(args, "responsecurves=TRUE")
   if (isTRUE(logistic_format))
     args <- c(args, "outputformat=logistic")
+
   f <- function(name) {
+
     if (!quiet)
       message("\n\nDoing ", name)
     name_ <- gsub(" ", "_", name)
     swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
     swd <- swd[, -match(species_column, names(swd))]
+
     if (ncol(swd) < k_thr)
       stop("Initial number of variables < k_thr", call. = FALSE)
     pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
     vc <- usdm::vifcor(swd, maxobservations = nrow(swd),
                        th = cor_thr)
+
     vif <- methods::slot(vc, "results")
     k <- nrow(vif)
     exclude <- methods::slot(vc, "excluded")
+
     if (!isTRUE(quiet) & length(exclude) > 0) {
       message("Dropped due to collinearity: ", paste0(exclude,
                                                       collapse = ", "))
     }
+
     if (k < k_thr)
       stop(sprintf("Number of uncorrelated variables (%s) < k_thr (%s). %s",
                    k, k_thr, "Reduce k_thr, increase cor_thr, or find alternative predictors."),
            call. = FALSE)
+
     swd_uncor <- swd[, as.character(vif$Variables)]
     d <- file.path(path, name_, if (replicates > 1)
       "xval"
       else "full")
+
     m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
     if (isTRUE(save))
       saveRDS(m, file.path(d, "maxent_fitted.rds"))
+
     pct <- m@results[grep(type, rownames(m@results)), ,
                      drop = FALSE]
     pct <- pct[, ncol(pct)]
     pct <- sort(pct)
+
     names(pct) <- sub(paste0("\\.", type), "", names(pct))
+
     if (min(pct) >= pct_thr || length(pct) == k_thr) {
+
       if (replicates > 1) {
         d <- file.path(path, name_, "full")
         m <- dismo::maxent(swd_uncor, pa, args = grep("replicates",
-                                                      args, value = TRUE, invert = TRUE), path = d)
+                                                      args, value = TRUE,
+                                                      invert = TRUE), path = d)
       }
+
       if (isTRUE(save)) {
         saveRDS(m, file.path(d, "maxent_fitted.rds"))
       }
       return(m)
     }
+
     while (min(pct) < pct_thr && length(pct) > k_thr) {
       candidates <- vif[vif$Variables %in% names(pct)[pct ==
                                                         pct[1]], ]
+
       drop <- as.character(candidates$Variables[which.max(candidates$VIF)])
       message("Dropping ", drop)
+
       swd_uncor <- swd_uncor[, -match(drop, colnames(swd_uncor))]
       if (!quiet)
         message(sprintf("%s variables: %s", ncol(swd_uncor),
@@ -599,14 +633,17 @@ local_simplify = function (occ, bg, path, species_column = "species", response_c
       m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
       pct <- m@results[grep(type, rownames(m@results)),
                        , drop = FALSE]
+
       pct <- pct[, ncol(pct)]
       pct <- sort(pct)
       names(pct) <- sub(paste0("\\.", type), "", names(pct))
     }
+
     if (replicates > 1) {
       d <- file.path(path, name_, "full")
       m <- dismo::maxent(swd_uncor, pa, args = grep("replicates",
-                                                    args, value = TRUE, invert = TRUE), path = d)
+                                                    args, value = TRUE,
+                                                    invert = TRUE), path = d)
     }
     if (isTRUE(save)) {
       saveRDS(m, file.path(d, "maxent_fitted.rds"))
@@ -621,24 +658,37 @@ local_simplify = function (occ, bg, path, species_column = "species", response_c
 
 
 ## Compile the SDM data ----
+
+
+#' This function takes a data frame of all species records,
+#' and runs a specialised maxent analysis for each species.
+#' It uses the rmaxent package https://github.com/johnbaums/rmaxent
+#' It assumes that the input df is that returned by the prepare_sdm_table function
+#' @param species_list      Character string - the species to run maxent models for
+#' @param results_dir       Character string - The file path used for saving the maxent output
+#' @param save_data         Logical or character - do you want to save the data frame?
+#' @param data_path         Character string - The file path used for saving the data frame
+#' @param save_run          Character string - run name to append to the data frame, useful for multiple runs.
+#' @return                  Data.frame of maxent results
 #' @export
 compile_sdm_results = function(species_list,
                                results_dir,
                                save_data,
-                               DATA_path,
+                               data_path,
                                save_run) {
 
   ## The code that adds niche info is now in './R/9_COLLATE_MAXENT_RESULTS.R'
-  message('Creating summary stats for ', length(species_list), ' species in the set ', "'", save_run, "'")
+  message('Creating summary stats for ', length(species_list),
+          ' species in the set ', "'", save_run, "'")
 
-  ## First, make a list of all the species with models, then restrict them to just the models on the species_list list
+  ## First, make a list of all the species with models, then restrict them
+  ## to just the models on the species_list list
   map_spp_list  = gsub(" ", "_", species_list)
   map_spp_patt  = paste0(map_spp_list, collapse = "|")
   message ("map_spp_list head:")
   message (paste (head(map_spp_list), collapse=","))
 
   ## Now stop R from creating listing all the maxent files that have completed - this takes a long time
-  #message ("DEBUGDEBUG - remember to disable next line")
   message('Compile SDM results for species in ', results_dir)
   maxent.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/maxent_fitted.rds", sep="/")})
 
@@ -720,7 +770,8 @@ compile_sdm_results = function(species_list,
     ## Finally, bind all the rows together
     bind_rows
 
-  ## Now create a list of the '10th percentile training presence Logistic threshold'. This is used in step 8 to threshold
+  ## Now create a list of the '10th percentile training presence Logistic threshold'.
+  ## This is used in step 8 to threshold
   ## the maps to just areas above the threshold.
   message ("MAXENT.RESULTS columns")
   message (paste (colnames (MAXENT.RESULTS)))
@@ -735,7 +786,6 @@ compile_sdm_results = function(species_list,
 
   ## Only process the existing files
   om.exists = lapply (omission.tables, FUN = function (x) {file.exists (x)}) %>% unlist()
-  # om.exists = unlist(om.exists)
   omission.tables = omission.tables[om.exists]
   message(head(omission.tables))
 
@@ -789,19 +839,16 @@ compile_sdm_results = function(species_list,
   MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
   MAXENT.RESULTS$results_dir = SDM.RESULTS.DIR
 
-
   ##
   if(save_data == TRUE) {
 
     ## If saving, save
-    saveRDS(MAXENT.RESULTS, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
+    saveRDS(MAXENT.RESULTS, paste0(data_path, 'MAXENT_RESULTS_', save_run, '.rds'))
 
   } else {
-
     ## Or return to the global environment
     message(' skip file saving, not many species analysed')
     return(MAXENT.RESULTS)
-
   }
 
 }

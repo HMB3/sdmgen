@@ -1016,7 +1016,8 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
           identical(projection(aus_poly), projection(gain_plot))
 
           message('writing gain/loss png for ', 'species')
-          png(sprintf('%s/%s/full/%s_%s_%s_20%s.png', maxent_path, save_name, save_name, "gain_loss", thresh, time_slice),
+          png(sprintf('%s/%s/full/%s_%s_%s_20%s.png', maxent_path, save_name,
+                      save_name, "gain_loss", thresh, time_slice),
               16, 10, units = 'in', res = 500)
 
           ## Could add the SUA polygons as well
@@ -1024,8 +1025,10 @@ area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
                           col.regions = csort$color,
                           xlab = NULL, ylab = NULL,
                           main       = list(paste0(gsub('_', ' ', species), ' :: ',  20,
-                                                   time_slice, ' 4GCMs > ',  thresh), font = 4, cex = 2)) +
-                  latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)))
+                                                   time_slice, ' 4GCMs > ',  thresh),
+                                            font = 4, cex = 2)) +
+                  latticeExtra::layer(sp.polygons(aus_poly),
+                                      data = list(aus_poly = aus_poly)))
 
           dev.off()
 

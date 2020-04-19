@@ -51,13 +51,13 @@
 
 ## Check how the Koppen zones were calculated
 ## This Needs to be made transparent - need to create functions for making the koppen layers too
-# Koppen_zones     = unique(readOGR('data/world_koppen/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
-# Koppen_shp       = readOGR('data/base/Contextual/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')
-# Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
-# AUS              = readRDS("./data/base/Contextual/aus_states.rds")
-# LAND             = readRDS("./data/base/Contextual/LAND_world.rds")
-# IBRA             = readRDS('./data/base/Contextual/IBRA7_SUB.rds')
-# SUA              = readRDS('./data/base/Contextual/SUA_2016_AUST.rds')
+Koppen_zones     = unique(readOGR('data/world_koppen/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
+Koppen_shp       = readOGR('data/world_koppen/WC05_1975H_Koppen_Kriticos_2012.shp')
+Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
+AUS              = readRDS("./data/AUS_albers.rds")
+LAND             = readRDS("./data/LAND_albers.rds")
+#IBRA             = load('./data/IBRA.rda')
+SUA              = readRDS('./data/AUS_albers.rds')
 
 
 # AUS_albers <- AUS %>%

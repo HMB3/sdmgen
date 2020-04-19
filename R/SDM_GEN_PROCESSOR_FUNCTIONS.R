@@ -16,10 +16,10 @@
 #' It downloads the species without returning anything
 #'
 #' @param species_list   List of species to download
-#' @param downlpad_path  File path for species downloads
+#' @param download_path  File path for species downloads
 #' @param download_limit How many records can be downloaded at one time? Set by server
 #' @export
-download_GBIF_all_species = function(species_list, downlpad_path, download_limit) {
+download_GBIF_all_species = function(species_list, download_path, download_limit) {
 
   ## create variables
   GBIF.download.limit = download_limit
@@ -29,7 +29,7 @@ download_GBIF_all_species = function(species_list, downlpad_path, download_limit
 
     ## First, check if the f*&%$*# file exists
     ## data\base\HIA_LIST\GBIF\SPECIES
-    file_name = paste0(downlpad_path, sp.n, "_GBIF_records.RData")
+    file_name = paste0(download_path, sp.n, "_GBIF_records.RData")
 
     ## If it's already downloaded, skip
     if (file.exists (file_name)) {
@@ -110,11 +110,11 @@ download_GBIF_all_species = function(species_list, downlpad_path, download_limit
 #' It assumes that the species list supplied is taxonomically correct.
 #' It downloads the species without returning anything
 #'
-#' @param species_list   List of species to download
-#' @param downlpad_path  File path for species downloads
-#' @param download_limit How many records can be downloaded at one time? Set by server
+#' @param species_list   Character string - the species to run maxent models for
+#' @param download_path  Character string - File path for species downloads
+#' @param download_limit Numeric - How many records can be downloaded at one time? Set by server
 #' @export
-download_ALA_all_species = function (species_list, downlpad_path, download_limit) {
+download_ALA_all_species = function (species_list, download_path, download_limit) {
 
   ## create variables
   download_limit  = 200000
@@ -126,7 +126,7 @@ download_ALA_all_species = function (species_list, downlpad_path, download_limit
     lsid <- ALA4R::specieslist(sp.n)$taxonConceptLsid
 
     ## First, check if the f*&%$*# file exists
-    file_name = paste0(downlpad_path, sp.n, "_ALA_records.RData")
+    file_name = paste0(download_path, sp.n, "_ALA_records.RData")
 
     ## If it's already downloaded, skip
     if (file.exists (file_name)) {
@@ -694,8 +694,8 @@ combine_records_extract = function(ala_df,
     message('Processing worldclim 1.0 data, divide the rasters by 10')
 
     COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)
-    COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x)
-      x / 10 ), .SDcols = env.variables [c(1:11)]]
+    COMBO.RASTER.CONVERT[, (env_variables [c(1:11)]) := lapply(.SD, function(x)
+      x / 10 ), .SDcols = env_variables [c(1:11)]]
     COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)
 
   } else {
@@ -819,8 +819,8 @@ urban_records_extract = function(urban_df,
     message('Processing worldclim 1.0 data, divide the rasters by 10')
 
     COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)
-    COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x)
-      x / 10 ), .SDcols = env.variables [c(1:11)]]
+    COMBO.RASTER.CONVERT[, (env_variables [c(1:11)]) := lapply(.SD, function(x)
+      x / 10 ), .SDcols = env_variables [c(1:11)]]
     COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)
 
   } else {

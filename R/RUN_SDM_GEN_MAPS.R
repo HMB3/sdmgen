@@ -63,7 +63,7 @@ source('./R/SDM_GEN_MODEL_LISTS.R')
 
 
 
-## STEP 1 ======================================================================================================
+## STEP 1 :: Download species occurrence data ================================================================================
 
 
 ## Load in all the .rda files that are save with the package ::
@@ -81,7 +81,7 @@ for (i in 1:length(list.filenames))
 
 
 ## The species list to be analyzed ----
-analysis.spp <- stoten.spp
+analysis_spp <- stoten.spp[1:3]
 
 
 ## Create a list of species to analyse
@@ -91,48 +91,50 @@ bat.spp <- aus.bats$Species[1:2] %>%
   str_trim()
 
 
-## :: Download GBIF and ALA data
-download_GBIF_all_species(species_list = analysis.spp,
-                          path         = "./data/GBIF/")
+## Download GBIF and ALA data
+download_GBIF_all_species(species_list  = analysis_spp,
+                          download_path = "./data/GBIF/",
+                          download_limit = 20000)
 
 
-download_ALA_all_species(species_list = analysis.spp,
-                         path         = "./data/ALA/")
+download_ALA_all_species(species_list  = analysis_spp,
+                         download_path = "./data/ALA/",
+                         download_limit = 20000)
 
 
 
 
 
-## STEP 2 ======================================================================================================
+## STEP 2 :: Combine species occurrence data ============================================================================
 
 
-## :: Combine ALA data and filter to records on land taken > 1950
+## Combine ALA data and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
 ## Raster :: Error in .local(.Object, ...) : does not like having the file slot changed....
-ALA.LAND = combine_ala_records(species_list      = analysis.spp,
+ALA.LAND = combine_ala_records(species_list      = analysis_spp,
                                records_path      = "./data/ALA/",
                                records_extension = "_ALA_records.RData",
                                record_type       = "ALA",
-                               keep_cols         = ALA.keep,
+                               keep_cols         = ALA_keep,
                                world_raster      = world.grids.current)
 
 
-## :: Combine GBIF data and filter to records on land taken > 1950
-GBIF.LAND = combine_gbif_records(species_list      = analysis.spp,
+## Combine GBIF data and filter to records on land taken > 1950
+GBIF.LAND = combine_gbif_records(species_list      = analysis_spp,
                                  records_path      = "./data/GBIF/",
                                  records_extension = "_GBIF_records.RData",
                                  record_type       = "GBIF",
-                                 keep_cols         = gbif.keep,
+                                 keep_cols         = gbif_keep,
                                  world_raster      = world.grids.current)
 
 
 
 
 
-## STEP 3 ======================================================================================================
+## STEP 3 :: extract environmental values =================================================================================
 
 
-## :: combine GBIF and ALA data, and extract environmental values
+## Combine GBIF and ALA data, and extract environmental values
 ## Create messages for this
 COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                gbif_df         = GBIF.LAND,
@@ -141,25 +143,25 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                template_raster = template.raster.1km.84,
                                                world_raster    = world.grids.current,
                                                projection      = CRS.WGS.84,
-                                               species_list    = analysis.spp,
-                                               biocl_vars      = bioclim.variables,
-                                               env_vars        = env.variables,
+                                               species_list    = analysis_spp,
+                                               biocl_vars      = bioclim_variables,
+                                               env_vars        = env_variables,
                                                worldclim_grids = "TRUE",
                                                save_data       = "FALSE",
                                                #data_path    = "./output/results/",
                                                save_run        = "TEST_BATS")
 
 
-## If needed, extract urban data
+## If needed, extract urban data (i.e. if the species analaysed are in Alessandro's urban dataset)
 ## This needs to be separate, so that the urban records aren't removed by spatial cleaning
 URBAN.RASTER.CONVERT = urban_records_extract(urban_df        = TI.XY,
                                              template_raster = template.raster.1km.84,
                                              world_raster    = world.grids.current,
                                              projection      = CRS.WGS.84,
-                                             species_list    = analysis.spp,
+                                             species_list    = analysis_spp,
                                              thin_records    = TRUE,
-                                             biocl_vars      = bioclim.variables,
-                                             env_vars        = env.variables,
+                                             biocl_vars      = bioclim_variables,
+                                             env_vars        = env_variables,
                                              worldclim_grids = "TRUE",
                                              save_data       = "FALSE",
                                              #data_path    = "./output/results/",
@@ -169,7 +171,7 @@ URBAN.RASTER.CONVERT = urban_records_extract(urban_df        = TI.XY,
 
 
 
-## STEP 4 ======================================================================================================
+## STEP 4 :: Flag institutional outliers ===================================================================
 
 
 ## :: Flag records as institutional or spatial outliers
@@ -195,8 +197,8 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLE
                              world_shp    = LAND,
                              kop_shp      = Koppen_shp,
                              ibra_shp     = IBRA,
-                             species_list = analysis.spp,
-                             env_vars     = env.variables,
+                             species_list = analysis_spp,
+                             env_vars     = env_variables,
                              cell_size    = 2,
                              save_run     = "Stoten_EG",
                              data_path    = "./output/results/",
@@ -206,14 +208,14 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLE
 ## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
 ##  make GUTI color light grey,  GBIF cyan and ALA another color-blind friendly contrasting color
 plot_range_histograms(coord_df     = SPATIAL.CLEAN,
-                      species_list = analysis.spp,
+                      species_list = analysis_spp,
                       range_path = './data/GBIF/Check_plots/')
 
 
 
 
 
-## STEP 6 :: Flag spatial outliers ==============================================================================
+## STEP 5 :: Flag spatial outliers ==============================================================================
 
 
 ## This code creates the table for running SDMs in 'species with data', or SWD format.
@@ -221,7 +223,7 @@ plot_range_histograms(coord_df     = SPATIAL.CLEAN,
 ## In this example for bats, we'll just use
 SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
                                     species_list    = unique(COORD.CLEAN$searchTaxon),
-                                    sdm_table_vars  = sdm.table.vars,
+                                    sdm_table_vars  = sdm_table_vars,
                                     save_run        = "TEST_BATS",
                                     read_background = "FALSE",
                                     #BG_points       = 'SDM_SPAT_ALL_ANIMAL_BG_POINTS.rds', ## This should be just bats
@@ -232,7 +234,7 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
 
 
 
-## STEP 7 ::: run SDMs ============================================================================================
+## STEP 6 :: Run Global SDMs ============================================================================================
 ## Run SDMs across all taxa, but don't show extra loops, etc.
 
 
@@ -245,16 +247,14 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
 #SDM.SPAT.OCC.BG <- readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_ALL_BATS.rds")
 
 
-## Up to here...........................................
-
-
 ## Run the SDMs for a set of taxa ----
-run_sdm_analysis(species_list            = bat.spp,
+run_sdm_analysis(species_list            = analysis_spp,
                  maxent_dir              = 'output/maxent/full_models',      ## Must be created in your directory
                  bs_dir                  = 'output/maxent/back_sel_models',  ## Must be created in your directory
                  sdm_df                  = SDM.SPAT.OCC.BG,
-                 sdm.predictors          = bs.predictors,
+                 sdm_predictors          = bs_predictors,
                  backwards_sel           = "TRUE",        ## If TRUE, run both full models, and backwards selected models
+                 template_raster         = template.raster.1km,
                  cor_thr                 = 0.8,           ## The maximum allowable pairwise correlation between predictor variables
                  pct_thr                 = 5,             ## The minimum allowable percent variable contribution
                  k_thr                   = 4,             ## The minimum number of variables to be kept in the model.
@@ -267,27 +267,27 @@ run_sdm_analysis(species_list            = bat.spp,
                  replicates              = 5,             ## Number of replicates
                  responsecurves          = TRUE,          ## Save response curves?
                  aus_shp                 = AUS,
-                 Koppen_zones            = Koppen_zones,
-                 Koppen                  = Koppen_1975_1km)
+                 Koppen_zones            = Koppen_zones,   ## This needs to be re-created reproducibly
+                 Koppen_raster           = Koppen_1975_1km)
 
 
 
 
 
-## STEP 8 ::: project SDMs =========================================================================================
+## STEP 7 :: Project SDMs across Australia ================================================================================
 
 
-## Create a table of maxent results -----
+## Create a table of maxent results
 ## This function will just aggregate the results for models that ran successfully
 MAXENT.RESULTS = compile_sdm_results(species_list = bat.spp,
                                      results_dir  = 'output/maxent/back_sel_models',
                                      save_data    = FALSE,
-                                     DATA_path    = "./output/results/",
+                                     data_path    = "./output/results/",
                                      save_run     = "TEST_BATS")
 
 
-## First, get map_spp from the maxent results table above, change the species column, and create a list of logistic thresholds -
-## These values are debateable, need a few references from the literature...
+## First, get map_spp from the maxent results table above, change the species column,
+## and create a list of logistic thresholds - These values are debateable, need a few references from the literature...
 map_spp         <- MAXENT.RESULTS$searchTaxon %>% gsub(" ", "_", .,)
 percent.10.log  <- MAXENT.RESULTS$Logistic_threshold
 sdm.results.dir <- MAXENT.RESULTS$results_dir
@@ -314,7 +314,7 @@ tryCatch(
                             maxent_path   = './output/maxent/back_sel_models/',    ## Output folder
                             climate_path  = './data/worldclim/aus/',               ## Future climate data
 
-                            grid_names    = env.variables,             ## Names of all variables
+                            grid_names    = env_variables,             ## Names of all variables
                             time_slice    = 30,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids
                             create_mess   = TRUE,
@@ -334,7 +334,7 @@ tryCatch(
 
 
 
-## STEP 9 ::: project SDMs ==========================================================================================
+## STEP 8 :: Aggregate SDM projections within Spatial units ==============================================================
 
 
 ## Rasterize a shapefile ----
@@ -406,7 +406,7 @@ tryCatch(mapply(area_cell_count,                                  ## Function ag
 
 
 
-## STEP 10 ::: Aggregate SDM results ===================================================================================
+## STEP 9 ::: Collate SDM results ===================================================================================
 
 
 ## Summarise the SDM results as per the Stoten publication
