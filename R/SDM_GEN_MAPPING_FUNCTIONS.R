@@ -10,16 +10,25 @@
 ## Project maxent files ----
 
 
-#' Project maxent files
-#'
-#' This function loads a file as a matrix. It assumes that the first column
-#' contains the rownames and the subsequent columns are the sample identifiers.
-#' Any rows with duplicated row names will be dropped with the first one being
-
-#' @param infile Path to the input file
-#' @return A matrix of the infile
-
-
+#' This function takes a data frame of all species records,
+#' and runs a specialised maxent analysis for each species.
+#' It uses the rmaxent package https://github.com/johnbaums/rmaxent
+#' It assumes that the input df is that returned by the prepare_sdm_table function
+#' @param aus_shp            SpatialPolygonsDataFrame - Spdf of the country for mapping maxent results (e.g. Australia)
+#' @param world_shp          SpatialPolygonsDataFrame - Spdf of the world for mapping maxent results
+#' @param country_prj        CRS object  - Local projection for mapping maxent results
+#' @param world_prj          CRS object  - Global projection for mapping maxent results
+#' @param scen_list          Character string - The list of global circulation models to create predictions for
+#' @param species_list       Character string - The species to run maxent predictions for
+#' @param maxent_path        Character string - The file path containin the existing maxent models
+#' @param climate_path       Character string - The file path where the climate data is saved
+#' @param grid_names         Character string - Vector of enviro conditions that you want to include
+#' @param time_slice         Character string - The time period to create predictions for (e.g. '2050', or '2070')
+#' @param current_grids      Character string - Vector of current enviro conditions that you want to include
+#' @param create_mess        Logical - Create mess maps of the preditions (T/F)?
+#' @param nclust             Numeric - How many clusters to use for parallel processing (e.g. 1)
+#' @param OSGeo_path         Character string - file path of .bat file for converting rasters to polygons (
+#' you need to download the OSGeo4W64 setup, see https://www.osgeo.org/)
 #' @export
 project_maxent_grids_mess = function(aus_shp,       world_shp,
                                      country_prj,   world_prj,
@@ -59,7 +68,6 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
       ## Simple loop
       message(i)
       s[[i]] <- s[[ i]]/10
-
     }
 
     ## Then apply each GCM to each species.
@@ -296,7 +304,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
             novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"),
                                                       OSGeo_path = OSGeo_path)
             novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x),
-                                                              OSGeo_path = OSGeo_path)
+                                                      OSGeo_path = OSGeo_path)
 
             ## Create the MESS path and save shapefiles
             MESS_shp_path   = sprintf('%s%s/full/%s',
@@ -487,11 +495,10 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
       } else {
         message(species, ' ', x, ' skipped - SDM not yet run')
       }
-
     }
 
     ## Check this is the best way to run parallel
-    if (nclust==1) {
+    if (nclust == 1) {
 
       lapply(species_list, maxent_predict_fun)
 
@@ -509,7 +516,11 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
 
 
 ## Plot a rasterVis::levelplot with a colour ramp diverging around zero ----
-## Written by John Baumgartner for the x package, adpated here locally
+## A gist by John Baumgartner for the (https://gist.github.com/johnbaums?direction=desc&sort=updated), adpated here locally
+
+
+#' @param p    A trellis object resulting from rasterVis::levelplot
+#' @param ramp Character string - The name of an RColorBrewer palette (as character), a character
 #' @export
 diverge0 <- function(p, ramp) {
 
@@ -518,15 +529,10 @@ diverge0 <- function(p, ramp) {
   ##       vector of colour names to interpolate, or a colorRampPalette.
   if(length(ramp)==1 && is.character(ramp) && ramp %in%
      row.names(brewer.pal.info)) {
-
     ramp <- suppressWarnings(colorRampPalette(brewer.pal(11, ramp)))
-
   } else if(length(ramp) > 1 && is.character(ramp) && all(ramp %in% colors())) {
-
     ramp <- colorRampPalette(ramp)
-
   } else if(!is.function(ramp))
-
     stop('ramp should be either the name of a RColorBrewer palette, ',
          'a vector of colours to be interpolated, or a colorRampPalette.')
 
@@ -541,7 +547,6 @@ diverge0 <- function(p, ramp) {
   p[[grep('^legend', names(p))]][[1]]$args$key$col <- ramp(1000)[zlim[-length(zlim)]]
   p$panel.args.common$col.regions <- ramp(1000)[zlim[-length(zlim)]]
   p
-
 }
 
 
@@ -549,7 +554,11 @@ diverge0 <- function(p, ramp) {
 
 
 ## Create hatching on a shapefile ----
-## Written by John Baumgartner
+
+
+## Written as agist by John Baumgartner ()
+#' @param x    SpatialPolgyons* or sf - A polygon object to create hatching for
+#' @param density Numeric - Approx number of lines to plot as hatching on the polygon
 #' @export
 hatch <- function(x, density) {
 
@@ -590,8 +599,12 @@ hatch <- function(x, density) {
 
 
 ## Function to convert a raster into a polygon ----
-## Written by John Baumgartner, change the .bat location to make it work on a Linux cluster
-## 'C:/OSGeo4W64/OSGeo4W.bat'
+
+
+## Written as a gist by John Baumgartner ()
+#' @param x           Raster layer - Or the file path to a raster file recognised by GDAL
+#' @param OSGeo_path  Character string - file path of .bat file for converting rasters to polygons (
+#' you need to download the OSGeo4W64 setup, see https://www.osgeo.org/)
 #' @export
 polygonizer_windows <- function(x, OSGeo_path = OSGeo_path,
                                 outshape = NULL, pypath = NULL, readpoly = TRUE,
@@ -693,10 +706,22 @@ polygonizer_windows <- function(x, OSGeo_path = OSGeo_path,
 
 
 ## Create vector of raster -----
+
+
+#' This function takes a raster of a shapefile (for example the urban areas of Australia),
+#' and creates a shapefile (i.e. a vector).
+#' It uses the rmaxent package https://github.com/johnbaums/rmaxent
+#' It assumes that the input df is that returned by the prepare_sdm_table function
+#' @param shp_file           SpatialPolygonsDataFrame - Spdf of spatial units used to aggregate the SDMs (e.g. urban areas of Australia)
+#' @param prj                CRS object - Local projection for mapping the shapefile (e.g. Australian Albers)
+#' @param sort_var           Character string - The field name in the shapefile to use for sorting (e.g. Urban area names)
+#' @param agg_var            Character string - The field name in the shapefile to use for aggregating SDM results (e.g. Urban area codes)
+#' @param temp_ras           Raster - An existing raster with the same extent, resolution and projection as the maxent models (e.g. Australia)
+#' @param targ_ras           Raster - An existing raster of the shapefile with the same extent, resolution and projection as the maxent models (e.g. Australia)
 #' @export
 shapefile_vector_from_raster = function (shp_file,
                                          prj,
-                                         sort_var,
+                                         #sort_var,
                                          agg_var,
                                          temp_ras,
                                          targ_ras) {
@@ -707,7 +732,7 @@ shapefile_vector_from_raster = function (shp_file,
 
   ## Rasterize shapefile, insert 'sort_var'
   message('Rasterizing shapefile')
-  areal_unit = areal_unit[order(areal_unit[[sort_var]]),]
+  #areal_unit = areal_unit[order(areal_unit[[sort_var]]),]
   #areal_unit = areal_unit[order(areal_unit$SUA_NAME16),]
   f <- tempfile()
 
@@ -737,12 +762,31 @@ shapefile_vector_from_raster = function (shp_file,
 
 
 ## Function to aggregate sdm predictions ----
+
+
+#' This function takes a data frame of all species records,
+#' and runs a specialised maxent analysis for each species.
+#' It uses the rmaxent package https://github.com/johnbaums/rmaxent
+#' It assumes that the input df is that returned by the prepare_sdm_table function
+#' @param unit_shp           SpatialPolygonsDataFrame - Spdf of the spatial units used to aggregate the maxent results (e.g. Australia)
+#' @param aus_shp            SpatialPolygonsDataFrame - Spdf of the country for aggregating maxent results (e.g. Australia)
+#' @param world_shp          SpatialPolygonsDataFrame - Spdf of the world for aggregating maxent results
+#' @param sort_var           Character string - The field name in the shapefile to use for sorting (e.g. Urban area names)
+#' @param agg_var            Character string - The field name in the shapefile to use for aggregating SDM results (e.g. Urban area codes)
+#' @param @param unit_vec    Character string - The field name in the shapefile to use for aggregating SDM results (e.g. Urban area codes)
+#' @param scen_list          Character string - The list of global circulation models to create predictions for
+#' @param species_list       Character string - The species to run maxent predictions for
+#' @param maxent_path        Character string - The file path containin the existing maxent models
+#' @param time_slice         Character string - The time period to create predictions for (e.g. '2050', or '2070')
 #' @export
-area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
-                           code_var, unit_vec,
-                           DIR_list, species_list, number_gcms,
-                           maxent_path, thresholds,
-                           time_slice, write_rasters) {
+
+
+#' @export
+sdm_area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
+                               agg_var, unit_vec,
+                               DIR_list, species_list, number_gcms,
+                               maxent_path, thresholds,
+                               time_slice, write_rasters) {
 
   ## Read in shapefiles as .RDS files
   ## This solves the problem

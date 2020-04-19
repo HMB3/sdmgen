@@ -298,6 +298,7 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 
 ## Create 2030 sdm map projections ----
 ## This step would need to change, to run as a package
+## Cannot create a RasterLayer object from this file.
 ## Error in .local(.Object, ...) :
 tryCatch(
   project_maxent_grids_mess(aus_shp       = AUS,          ## Shapefile, e.g. Australian states
@@ -306,7 +307,7 @@ tryCatch(
                             world_prj     = CRS("+init=epsg:4326"),
 
                             scen_list     = scen_2030,                 ## List of climate scenarios
-                            species_list  = map_spp,                   ## List of species folders with maxent models
+                            species_list  = map_spp[3],                   ## List of species folders with maxent models
                             maxent_path   = './output/maxent/back_sel_models/',    ## Output folder
                             climate_path  = './data/worldclim/aus/',               ## Future climate data
 
@@ -337,7 +338,7 @@ tryCatch(
 ## Rasterize a shapefile ----
 ## Can't use the .rda, must use the file path
 areal_unit_vec <- shapefile_vector_from_raster(shp_file = SUA,
-                                               prj      = ALB.CONICAL,
+                                               prj      = CRS("+init=EPSG:3577"),
                                                sort_var = 'SUA_NAME16',
                                                agg_var  = 'SUA_CODE16',
                                                temp_ras = aus.grids.current[[1]],
@@ -372,11 +373,11 @@ summary(areal_unit_vec)
 ## Combine GCM predictions and calculate gain and loss for 2030 ----
 ## Then loop over the species folders and climate scenarios
 ## Why doesn't using the
-tryCatch(mapply(area_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
+tryCatch(mapply(sdm_area_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
                 unit_shp      = './data/SUA_albers.rds',          ## Spatial unit of analysis - E.G. SUAs, in Australian Albers
                 unit_vec      = areal_unit_vec,                   ## Vector of rasterized unit cells
                 sort_var      = "SUA_NAME16",
-                code_var      = "SUA_CODE16",
+                agg_var       = "SUA_CODE16",
                 world_shp     = './data/LAND_albers.rds',         ## Polygon for AUS maps
                 aus_shp       = './data/AUS_albers.rds',          ## Polygon for World maps
 
