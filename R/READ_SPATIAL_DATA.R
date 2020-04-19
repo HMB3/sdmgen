@@ -9,11 +9,8 @@
 ## This can only be tested in another location :: ask Shawn to have a go
 
 
-## Upload to dropbox, etc, and ask Shawn/will to test
-
-
-## Change these slots to be the project paths ::
-# template.raster.1km.84@file@name        <- "\\data\\world_koppen\\template_1km_WGS84.tif"
+## Create a function to get the spatial data ::
+#https://www.rdocumentation.org/packages/raster/versions/3.0-12/topics/getData
 
 
 
@@ -47,6 +44,9 @@
 # CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
 # ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
 # sp_epsg54009 <- "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
+
+
+## Need to create a function that genererates all the spatial data
 
 
 ## Check how the Koppen zones were calculated

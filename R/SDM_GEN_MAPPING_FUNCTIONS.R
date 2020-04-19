@@ -22,18 +22,19 @@
 
 #' @export
 project_maxent_grids_mess = function(aus_shp,       world_shp,
+                                     country_prj,   world_prj,
                                      scen_list,     species_list,
                                      maxent_path,   climate_path,
-                                     static_path,   grid_names,
-                                     time_slice,    current_grids,
-                                     create_mess,   nclust) {
+                                     grid_names,    time_slice,
+                                     current_grids, create_mess,
+                                     nclust,        OSGeo_path) {
 
-  ## Read in the Australian shapefile at the top
+  ## Read in the Aus and world shapefile and re-rpoject
   aus_poly   <- aus_shp %>%
-    spTransform(ALB.CONICAL)
+    spTransform(country_prj)
 
   world_poly <- world_shp %>%
-    spTransform(CRS.WGS.84)
+    spTransform(world_prj)
 
   ## First, run a loop over each scenario:
   lapply(scen_list, function(x) {
@@ -41,6 +42,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
     ## Create a raster stack for each of the 6 GCMs, not for each species
     ## They need to have exactly the same extent.
     ## Could stack all the rasters, or, keep them separate
+    ## x = scen_list[1]
     s <- stack(c(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19)))
     identical(projection(s), projection(aus_poly))
 
@@ -67,10 +69,11 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
     ## Define function to then send to one or multiple cores
     maxent_predict_fun <- function(species) {
 
-      ##
+      ## Create species name
+      ## species = map_spp[1]
       save_name = gsub(' ', '_', species)
 
-      ## Why is this checing at the wrong level?
+      ## Check the file exists
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
         message('Then run maxent projections for ', species, ' under ', x, ' scenario')
 
@@ -93,7 +96,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
           ## Read in species with data and occurrence files
           swd <- as.data.frame(readRDS(sprintf('%s%s/swd.rds',    maxent_path, species, species)))
           occ <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, species, species)) %>%
-            spTransform(ALB.CONICAL)
+            spTransform(country_prj)
 
           ## Create a file path for the current raster prediction
           f_current  <- sprintf('%s%s/full/%s_current.tif', maxent_path, species, species)
@@ -290,8 +293,10 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
 
 
             ## If we're on windows, use the GDAL .bat file
-            novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
-            novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+            novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"),
+                                                      OSGeo_path = OSGeo_path)
+            novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x),
+                                                              OSGeo_path = OSGeo_path)
 
             ## Create the MESS path and save shapefiles
             MESS_shp_path   = sprintf('%s%s/full/%s',
@@ -303,7 +308,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
 
               ## Re-project the shapefiles
               novel_current_poly = novel_current_poly %>%
-                spTransform(ALB.CONICAL)
+                spTransform(country_prj)
 
               ## Now save the novel areas as shapefiles
               ## There is a problem with accessing the files at the same time
@@ -491,15 +496,12 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
       lapply(species_list, maxent_predict_fun)
 
     } else {
-
       ## Export all objects from the function call
       message('Running project_maxent_grids_mess for ', length(species_list),
               ' species on ', nclust, ' cores for GCM ', x)
       parLapply(cl, species_list, maxent_predict_fun)
     }
-
   })
-
 }
 
 
@@ -589,10 +591,12 @@ hatch <- function(x, density) {
 
 ## Function to convert a raster into a polygon ----
 ## Written by John Baumgartner, change the .bat location to make it work on a Linux cluster
+## 'C:/OSGeo4W64/OSGeo4W.bat'
 #' @export
-polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
-                                fillholes=FALSE, aggregate=FALSE,
-                                quietish=TRUE) {
+polygonizer_windows <- function(x, OSGeo_path = OSGeo_path,
+                                outshape = NULL, pypath = NULL, readpoly = TRUE,
+                                fillholes = FALSE, aggregate = FALSE,
+                                quietish = TRUE) {
 
   # x: an R Raster layer, or the file path to a raster file recognised by GDAL
   # outshape: the path to the output shapefile (if NULL, a temporary file will
@@ -609,7 +613,7 @@ polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
   if (isTRUE(aggregate)) require(rgeos)
   if (is.null(pypath)) {
 
-    cmd <- Sys.which('C:/OSGeo4W64/OSGeo4W.bat')
+    cmd <- Sys.which(OSGeo_path)
     pypath <- 'gdal_polygonize'
     if(cmd=='') {
       cmd <- 'python'

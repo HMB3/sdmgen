@@ -84,13 +84,6 @@ for (i in 1:length(list.filenames))
 analysis_spp <- stoten.spp[1:3]
 
 
-## Create a list of species to analyse
-bat.spp <- aus.bats$Species[1:2] %>%
-  str_trim()
-bat.spp <- aus.bats$Species[1:2] %>%
-  str_trim()
-
-
 ## Download GBIF and ALA data
 download_GBIF_all_species(species_list  = analysis_spp,
                           download_path = "./data/GBIF/",
@@ -279,7 +272,7 @@ run_sdm_analysis(species_list            = analysis_spp,
 
 ## Create a table of maxent results
 ## This function will just aggregate the results for models that ran successfully
-MAXENT.RESULTS = compile_sdm_results(species_list = bat.spp,
+MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp,
                                      results_dir  = 'output/maxent/back_sel_models',
                                      save_data    = FALSE,
                                      data_path    = "./output/results/",
@@ -305,9 +298,12 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 
 ## Create 2030 sdm map projections ----
 ## This step would need to change, to run as a package
+## Error in .local(.Object, ...) :
 tryCatch(
   project_maxent_grids_mess(aus_shp       = AUS,          ## Shapefile, e.g. Australian states
                             world_shp     = LAND,         ## World shapefile
+                            country_prj   = CRS("+init=EPSG:3577"),
+                            world_prj     = CRS("+init=epsg:4326"),
 
                             scen_list     = scen_2030,                 ## List of climate scenarios
                             species_list  = map_spp,                   ## List of species folders with maxent models
@@ -318,6 +314,7 @@ tryCatch(
                             time_slice    = 30,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids
                             create_mess   = TRUE,
+                            OSGeo_path    = 'C:/OSGeo4W64/OSGeo4W.bat', ## Other users would need to install this
                             nclust        = 1),
 
   ## If the species fails, write a fail message to file.
