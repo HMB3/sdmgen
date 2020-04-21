@@ -81,7 +81,7 @@ for (i in 1:length(list.filenames))
 
 
 ## The species list to be analyzed ----
-analysis_spp <- stoten.spp[1:3]
+analysis_spp <- stoten.spp[1:10]
 
 
 ## Download GBIF and ALA data
@@ -217,7 +217,7 @@ plot_range_histograms(coord_df     = SPATIAL.CLEAN,
 SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
                                     species_list    = unique(COORD.CLEAN$searchTaxon),
                                     sdm_table_vars  = sdm_table_vars,
-                                    save_run        = "TEST_BATS",
+                                    save_run        = "test_species",
                                     read_background = "FALSE",
                                     #BG_points       = 'SDM_SPAT_ALL_ANIMAL_BG_POINTS.rds', ## This should be just bats
                                     save_data       = "FALSE",

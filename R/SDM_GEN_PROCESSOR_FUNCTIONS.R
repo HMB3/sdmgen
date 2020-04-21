@@ -12,12 +12,12 @@
 #' Download species occurrence files from GBIF
 #'
 #' This function downloads species occurrence files from GBIF (https://www.gbif.org/).
-#' It assumes that the species list supplied is taxonomically correct.
-#' It downloads the species without returning anything
+#' It assumes that the species list supplied is taxonomically correct (haha!).
+#' It downloads the species to the specified folders without returning anything
 #'
-#' @param species_list   List of species to download
-#' @param download_path  File path for species downloads
-#' @param download_limit How many records can be downloaded at one time? Set by server
+#' @param species_list   Character vector - List of species binomials to download
+#' @param download_path  Character string - File path for species downloads
+#' @param download_limit Numeric - How many records can be downloaded at one time? Set by server
 #' @export
 download_GBIF_all_species = function(species_list, download_path, download_limit) {
 
@@ -28,7 +28,6 @@ download_GBIF_all_species = function(species_list, download_path, download_limit
   for(sp.n in species_list){
 
     ## First, check if the f*&%$*# file exists
-    ## data\base\HIA_LIST\GBIF\SPECIES
     file_name = paste0(download_path, sp.n, "_GBIF_records.RData")
 
     ## If it's already downloaded, skip
@@ -82,9 +81,9 @@ download_GBIF_all_species = function(species_list, download_path, download_limit
       GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
       GBIF <- as.data.frame(GBIF$data)
 
-      cat("Synonyms returned for :: ",  sp.n, unique(GBIF$scientificName), sep="\n")
-      cat("Names returned for :: ", sp.n, unique(GBIF$name),               sep="\n")
-      cat("Takonkeys returned for :: ", sp.n, unique(GBIF$taxonKey),       sep="\n")
+      cat("Synonyms returned for :: ",  sp.n, unique(GBIF$scientificName), sep = "\n")
+      cat("Names returned for :: ",     sp.n, unique(GBIF$name),           sep = "\n")
+      cat("Takonkeys returned for :: ", sp.n, unique(GBIF$taxonKey),       sep = "\n")
 
       ## Could also only use the key searched, but that could knock out a lot of species
       message(dim(GBIF[1]), " Records returned for ", sp.n)
@@ -93,9 +92,7 @@ download_GBIF_all_species = function(species_list, download_path, download_limit
       save(GBIF, file = file_name)
 
     }
-
   }
-
 }
 
 
@@ -104,13 +101,14 @@ download_GBIF_all_species = function(species_list, download_path, download_limit
 
 ## ALA download ----
 
-#' Download species occurrence files from GBIF
+
+#' Download species occurrence files from the Atlas of Living Australia (ALA)
 #'
-#' This function downloads species occurrence files from GBIF (https://www.gbif.org/).
+#' This function downloads species occurrence files from ALA (https://www.ala.org.au/).
 #' It assumes that the species list supplied is taxonomically correct.
 #' It downloads the species without returning anything
 #'
-#' @param species_list   Character string - the species to run maxent models for
+#' @param species_list   Character vector - List of species binomials to download
 #' @param download_path  Character string - File path for species downloads
 #' @param download_limit Numeric - How many records can be downloaded at one time? Set by server
 #' @export
@@ -191,7 +189,7 @@ download_ALA_all_species = function (species_list, download_path, download_limit
 #' It assumes that all the files come from the previous downloads function.
 #' Although you can download all the records for in one go, this is better for
 #' Doing small runs of species, or where you want to re-run them constantly
-#' @param species_list       List of species already downloaded
+#' @param species_list       Character Vector - List of species already downloaded
 #' @param records_path       File path for downloaded species
 #' @param records_extension  Which R file type? RDS or RDA
 #' @param record_type        Adds a column to the data frame for the data source, EG ALA
@@ -1208,7 +1206,6 @@ check_spatial_outliers = function(all_df,
 #' @param ibra_shp           .Rds object. Shapefile of Australia's IBRA zones (see https://www.environment.gov.au/land/nrs/science/ibra)
 #' @param species_list       Character string - List of species analysed, used to cut the dataframe down
 #' @param env_vars           Character string - List of environmental variables analysed
-#' @param species_list       Character string - List of species analysed, used to cut the dataframe down
 #' @param cell_size          Numeric. Value indicating the grid size in decimal degrees used for estimating Area of Occupancy (see ?AOO.computing)
 #' @param save_run           Character string - run name to append to the data frame, useful for multiple runs.
 #' @param save_data          Logical - do you want to save the data frame?
