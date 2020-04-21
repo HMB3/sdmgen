@@ -14,7 +14,7 @@
 #' and runs a specialised maxent analysis for each species.
 #' It uses the rmaxent package https://github.com/johnbaums/rmaxent
 #' It assumes that the input df is that returned by the prepare_sdm_table function
-#' @param aus_shp            SpatialPolygonsDataFrame - Spdf of the country for mapping maxent results (e.g. Australia)
+#' @param country_shp            SpatialPolygonsDataFrame - Spdf of the country for mapping maxent results (e.g. Australia)
 #' @param world_shp          SpatialPolygonsDataFrame - Spdf of the world for mapping maxent results
 #' @param country_prj        CRS object  - Local projection for mapping maxent results
 #' @param world_prj          CRS object  - Global projection for mapping maxent results
@@ -30,7 +30,7 @@
 #' @param OSGeo_path         Character string - file path of .bat file for converting rasters to polygons (
 #' you need to download the OSGeo4W64 setup, see https://www.osgeo.org/)
 #' @export
-project_maxent_grids_mess = function(aus_shp,       world_shp,
+project_maxent_grids_mess = function(country_shp,       world_shp,
                                      country_prj,   world_prj,
                                      scen_list,     species_list,
                                      maxent_path,   climate_path,
@@ -39,7 +39,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
                                      nclust,        OSGeo_path) {
 
   ## Read in the Aus and world shapefile and re-rpoject
-  aus_poly   <- aus_shp %>%
+  country_poly   <- country_shp %>%
     spTransform(country_prj)
 
   world_poly <- world_shp %>%
@@ -53,7 +53,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
     ## Could stack all the rasters, or, keep them separate
     ## x = scen_list[1]
     s <- stack(c(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19)))
-    identical(projection(s), projection(aus_poly))
+    identical(projection(s), projection(country_poly))
 
     ## Rename both the current and future environmental stack...
     ## critically important that the order of the name
@@ -117,7 +117,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
 
             pred.current <- rmaxent::project(
               m, current_grids[[colnames(m@presence)]])$prediction_logistic
-            writeRaster(pred.current, f_current, overwrite = TRUE)
+            #writeRaster(pred.current, f_current, overwrite = TRUE)
 
           } else {
             message('Use existing prediction for ', species)
@@ -173,7 +173,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
                              colorkey = list(height = 0.6),
                              main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', raster_name, species))) +
 
-                latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))  ## need list() for polygon
+                latticeExtra::layer(sp.polygons(country_poly), data = list(country_poly = country_poly))  ## need list() for polygon
 
               p <- diverge0(p, 'RdBu')
               f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", raster_name)
@@ -262,7 +262,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
                                main = gsub('_', ' ', sprintf('Future_mess_for_%s_%s (%s)',
                                                              raster_name, x, species, x))) +
 
-                  latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))
+                  latticeExtra::layer(sp.polygons(country_poly), data = list(country_poly = country_poly))
 
                 p <- diverge0(p, 'RdBu')
                 f <- sprintf('%s/%s%s%s%s%s.png', MESS_dir, species, "_future_mess_", raster_name, "_", x)
@@ -298,6 +298,9 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
             } else {
               message('Dont run future MESS maps for ', species, ' under scenario ',  x )
             }
+
+            ## Try writing the current raster out here - this was causing issues....
+            writeRaster(pred.current, f_current, overwrite = TRUE)
 
 
             ## If we're on windows, use the GDAL .bat file
@@ -393,7 +396,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
                       ## Plot the Aus shapefile with the occurrence points for reference
                       ## Can the current layer be plotted on it's own?
                       ## Add the novel maps as vectors.
-                      latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
+                      latticeExtra::layer(sp.polygons(country_poly), data = list(country_poly = country_poly)) +
                       latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15,
                                                     col = c('red', 'transparent', 'transparent')[panel.number()]),
                                           data = list(occ = occ)) +
@@ -477,7 +480,7 @@ project_maxent_grids_mess = function(aus_shp,       world_shp,
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Can the current layer be plotted on it's own?
                     ## Add the novel maps as vectors.
-                    latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
+                    latticeExtra::layer(sp.polygons(country_poly), data = list(country_poly = country_poly)) +
                     latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15,
                                                   col = c('red', 'transparent', 'transparent')[panel.number()]),
                                         data = list(occ = occ)) +
@@ -769,7 +772,7 @@ shapefile_vector_from_raster = function (shp_file,
 #' It uses the rmaxent package https://github.com/johnbaums/rmaxent
 #' It assumes that the input df is that returned by the prepare_sdm_table function
 #' @param unit_shp           SpatialPolygonsDataFrame - Spdf of the spatial units used to aggregate the maxent results (e.g. Australia)
-#' @param aus_shp            SpatialPolygonsDataFrame - Spdf of the country for aggregating maxent results (e.g. Australia)
+#' @param country_shp            SpatialPolygonsDataFrame - Spdf of the country for aggregating maxent results (e.g. Australia)
 #' @param world_shp          SpatialPolygonsDataFrame - Spdf of the world for aggregating maxent results
 #' @param sort_var           Character string - The field name in the shapefile to use for sorting (e.g. Urban area names)
 #' @param agg_var            Character string - The field name in the shapefile to use for aggregating SDM results (e.g. Urban area codes)
@@ -782,7 +785,8 @@ shapefile_vector_from_raster = function (shp_file,
 
 
 #' @export
-sdm_area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
+sdm_area_cell_count = function(unit_shp, country_shp,
+                               world_shp, sort_var,
                                agg_var, unit_vec,
                                DIR_list, species_list, number_gcms,
                                maxent_path, thresholds,
@@ -790,9 +794,9 @@ sdm_area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
 
   ## Read in shapefiles as .RDS files
   ## This solves the problem
-  areal_unit <- readRDS(unit_shp)
-  aus_poly   <- readRDS(aus_shp)
-  world_poly <- readRDS(world_shp)
+  areal_unit   <- readRDS(unit_shp)
+  country_poly <- readRDS(country_shp)
+  world_poly   <- readRDS(world_shp)
 
   ## Loop over each directory
   ## DIR = DIR_list[1]
@@ -1061,7 +1065,7 @@ sdm_area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
 
           ## Save the gain/loss raster to PNG
           save_name = gsub(' ', '_', species)
-          identical(projection(aus_poly), projection(gain_plot))
+          identical(projection(country_poly), projection(gain_plot))
 
           message('writing gain/loss png for ', 'species')
           png(sprintf('%s/%s/full/%s_%s_%s_20%s.png', maxent_path, save_name,
@@ -1075,8 +1079,8 @@ sdm_area_cell_count = function(unit_shp, aus_shp, world_shp, sort_var,
                           main       = list(paste0(gsub('_', ' ', species), ' :: ',  20,
                                                    time_slice, ' 4GCMs > ',  thresh),
                                             font = 4, cex = 2)) +
-                  latticeExtra::layer(sp.polygons(aus_poly),
-                                      data = list(aus_poly = aus_poly)))
+                  latticeExtra::layer(sp.polygons(country_poly),
+                                      data = list(country_poly = country_poly)))
 
           dev.off()
 

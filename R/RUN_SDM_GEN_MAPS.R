@@ -186,7 +186,7 @@ SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
 
 ## Step 4c ::Estima ecliate niches usign pecies records
 GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLEAN
-                             aus_shp      = AUS,
+                             country_shp      = AUS,
                              world_shp    = LAND,
                              kop_shp      = Koppen_shp,
                              ibra_shp     = IBRA,
@@ -259,7 +259,7 @@ run_sdm_analysis(species_list            = analysis_spp,
                  features                = 'lpq',         ## Maxent features to use
                  replicates              = 5,             ## Number of replicates
                  responsecurves          = TRUE,          ## Save response curves?
-                 aus_shp                 = AUS,
+                 country_shp                 = AUS,
                  Koppen_zones            = Koppen_zones,   ## This needs to be re-created reproducibly
                  Koppen_raster           = Koppen_1975_1km)
 
@@ -301,7 +301,7 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 ## Cannot create a RasterLayer object from this file.
 ## Error in .local(.Object, ...) :
 tryCatch(
-  project_maxent_grids_mess(aus_shp       = AUS,          ## Shapefile, e.g. Australian states
+  project_maxent_grids_mess(country_shp       = AUS,          ## Shapefile, e.g. Australian states
                             world_shp     = LAND,         ## World shapefile
                             country_prj   = CRS("+init=EPSG:3577"),
                             world_prj     = CRS("+init=epsg:4326"),
@@ -379,7 +379,7 @@ tryCatch(mapply(sdm_area_cell_count,                                  ## Functio
                 sort_var      = "SUA_NAME16",
                 agg_var       = "SUA_CODE16",
                 world_shp     = './data/LAND_albers.rds',         ## Polygon for AUS maps
-                aus_shp       = './data/AUS_albers.rds',          ## Polygon for World maps
+                country_shp   = './data/AUS_albers.rds',          ## Polygon for World maps
 
                 DIR_list      = sdm.results.dir,                  ## List of directories with rasters
                 species_list  = map_spp,                          ## List of species' directories

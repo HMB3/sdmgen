@@ -56,8 +56,8 @@ Koppen_shp       = readOGR('data/world_koppen/WC05_1975H_Koppen_Kriticos_2012.sh
 Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 AUS              = readRDS("./data/AUS_albers.rds")
 LAND             = readRDS("./data/LAND_albers.rds")
-#IBRA             = load('./data/IBRA.rda')
-SUA            = readOGR('data/SUA_2016_AUST.shp')
+#IBRA            = load('./data/IBRA.rda')
+SUA              = readOGR('data/SUA_2016_AUST.shp')
 
 
 # AUS_albers <- AUS %>%
