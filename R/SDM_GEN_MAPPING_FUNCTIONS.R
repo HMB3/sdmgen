@@ -118,7 +118,7 @@ project_maxent_grids_mess = function(country_shp,       world_shp,
 
             pred.current <- rmaxent::project(
               m, current_grids[[colnames(m@presence)]])$prediction_logistic
-            #writeRaster(pred.current, f_current, overwrite = TRUE)
+            writeRaster(pred.current, f_current, overwrite = TRUE)
 
           } else {
             message('Use existing prediction for ', species)
@@ -130,8 +130,6 @@ project_maxent_grids_mess = function(country_shp,       world_shp,
           ## Could work out how to the static mess once, before looping through scenarios
           MESS_dir = sprintf('%s%s/full/%s',
                              maxent_path, species, 'MESS_output')
-          f_mess_current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess")
-
 
           ## If the current novel layer doesn't exist, create it
           if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")))  {
@@ -238,11 +236,11 @@ project_maxent_grids_mess = function(country_shp,       world_shp,
                                             species, species, "_future_not_novel_", x)
 
 
-              if(!file.exists(hs_future_not_novel)) {
+              #if(!file.exists(hs_future_not_novel)) {
 
-                ## Set the names of the rasters to match the occ data, and subset both
-                ## Watch the creation of objects in each run
-                sdm_vars             = names(m@presence)
+              ## Set the names of the rasters to match the occ data, and subset both
+              ## Watch the creation of objects in each run
+              sdm_vars             = names(m@presence)
               future_grids         = s
               future_grids         = subset(future_grids, sdm_vars)
               swd                  = swd [,sdm_vars]
@@ -307,19 +305,22 @@ project_maxent_grids_mess = function(country_shp,       world_shp,
                                                        species, species, "_future_not_novel_", x),
                           overwrite = TRUE)
 
-              } else {
-                message('Future MESS maps for ', species, ' under scenario ',  x , 'already run, read them in')
+              # } else {
+              #   message('Future SDM maps for ', species, ' under scenario ',  x , 'already run, read them in from file')
+              #
+              #   ## Here we need to read in all the layers used in the plots below, which should have been saved to file
+              #   ## Read in ras1, ras2, etc
+              #   hs_future_not_novel = raster(sprintf('%s%s/full/%s%s%s.tif', maxent_path,
+              #                                        species, species, "_future_not_novel_", x))
+              #
+              # }
 
-                ## Here we need to read in all the layers used in the plots below, which should have been saved to file
-                ## Read in ras1, ras2, etc
-              }
             } else {
               message('Dont run future MESS maps for ', species, ' under scenario ',  x )
             }
 
             ## Try writing the current raster out here - this was causing issues....
-            writeRaster(pred.current, f_current, overwrite = TRUE)
-
+            #writeRaster(pred.current, f_current, overwrite = TRUE)
 
             ## If we're on windows, use the GDAL .bat file
             novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"),
