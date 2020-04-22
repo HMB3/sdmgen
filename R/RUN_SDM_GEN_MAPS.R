@@ -58,7 +58,7 @@ source('./R/SDM_GEN_MODEL_LISTS.R')
 
 ## Set temporary raster directory ----
 ## This step is vital
-rasterOptions(tmpdir = './RTEMP')
+rasterOptions(tmpdir = './r_temp')
 
 
 

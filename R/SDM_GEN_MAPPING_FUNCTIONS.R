@@ -233,9 +233,16 @@ project_maxent_grids_mess = function(country_shp,       world_shp,
             if(create_mess == TRUE) {
               message('Running future mess map for ', species, ' under ', x)
 
-              ## Set the names of the rasters to match the occ data, and subset both
-              ## Watch the creation of objects in each run
-              sdm_vars             = names(m@presence)
+              ## Check if the future environments have been created
+              hs_future_not_novel = sprintf('%s%s/full/%s%s%s.tif', maxent_path,
+                                            species, species, "_future_not_novel_", x)
+
+
+              if(!file.exists(hs_future_not_novel)) {
+
+                ## Set the names of the rasters to match the occ data, and subset both
+                ## Watch the creation of objects in each run
+                sdm_vars             = names(m@presence)
               future_grids         = s
               future_grids         = subset(future_grids, sdm_vars)
               swd                  = swd [,sdm_vars]
@@ -299,6 +306,13 @@ project_maxent_grids_mess = function(country_shp,       world_shp,
               writeRaster(hs_future_not_novel, sprintf('%s%s/full/%s%s%s.tif', maxent_path,
                                                        species, species, "_future_not_novel_", x),
                           overwrite = TRUE)
+
+              } else {
+                message('Future MESS maps for ', species, ' under scenario ',  x , 'already run, read them in')
+
+                ## Here we need to read in all the layers used in the plots below, which should have been saved to file
+                ## Read in ras1, ras2, etc
+              }
             } else {
               message('Dont run future MESS maps for ', species, ' under scenario ',  x )
             }
