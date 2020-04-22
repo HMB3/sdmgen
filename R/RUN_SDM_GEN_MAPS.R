@@ -56,8 +56,9 @@ source('./R/SDM_GEN_MODEL_LISTS.R')
 # source('./R/READ_SPATIAL_DATA.R')
 
 
-## Set temporary raster directory
-#rasterOptions(tmpdir = './RTEMP')
+## Set temporary raster directory ----
+## This step is vital
+rasterOptions(tmpdir = './RTEMP')
 
 
 
@@ -301,13 +302,13 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 ## Cannot create a RasterLayer object from this file.
 ## Error in .local(.Object, ...) :
 tryCatch(
-  project_maxent_grids_mess(country_shp       = AUS,          ## Shapefile, e.g. Australian states
+  project_maxent_grids_mess(country_shp   = AUS,          ## Shapefile, e.g. Australian states
                             world_shp     = LAND,         ## World shapefile
                             country_prj   = CRS("+init=EPSG:3577"),
                             world_prj     = CRS("+init=epsg:4326"),
 
                             scen_list     = scen_2030,                 ## List of climate scenarios
-                            species_list  = map_spp[3],                   ## List of species folders with maxent models
+                            species_list  = map_spp,                   ## List of species folders with maxent models
                             maxent_path   = './output/maxent/back_sel_models/',    ## Output folder
                             climate_path  = './data/worldclim/aus/',               ## Future climate data
 

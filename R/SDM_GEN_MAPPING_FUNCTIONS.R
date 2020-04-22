@@ -81,12 +81,16 @@ project_maxent_grids_mess = function(country_shp,       world_shp,
       ## species = map_spp[1]
       save_name = gsub(' ', '_', species)
 
+      ## Create a path for the current prediction of the species
+      f_current  <- sprintf('%s%s/full/%s_current.tif', maxent_path, species, species)
+
       ## Check the file exists
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
         message('Then run maxent projections for ', species, ' under ', x, ' scenario')
 
         ## Then, check if the species projection has already been run...
-        if(!file.exists(sprintf('%s/%s/full/%s_future_not_novel_%s.tif', maxent_path, species, species, x))) {
+        if(!file.exists(sprintf('%s/%s/full/%s_future_not_novel_%s.tif',
+                                maxent_path, species, species, x))) {
 
           ## Now read in the SDM model, calibrated on current conditions
           ## if it was run with backwards selection, just use the full model
@@ -106,11 +110,8 @@ project_maxent_grids_mess = function(country_shp,       world_shp,
           occ <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, species, species)) %>%
             spTransform(country_prj)
 
-          ## Create a file path for the current raster prediction
-          f_current  <- sprintf('%s%s/full/%s_current.tif', maxent_path, species, species)
-
           ## If the current raster prediction has not been run, run it
-          if(!file.exists(f_current)) {
+          if(!file.exists(f_current) == TRUE) {
 
             ## Report which prediction is in progress :: m$me_full, m$me_full@presence
             message('Running current prediction for ', species)
@@ -139,7 +140,10 @@ project_maxent_grids_mess = function(country_shp,       world_shp,
             sdm_vars             = names(m@presence)
             current_grids        = subset(current_grids, sdm_vars)
             swd                  = swd [,sdm_vars]
-            identical(names(swd), names(current_grids))
+
+            ##
+            message('Are the environmental variables identical? ',
+                    identical(names(swd), names(current_grids)))
 
             ## Create a map of novel environments for current conditions.
             ## This similarity function only uses variables (e.g. n bioclim), not features
