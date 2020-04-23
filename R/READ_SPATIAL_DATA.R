@@ -95,7 +95,7 @@ length(unique(SUA$SUA_CODE16))
 ## If needed, read in background data
 #BG.POINTS     = readRDS("./data/base/background/SDM_SPAT_ALL_ANIMAL_BG_POINTS.rds")
 TI.XY   = readRDS("./data/Global_Inventory_CLEAN_21.03.2019.rds")
-stoten.spp = read.csv('./data/MAXENT_SUMMARY_SUA_ANALYSIS_NATIVE_GOOD_1502_2019.csv') %>%
+plant.spp = read.csv('./data/MAXENT_SUMMARY_SUA_ANALYSIS_NATIVE_GOOD_1502_2019.csv') %>%
   .$searchTaxon %>% as.character()
 
 

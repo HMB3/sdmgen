@@ -10,14 +10,17 @@
 ## Also see the Markdown file
 
 
-## When run as a package, the addresses wouldn't be the same...
-## The functions run over the folders, and they will be hard to replicate
+## Add data that fits within git limits
 
-
-## Raster data is too big to push to github
-## Changing rasters to .rda + addresses may cause errors.
-## EG the plot raster doesn't work simply on the .rda.
-## So we can't access the rasters using data files
+# - Koppen files are created by me, and cross-referenced to Kriticos. They won't change, so making them static is ok
+#
+# - The example shape files and species lists all come with the package
+#
+# - The Kopppen raster is downloaded from Google drive, etc, because it is bespoke
+#
+# - The worldclim rasters are all take from the getraster function
+#
+# - The creation of the SUA.tif is the key outstanding step : this is needed to run the final aggregation, and needs to be generalisable
 
 
 
@@ -262,7 +265,7 @@ run_sdm_analysis(species_list            = analysis_spp,
                  responsecurves          = TRUE,          ## Save response curves?
                  country_shp                 = AUS,
                  Koppen_zones            = Koppen_zones,   ## This needs to be re-created reproducibly
-                 Koppen_raster           = Koppen_1975_1km)
+                 Koppen_raster           = Koppen_1975_1km )
 
 
 
