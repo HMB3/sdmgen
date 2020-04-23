@@ -809,7 +809,7 @@ sdm_area_cell_count = function(unit_shp, country_shp,
                                maxent_path, thresholds,
                                time_slice, write_rasters) {
 
-  ## Read in shapefiles as .RDS files
+  ## Read in shapefiles as .RDS  files
   ## This solves the problem
   areal_unit   <- readRDS(unit_shp)
   country_poly <- readRDS(country_shp)
