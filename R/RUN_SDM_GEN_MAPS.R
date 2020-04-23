@@ -85,7 +85,7 @@ for (i in 1:length(list.filenames))
 
 
 ## The species list to be analyzed ----
-analysis_spp <- stoten.spp[1:10]
+analysis_spp <- stoten.spp[1:11]
 
 
 ## Download GBIF and ALA data
@@ -343,7 +343,6 @@ tryCatch(
 ## Can't use the .rda, must use the file path
 areal_unit_vec <- shapefile_vector_from_raster(shp_file = SUA,
                                                prj      = CRS("+init=EPSG:3577"),
-                                               sort_var = 'SUA_NAME16',
                                                agg_var  = 'SUA_CODE16',
                                                temp_ras = aus.grids.current[[1]],
                                                targ_ras = './data/SUA_2016_AUST.tif')

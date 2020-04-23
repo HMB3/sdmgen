@@ -57,17 +57,17 @@ Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 AUS              = readRDS("./data/AUS_albers.rds")
 LAND             = readRDS("./data/LAND_albers.rds")
 #IBRA            = load('./data/IBRA.rda')
-SUA              = readOGR('data/SUA_2016_AUST.shp')
+SUA              = readOGR('data/world_koppen/SUA_2016_AUST.shp')
 
 
-# AUS_albers <- AUS %>%
-#   spTransform(ALB.CONICAL)
-#
-# LAND_albers <- LAND %>%
-#   spTransform(ALB.CONICAL)
-#
-# SUA_albers <- SUA %>%
-#   spTransform(ALB.CONICAL)
+AUS_albers <- AUS %>%
+  spTransform(ALB.CONICAL)
+
+LAND_albers <- LAND %>%
+  spTransform(ALB.CONICAL)
+
+SUA_albers <- SUA %>%
+  spTransform(ALB.CONICAL)
 #
 #
 # saveRDS(LAND_albers, 'data/LAND_albers.rds')
