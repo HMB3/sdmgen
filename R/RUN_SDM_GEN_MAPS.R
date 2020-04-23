@@ -307,13 +307,13 @@ tryCatch(
                             country_prj   = CRS("+init=EPSG:3577"),
                             world_prj     = CRS("+init=epsg:4326"),
 
-                            scen_list     = scen_2030,                 ## List of climate scenarios
+                            scen_list     = scen_2070,                 ## List of climate scenarios
                             species_list  = map_spp,                   ## List of species folders with maxent models
                             maxent_path   = './output/maxent/back_sel_models/',    ## Output folder
                             climate_path  = './data/worldclim/aus/',               ## Future climate data
 
                             grid_names    = env_variables,             ## Names of all variables
-                            time_slice    = 30,                        ## Time period
+                            time_slice    = 70,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids
                             create_mess   = TRUE,
                             OSGeo_path    = 'C:/OSGeo4W64/OSGeo4W.bat', ## Other users would need to install this
