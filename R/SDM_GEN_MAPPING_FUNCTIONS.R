@@ -3,8 +3,6 @@
 #########################################################################################################################
 
 
-## Below is a list of the functions used to project the SDM models
-## Some are custom versions of those found in John Baumgartner's rmaxent, as well as gists (probably now published).
 
 
 ## Project maxent files ----

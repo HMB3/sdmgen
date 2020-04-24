@@ -85,7 +85,7 @@ for (i in 1:length(list.filenames))
 
 
 ## The species list to be analyzed ----
-analysis_spp <- stoten.spp[1:11]
+analysis_spp <- plant.spp[1:11]
 
 
 ## Download GBIF and ALA data
@@ -264,7 +264,7 @@ run_sdm_analysis(species_list            = analysis_spp,
                  replicates              = 5,             ## Number of replicates
                  responsecurves          = TRUE,          ## Save response curves?
                  country_shp                 = AUS,
-                 Koppen_zones            = Koppen_zones,   ## This needs to be re-created reproducibly
+                 Koppen_zones            = Koppen_zones,  ## Cross-ref Kriticos
                  Koppen_raster           = Koppen_1975_1km )
 
 
