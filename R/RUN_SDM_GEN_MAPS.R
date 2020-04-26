@@ -44,7 +44,7 @@ package.list <- c('ff',         'things',    'raster',        'dismo',          
                   'rvest',      'magrittr',  'devtools',      'ggplot2',           'reshape2',     'rmarkdown',             'flexdashboard',
                   'shiny',      'rgbif',     'ENMeval',       'tibble',            'ncdf4',        'Cairo',                 'taxonlookup',
                   'kgc',        'betareg',   'gridExtra',     'grid',              'lattice',      'ConR',                  'writexl',
-                  'sf',         'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW', 'tidyverse',  'ggpubr', 'GGally')
+                  'sf',         'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW', 'tidyverse',  'ggpubr', 'GGally', 'maptools')
 
 
 ## Require packages
