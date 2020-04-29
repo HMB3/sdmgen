@@ -12,7 +12,7 @@
 #' and runs a specialised maxent analysis for each species.
 #' It uses the rmaxent package https://github.com/johnbaums/rmaxent
 #' It assumes that the input df is that returned by the prepare_sdm_table function
-#' @param country_shp            SpatialPolygonsDataFrame - Spdf of the country for mapping maxent results (e.g. Australia)
+#' @param country_shp        SpatialPolygonsDataFrame - Spdf of the country for mapping maxent results (e.g. Australia)
 #' @param world_shp          SpatialPolygonsDataFrame - Spdf of the world for mapping maxent results
 #' @param country_prj        CRS object  - Local projection for mapping maxent results
 #' @param world_prj          CRS object  - Global projection for mapping maxent results
