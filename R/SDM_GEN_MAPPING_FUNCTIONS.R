@@ -4,6 +4,8 @@
 
 
 
+## Below are the functions used to project SDM models across geographic areas
+
 
 ## Project maxent files ----
 

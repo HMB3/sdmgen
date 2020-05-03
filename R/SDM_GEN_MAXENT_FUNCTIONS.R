@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 
-## Below is a list of the functions used to run the SDM models
+## Below are the functions used to run the SDM models
 
 
 ## Run the SDM analysis ----

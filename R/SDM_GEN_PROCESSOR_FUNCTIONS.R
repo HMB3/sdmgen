@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 
-## Below is a list of the functions used to prepare the data for SDM analysis
+## Below are the functions used to estiamte species ranges and prepare occurrence data for SDM analysis
 
 
 ## GBIF download ----
