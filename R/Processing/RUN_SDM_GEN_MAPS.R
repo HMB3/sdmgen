@@ -265,8 +265,8 @@ run_sdm_analysis(species_list            = analysis_spp,
                  replicates              = 5,             ## Number of replicates
                  responsecurves          = TRUE,          ## Save response curves?
                  country_shp                 = AUS,
-                 Koppen_zones            = Koppen_zones,  ## Cross-ref Kriticos
-                 Koppen_raster           = Koppen_1975_1km )
+                 Koppen_zones            = Koppen_zones,    ## Cross-ref Kriticos
+                 Koppen_raster           = Koppen_1975_1km) ## This needs to be created locally using Koppen Zones
 
 
 
@@ -318,7 +318,7 @@ tryCatch(
 
                             grid_names    = env_variables,             ## Names of all variables
                             time_slice    = 70,                        ## Time period
-                            current_grids = aus.grids.current,         ## predictor grids
+                            current_grids = aus.grids.current,         ## Create this locally
                             create_mess   = TRUE,
                             OSGeo_path    = 'C:/OSGeo4W64/OSGeo4W.bat', ## Other users would need to install this
                             nclust        = 1),

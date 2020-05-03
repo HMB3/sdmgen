@@ -780,51 +780,6 @@ shapefile_vector_from_raster = function (shp_file,
 
 
 
-## Create raster using a shapefile -----
-
-
-#' This function takes a raster of a shapefile (for example the urban areas of Australia),
-#' and creates a shapefile (i.e. a vector).
-#' It uses the rmaxent package https://github.com/johnbaums/rmaxent
-#' It assumes that the input df is that returned by the prepare_sdm_table function
-#' @param shp_file           SpatialPolygonsDataFrame - Spdf of spatial units used to aggregate the SDMs (e.g. urban areas of Australia)
-#' @param prj                CRS object - Local projection for mapping the shapefile (e.g. Australian Albers)
-#' @param sort_var           Character string - The field name in the shapefile to use for sorting (e.g. Urban area names)
-#' @param agg_var            Character string - The field name in the shapefile to use for aggregating SDM results (e.g. Urban area codes)
-#' @param temp_ras           Raster - An existing raster with the same extent, resolution and projection as the maxent models (e.g. Australia)
-#' @param targ_ras           Raster - An existing raster of the shapefile with the same extent, resolution and projection as the maxent models (e.g. Australia)
-#' @return Raster            An existing raster of the shapefile with the same extent, resolution and projection as the maxent models (e.g. Australia)
-#' @export
-
-
-# shp_file = SUA
-# prj      = CRS("+init=EPSG:3577")
-
-shapefile_from_raster = function (shp_file,
-                                  prj,
-                                  agg_var,
-                                  temp_ras,
-                                  targ_ras) {
-
-  ## Read in shapefile
-  shp <- shp_file %>%
-    spTransform(prj)
-
-  ## Create blank raster
-  blank_raster <- raster(nrow = 100, ncol = 100, extent(shp))
-  land_raster  <- rasterize(shp, blank_raster)
-  land_raster[!(is.na(land_raster))] <- 1
-
-  ## project raster, set extent and resolution
-
-  ## return the vector
-  return(land_raster)
-
-}
-
-
-
-
 
 ## Function to aggregate sdm predictions ----
 
