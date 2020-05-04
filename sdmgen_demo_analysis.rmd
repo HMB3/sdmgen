@@ -54,7 +54,7 @@ https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
-## List of Variables used to run the SDM analyses
+## The package should important all the required packges
 devtools::install_github("HMB3/sdmgen")
 library(sdmgen)
 
@@ -69,10 +69,10 @@ library(sdmgen)
 
 \
 
-The backbone of the R workflow is a list of plant species that we supply. 
-The analysis is designed to process data for one species at a time, allowing
-species results to be updated as required. We can demonstrate the workflow 
-using a sample of 10 species from the Stoten publication above. 
+The backbone of the R workflow is a list of (taxonomically Ridgey Didge!) species names 
+that we supply. The analysis is designed to process data for one species at a time, 
+allowing species results to be updated as required. We can demonstrate the workflow 
+using a sample of 10 plant species from the Stoten publication above. 
 
 
 \
@@ -92,7 +92,7 @@ First, we use two functions to download all species records from the Atlas and l
 (https://www.ala.org.au/) and the Global Biodiversity Information Facility (GBIF, https://www.gbif.org/). 
 It downloads the species data as individual .Rdata files to the specified folders, which must exist first, 
 without returning anything. The functions are separated because the ALA and GBIF columns are slightly different, 
-but both data sources are needed to properly quantify species ranges.
+but both data sources are needed to properly quantify species ranges .
 
 \
 
