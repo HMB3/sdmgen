@@ -50,7 +50,7 @@ https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030
 \
 
 
-# Install
+### To install, run :
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
@@ -60,113 +60,79 @@ devtools::install_github("HMB3/sdmgen")
 ```
 
 
-
-# **<span style="color:blue"> Intro </span>**
-
-
-\
-
-Globally, government authorities are placing great emphasis on the environmental and socio-economic importance 
-of urban trees and vegetation (Luttik, 2000; Chiesura, 2004). In particular, planting trees is increasingly
-considered a cost-effective method for improving the adaptability and sustainability of cities to projected 
-changes in climate (Espeland and Kettenring, 2018). Trees can further mitigate urban environmental issues that 
-will likely be exacerbated by climate change, such as the urban heat island effect [UHI, Norton et al., 2015; 
-Lanza and Stone, 2016] and air pollution (Grote et al., 2016; Livesley et al., 2016). As a consequence of these 
-benefits, local authorities are increasing their investment in planting as well asmonitoring tree and forest 
-assets across urban environments (Endreny, 2018).
-
-\
-
-Despite these financial commitments, there is little consideration of whether the current selection of species 
-commonly used in urban plantings will be resilient to changes in climate projected to occur throughout the 
-lifespan of each tree species (Ordóñez and Duinker, 2015), which may be decades to a century. Thus, as 
-temperatures continue to rise in the 21st century, urban forestry and planning efforts must identify species
-that are most likely to thrive in future climates, to maximise planting success and return on investment 
-in the long term.
-
-\
-
-In this study, we assessed the baseline (1960–1990), short term (2030) and long term(2070) distribution of 
-climatically suitable habitat for 176 native Australian tree species that are commonly planted across
-Australia's urban landscapes and are also currently sold in commercial plant nurseries. These species are 
-a representative sample of the continent's urban tree flora, and thus are indicative of how urban trees
-may fare under climate change. In doing so, we asked: 1) which tree species are more likely to experience 
-increases and decreases in the distribution of climatically suitable habitat across urban areas in the short
-(2030) and long term(2070); and 2)which urban areas are more likely to experience substantial increases or 
-decreases in the number of species with suitable habitat by 2030 and 2070? We expect that urban areas in 
-cooler regions will experience greater gains in the number of species with climatically suitable habitat 
-than urban areas in warmer regions, consistent with findings from previous studies modelling large suites 
-of species occurring in natural environments on the Australian continent [e.g. O'Donnell et al., 2012]. 
-We also identify key challenges associated with the use of CSMs for species in urban environments, and 
-further discuss the implications for urban forestry, planning and industry efforts in order to create
-future urban forests that are more resilient to climate change.
-
 \
 
 
-### **Defining significant Urban Areas** 
-Our spatial units for estimating species' climatic suitability are Australia's Significant Urban Areas 
-(SUAs). SUAs are defined by the Australian Bureau of Statistics (ABS) as containing at least 10,000 people
-within a single labour market (ABS, 2018). The boundaries for these SUAs were obtained from the Australian 
-Bureau of Statistics (ABS, 2018) and refer to the year 2016. Combined, the 82 SUAs span ~46,211 km2, and 
-range in size from ~46 km2 (City of Sale, Victoria) to 6189 km2 (City of Melbourne, Victoria).
-
-
-\newpage 
-![](output/figures/CV_figs/FIG1_SUA_PLOTS_NO_SHP.png)
-
-**Figure 1.** Map of 82 Australian Significant Urban Areas (SUA, plotted in pink) included in this study, 
-with the largest SUA in each state and territory plotted in blue symbols. According to the Köppen classification 
-of Kriticos et al. (2012), all these SUAs fall within ‘temperate’ zones. (For interpretation of the references 
-to color in this figure legend, the reader is referred to the web version of this article.)
+# STEP 1 :: Download species occurrence data
+            
 
 \
 
+The backbone of the R workflow is a list of plant species that we supply. 
+We can demonstrate the workflow using a sample of 10 species from the Stoten
+publication above. 
 
-## **Species selection**
-To analyse horticulturally significant Australian species, we obtained a list of native tree species 
-grown by the nursery industry across Australia, as well as the number of nurseries growing each species 
-within each state or territory. We then created a spatial database of urban tree inventories in Australia 
-by contacting local government authorities. This resulted in inventory data for 41 local government areas 
-spanning  20 SUAs. The 400 most frequently reported trees within the inventories were then intersected 
-with the nursery list (i.e. those trees currently being sold within any Australian nursery), creating 
-a list of 248 native species. We consider these 248 species as the most commonly planted and sold native 
-trees in the current Australian horticultural market. This species list was first checked against the 
-backbone taxonomy of the Global Biodiversity Information Facilty (GBIF, www.gbif.org), and then against 
-The Plant List (TPL) backbone taxonomy using the Taxonstand package [version 2.1, Cayuela et al (2012)] 
-in the R language [Version 3.5.1, R Core team (2018)]. The accepted names from the TPL taxonomy were then 
-used for this analysis. 
 
 \
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
-## List of Variables used to run the SDM analyses
-source('./R/RMD_READ_PACKAGES.R')
+## Use the first 10 plant species in the list
+data("plant.spp")
+analysis_spp <- plant.spp[1:10]
+
+```
+
+\
+
+First we use two functions to download all species records from the Atlas and living Australia
+(https://www.ala.org.au/) and the Global Biodiversity Information Facility (GBIF, https://www.gbif.org/). 
+It downloads the species to the specified folders, which must exist first, without returning anything.
+
+\
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Create the folders if they don't exist
+ALA_dir  <- './data/ALA'
+GBIF_dir <- './data/GBIF'
+
+
+## Create ALA subfolder
+if(!dir.exists(ALA_dir)) {
+            message('Creating MESS directory for ', species)
+            dir.create(ALA_dir) } else {
+              'ALA directory already exists'}
+
+
+## Create GBIF subfolder
+if(!dir.exists(GBIF_dir)) {
+            message('Creating MESS directory for ', species)
+            dir.create(GBIF_dir) } else {
+              'GBIF directory already exists'}
 
 ```
 
 \
 
 
-## **Occurrence data** 
-For each of these planted and sold species, we downloaded global occurrence records from GBIF and the 
-Atlas of Living Australia (ALA, www.ala.org.au) using the rgbif and ALA4R packages in R 
-[https://github.com/AtlasOfLivingAustralia/ALA4R, (Hijmans et al. 2016) (R Core Team, 2017), 
-see R script "1_GBIF_ALA_DOWNLOAD.R"]. We then undertook an intensive spatial data-cleaning process to 
-remove spatially invalid or suspect records that, if retained, can cause species' climate niches to be 
-miscalculated (R scripts 2-6). Spatially invalid records, those collected before 1950, duplicate records, 
-those records within 10 km of capital cities (which are likely to be herbarium records, and thus not 
-reflective of the species realised niche), herbaria and biodiversity institutions, and individual 
-records 300 km from other records for that species were removed using the CoordinateCleaner package 
-[Zizka et al., 2019, version 1.0–7, resulting in ~22% of ~ 2.2 million records for 248 species being removed].
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Download GBIF and ALA data
+download_GBIF_all_species(species_list  = analysis_spp,
+                          download_path = "./data/GBIF/",
+                          download_limit = 20000)
+
+
+download_ALA_all_species(species_list  = analysis_spp,
+                         download_path = "./data/ALA/",
+                         download_limit = 20000)
+
+``` 
 
 \
 
-The backbone of the R workflow is a list of plant species. It is designed to download occurrence data for
-that list of species, clean it for common errors with a series of filters (taxonomic, contextual, spatial), 
-extract the climatic conditions for all records, and finally format the records into a table that can be
-passed to the Maxent algorithm (see 'H:\green_cities_sdm\output\maxent\SUA_SDM_analysis_workflow.pptx').   
+# STEP 2 :: Combine species occurrence data
 
 \
 
