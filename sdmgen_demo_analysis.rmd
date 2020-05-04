@@ -153,8 +153,9 @@ First, get some global climate data from worldclim
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
 ## Download global raster for minimum temperature 
-worldclim_2_5 <- raster::getData('worldclim', var='bio', res = 2.5)
-sp::plot(worldclim_2_5$bio1)
+##worldclim_annual_temp <- raster::getData('worldclim', var='bio', res = 2.5)
+worldclim_annual_temp <- raster::stack("./wc2-5/bio1.bil")
+#sp::plot(worldclim_annual_temp)
 
 ``` 
 
@@ -173,7 +174,7 @@ ALA.LAND = combine_ala_records(species_list      = analysis_spp,
                                records_extension = "_ALA_records.RData",
                                record_type       = "ALA",
                                keep_cols         = ALA_keep,
-                               world_raster      = worldclim_2_5)
+                               world_raster      = worldclim_annual_temp)
 
 
 ## Combine GBIF data and filter to records on land taken > 1950
