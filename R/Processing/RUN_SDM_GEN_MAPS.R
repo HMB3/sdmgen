@@ -108,7 +108,6 @@ download_ALA_all_species(species_list  = analysis_spp,
 
 ## Combine ALA data and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
-## Raster :: Error in .local(.Object, ...) : does not like having the file slot changed....
 ALA.LAND = combine_ala_records(species_list      = analysis_spp,
                                records_path      = "./data/ALA/",
                                records_extension = "_ALA_records.RData",

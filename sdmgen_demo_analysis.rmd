@@ -56,6 +56,7 @@ https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030
 
 ## List of Variables used to run the SDM analyses
 devtools::install_github("HMB3/sdmgen")
+library(sdmgen)
 
 ```
 
@@ -69,31 +70,35 @@ devtools::install_github("HMB3/sdmgen")
 \
 
 The backbone of the R workflow is a list of plant species that we supply. 
-We can demonstrate the workflow using a sample of 10 species from the Stoten
-publication above. 
+The analysis is designed to process data for one species at a time, allowing
+species results to be updated as required. We can demonstrate the workflow 
+using a sample of 10 species from the Stoten publication above. 
 
 
 \
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
-## Use the first 10 plant species in the list
+## Use the first 10 plant species in the Stoten list
 data("plant.spp")
 analysis_spp <- plant.spp[1:10]
+analysis_spp
 
 ```
 
 \
 
-First we use two functions to download all species records from the Atlas and living Australia
+First, we use two functions to download all species records from the Atlas and living Australia
 (https://www.ala.org.au/) and the Global Biodiversity Information Facility (GBIF, https://www.gbif.org/). 
-It downloads the species to the specified folders, which must exist first, without returning anything.
+It downloads the species data as individual .Rdata files to the specified folders, which must exist first, 
+without returning anything. The functions are separated because the ALA and GBIF columns are slightly different, 
+but both data sources are needed to properly quantify species ranges.
 
 \
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
-## Create the folders if they don't exist
+## The functions expect these folders, create them if they don't exist
 ALA_dir  <- './data/ALA'
 GBIF_dir <- './data/GBIF'
 
@@ -135,6 +140,34 @@ download_ALA_all_species(species_list  = analysis_spp,
 # STEP 2 :: Combine species occurrence data
 
 \
+
+The next function combines ALA and GBIF data, and filter to records on land, taken > 1950
+The climate data (i.e. raster) used can be any worldclim layer.
+
+\
+
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Combine ALA data, and filter to records on land taken > 1950
+## The climate data is the worldclim version 1.0
+ALA.LAND = combine_ala_records(species_list      = analysis_spp,
+                               records_path      = "./data/ALA/",
+                               records_extension = "_ALA_records.RData",
+                               record_type       = "ALA",
+                               keep_cols         = ALA_keep,
+                               world_raster      = world.grids.current)
+
+
+## Combine GBIF data and filter to records on land taken > 1950
+GBIF.LAND = combine_gbif_records(species_list      = analysis_spp,
+                                 records_path      = "./data/GBIF/",
+                                 records_extension = "_GBIF_records.RData",
+                                 record_type       = "GBIF",
+                                 keep_cols         = gbif_keep,
+                                 world_raster      = world.grids.current)
+
+``` 
 
 
 ## **Climate data**
