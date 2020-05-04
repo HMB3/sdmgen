@@ -146,6 +146,23 @@ The climate data (i.e. raster) used can be any worldclim layer.
 
 \
 
+First, get some global climate data from worldclim
+
+\
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Download global raster for minimum temperature 
+worldclim_2_5 <- raster::getData('worldclim', var='bio', res = 2.5)
+sp::plot(worldclim_2_5$bio1)
+
+``` 
+
+\
+
+Then trim the occurrence records to those inside the raster boundaries
+
+\
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
@@ -156,7 +173,7 @@ ALA.LAND = combine_ala_records(species_list      = analysis_spp,
                                records_extension = "_ALA_records.RData",
                                record_type       = "ALA",
                                keep_cols         = ALA_keep,
-                               world_raster      = world.grids.current)
+                               world_raster      = worldclim_2_5)
 
 
 ## Combine GBIF data and filter to records on land taken > 1950
@@ -165,22 +182,39 @@ GBIF.LAND = combine_gbif_records(species_list      = analysis_spp,
                                  records_extension = "_GBIF_records.RData",
                                  record_type       = "GBIF",
                                  keep_cols         = gbif_keep,
-                                 world_raster      = world.grids.current)
+                                 world_raster      = worldclim_2_5)
 
 ``` 
 
+\
 
-## **Climate data**
-We obtained baseline climate data from the WorldClim Database [worldclim.org/bioclim, Version 1.4 
-(Hijmans et al. 2005)]. WorldClim comprises 19 bioclimatic variables, summarised for the period 1960-1990, 
-of which we used eight for model calibration: Annual mean temperature, Temperature seasonality, 
-Maximum temperature of the warmest month, Minimum temperature of the coldest month, Annual precipitation, 
-Precipitation seasonality, Precipitation of the wettest month, and Precipitation of the driest month. 
-These variables were chosen to capture climate averages, seasonality and extremes, all of which have 
-been identified as important variables for predicting suitable habitat for plants (Bradie & Leung, 2017).
-Importantly, when averaged across the species analysed, the tree inventory data shows the urban climate niche 
-(quantified using tree inventory records) is effectively a subset of the ‘natural’ niche (quantified using 
-occurrence records fromGBIF and ALA, see Appendix, Fig. S1). 
+# STEP 3 :: extract environmental values
+
+\
+
+The next function combines occurrence files from ALA and GBIF into one table, and extracts enviro values.
+It assumes that both files come from the combine_ala_records and combine_gbif_records functions.
+
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Combine GBIF and ALA data, and extract environmental values
+COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
+                                               gbif_df         = GBIF.LAND,
+                                               urban_df        = 'NONE',
+                                               thin_records    = TRUE,
+                                               template_raster = template.raster.1km.84,
+                                               world_raster    = worldclim_2_5,
+                                               projection      = CRS.WGS.84,
+                                               species_list    = analysis_spp,
+                                               biocl_vars      = bioclim_variables,
+                                               env_vars        = env_variables,
+                                               worldclim_grids = "TRUE",
+                                               save_data       = "FALSE",
+                                               save_run        = "TEST_BATS")
+
+``` 
+
 
 \newpage 
 ![](output/figures/CV_figs/Niche_overlap.png)

@@ -281,7 +281,7 @@ combine_ala_records = function(species_list, records_path, records_extension, re
 
       ## Choose only the desired columns
       d = d %>%
-        select(one_of(keep_cols))
+        dplyr::select(one_of(keep_cols))
 
       ## Then print warnings
       warnings()
@@ -620,7 +620,7 @@ combine_records_extract = function(ala_df,
   common.cols    = intersect(names(gbif_df), names(ala_df))
   GBIF.ALA.COMBO = bind_rows(gbif_df, ala_df)
   GBIF.ALA.COMBO = GBIF.ALA.COMBO %>%
-    select(one_of(common.cols))
+    dplyr::select(one_of(common.cols))
 
   message(length(unique(GBIF.ALA.COMBO$searchTaxon)))
   length(unique(GBIF.ALA.COMBO$scientificName))
@@ -629,7 +629,7 @@ combine_records_extract = function(ala_df,
   if(urban_df != 'NONE') {
 
     urban_cols     <- intersect(names(GBIF.ALA.COMBO), names(urban_df))
-    urban_df       <- select(urban_df, urban_cols)
+    urban_df       <- dplyr::select(urban_df, urban_cols)
     GBIF.ALA.COMBO <- bind_rows(GBIF.ALA.COMBO, urban_df)
 
   } else {
@@ -682,7 +682,7 @@ combine_records_extract = function(ala_df,
 
   ## Group rename the columns
   setnames(COMBO.RASTER, old = biocl_vars, new = env_vars)
-  COMBO.RASTER <- COMBO.RASTER %>% select(-lat.1, -lon.1)
+  COMBO.RASTER <- COMBO.RASTER %>% dplyr::select(-lat.1, -lon.1)
 
   ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion.
   ## All worldclim temperature variables were multiplied by 10, so then divide by 10 to reverse it.
@@ -807,7 +807,7 @@ urban_records_extract = function(urban_df,
 
   ## Group rename the columns
   setnames(COMBO.RASTER, old = biocl_vars, new = env_vars)
-  COMBO.RASTER <- COMBO.RASTER %>% select(-lat.1, -lon.1)
+  COMBO.RASTER <- COMBO.RASTER %>% dplyr::select(-lat.1, -lon.1)
 
   ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion.
   ## All worldclim temperature variables were multiplied by 10, so then divide by 10 to reverse it.
@@ -907,7 +907,7 @@ coord_clean_records = function(records,
                       centroids_rad = centroids) %>%
 
     ## The select the relevant columns and rename
-    select(., coord_spp, CC.OBS, .val,  .equ, .zer, .cap,
+    dplyr::select(., coord_spp, CC.OBS, .val,  .equ, .zer, .cap,
            .cen,    .gbf,   .inst, .summary)
 
   ## Then rename
@@ -1053,7 +1053,7 @@ check_spatial_outliers = function(all_df,
 
     as.data.frame() %>%
 
-    select(searchTaxon, lon, lat, CC.OBS, SOURCE) %>%
+    dplyr::select(searchTaxon, lon, lat, CC.OBS, SOURCE) %>%
 
     dplyr::rename(species          = searchTaxon,
                   decimallongitude = lon,
@@ -1072,7 +1072,7 @@ check_spatial_outliers = function(all_df,
   ## Check how many records each spp has...
   COMBO.LUT <- SDM.COORDS %>%
     as.data.frame() %>%
-    select(species) %>%
+    dplyr::select(species) %>%
     table() %>%
     as.data.frame()
   COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = FALSE)[]
@@ -1308,7 +1308,7 @@ calc_1km_niches = function(coord_df,
 
 
   ## Remove duplicate Taxon columns and check the output
-  GLOB.NICHE <- GLOB.NICHE %>% select(-contains("."))
+  GLOB.NICHE <- GLOB.NICHE %>% dplyr::select(-contains("."))
   message('Calculated global niches for ', names(GLOB.NICHE), ' variables')
 
   message('Estimating Australian niches for ', length(species_list), ' species in the set ', "'", save_run, "'")
@@ -1327,7 +1327,7 @@ calc_1km_niches = function(coord_df,
     as.data.frame
 
   ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-  AUS.NICHE <- GLOB.NICHE %>% select(-contains("."))
+  AUS.NICHE <- GLOB.NICHE %>% dplyr::select(-contains("."))
   message('Calculated Australia niches for ', names(AUS.NICHE), ' variables')
 
   ## How are the AUS and GLOB niches related? Many species won't have both Australian and Global niches.
@@ -1391,7 +1391,7 @@ calc_1km_niches = function(coord_df,
   identical(nrow(GBIF.AOO), nrow(GLOB.NICHE))
   GLOB.NICHE <- list(GLOB.NICHE, GBIF.AOO, KOP.AGG, IBR.AGG) %>%
     reduce(left_join, by = "searchTaxon") %>%
-    select(searchTaxon, Aus_records, AOO, KOP_count, IBRA_count, everything())
+    dplyr::select(searchTaxon, Aus_records, AOO, KOP_count, IBRA_count, everything())
 
   if(save_data == "TRUE") {
 
@@ -1776,7 +1776,7 @@ prepare_sdm_table = function(coord_df,
   length(unique(coord_df$searchTaxon))
 
   COMBO.RASTER.ALL  <- coord_df %>%
-    select(one_of(sdm_table_vars))
+    dplyr::select(one_of(sdm_table_vars))
 
 
   ## Create a spatial points object, and change to a projected system to calculate distance more accurately
@@ -1816,7 +1816,7 @@ prepare_sdm_table = function(coord_df,
   SDM.COORDS  <- SDM.DATA.ALL %>%
     spTransform(., CRS.WGS.84) %>%
     as.data.frame() %>%
-    select(searchTaxon, lon, lat, SPOUT.OBS, SOURCE) %>%
+    dplyr::select(searchTaxon, lon, lat, SPOUT.OBS, SOURCE) %>%
     dplyr::rename(species          = searchTaxon,
                   decimallongitude = lon,
                   decimallatitude  = lat) %>%
@@ -1829,7 +1829,7 @@ prepare_sdm_table = function(coord_df,
   ## Check how many records each species has
   COMBO.LUT <- SDM.COORDS %>%
     as.data.frame() %>%
-    select(species) %>%
+    dplyr::select(species) %>%
     table() %>%
     as.data.frame()
   COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = FALSE)[]
@@ -1922,7 +1922,7 @@ prepare_sdm_table = function(coord_df,
   ## CREATE SHAPEFILES TO CHECK OUTLIERS ARCMAP
   ## Rename the fields so that ArcMap can handle them
   SPAT.OUT.CHECK = SPAT.FLAG %>%
-    select(SPOUT.OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT) %>%
+    dplyr::select(SPOUT.OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT) %>%
     dplyr::rename(TAXON     = searchTaxon,
                   LAT       = lat,
                   LON       = lon)
@@ -1970,7 +1970,7 @@ prepare_sdm_table = function(coord_df,
   ## Now select the final columns needed
   message(length(unique(SDM.SPAT.OCC.BG$searchTaxon)), ' Species in occurrence and BG data')
   drops <- c('CC.OBS', 'SPOUT.OBS')
-  sdm_cols <- names(select(SDM.SPAT.OCC.BG@data, searchTaxon, lon, lat, SOURCE, everything()))
+  sdm_cols <- names(dplyr::select(SDM.SPAT.OCC.BG@data, searchTaxon, lon, lat, SOURCE, everything()))
   SDM.SPAT.OCC.BG <- SDM.SPAT.OCC.BG[,!(names(SDM.SPAT.OCC.BG) %in% drops)]
 
   ## save data
