@@ -123,13 +123,15 @@ if(!dir.exists(GBIF_dir)) {
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
-## Download GBIF and ALA data
+## Download GBIF occurrence data for each species
 download_GBIF_all_species(species_list  = analysis_spp,
                           download_path = "./data/GBIF/",
                           download_limit = 20000)
 
 
+## Download ALA occurrence data for each species
 download_ALA_all_species(species_list  = analysis_spp,
+                         your_email    = 'hugh.burley@gmail.com',
                          download_path = "./data/ALA/",
                          download_limit = 20000)
 

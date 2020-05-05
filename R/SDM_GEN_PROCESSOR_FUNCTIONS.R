@@ -112,7 +112,7 @@ download_GBIF_all_species = function(species_list, download_path, download_limit
 #' @param download_path  Character string - File path for species downloads
 #' @param download_limit Numeric - How many records can be downloaded at one time? Set by server
 #' @export
-download_ALA_all_species = function (species_list, download_path, download_limit) {
+download_ALA_all_species = function (species_list, your_email, download_path, download_limit) {
 
   ## create variables
   download_limit  = 200000
@@ -138,8 +138,8 @@ download_ALA_all_species = function (species_list, download_path, download_limit
     save (dummy, file = file_name)
 
     ## Then check the spelling...incorrect nomenclature will return NULL result
-    if (is.null(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""),
-                                   download_reason_id = 7)$data) == TRUE) {
+    if (is.null(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"', sep = ""),
+                                   download_reason_id = 7, email = your_email)$data) == TRUE) {
 
       ## Now, append the species which had incorrect nomenclature to the skipped list
       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
@@ -150,7 +150,8 @@ download_ALA_all_species = function (species_list, download_path, download_limit
     }
 
     ## Skip species with no records
-    if (nrow(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""), download_reason_id = 7)$data) <= 2) {
+    if (nrow(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""),
+                                download_reason_id = 7, email = your_email)$data) <= 2) {
 
       ## now append the species which had no records to the skipped list
       print (paste ("No ALA records for", sp.n, "skipping"))
@@ -162,7 +163,7 @@ download_ALA_all_species = function (species_list, download_path, download_limit
 
     ## Download ALL records from ALA ::
     message("Downloading ALA records for ", sp.n, " using ALA4R :: occurrences")
-    ALA = ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""), download_reason_id = 7)
+    ALA = ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""), download_reason_id = 7, email = your_email)
     ALA = ALA[["data"]]
 
     cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")

@@ -34,6 +34,9 @@
 
 ## Set the R library so we know all the packages and dependencies will be the same
 # .libPaths("./R/win-library/3.5")
+# devtools::install_github("hrbrmstr/dtupdate")
+# library(dtupdate)
+# github_update("HMB3/sdmgen")
 
 
 ## Load only the packages needed for the analysis
