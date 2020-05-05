@@ -157,7 +157,7 @@ First, get some global climate data from worldclim
 ## Download global raster for minimum temperature 
 ##worldclim_annual_temp <- raster::getData('worldclim', var='bio', res = 2.5)
 worldclim_annual_temp <- raster::stack("./wc2-5/bio1.bil")
-#sp::plot(worldclim_annual_temp)
+sp::plot(worldclim_annual_temp)
 
 ``` 
 
