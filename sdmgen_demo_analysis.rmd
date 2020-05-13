@@ -54,31 +54,14 @@ https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
-## The package should important all the required packges
-## Currently that's not working
+## The package should import all the required packges
 devtools::install_github("HMB3/sdmgen")
 library(sdmgen)
 
 
 ## Load the packages
-## Load only the packages needed for the analysis
-sdlist <- c('ff',         
-                  'things',    'raster',        'dismo',             'rJava',        'sp',                    
-                  'latticeExtra',
-                  'data.table', 'devtools',  'roxygen2',
-                  'rgdal',      'rgeos',     'gdalUtils',     'rmaxent',           'readr',        'plyr',                  'dplyr',
-                  'tidyr',      'readr',     'rnaturalearth', 'rasterVis',         'RColorBrewer', 'latticeExtra',          'parallel',
-                  'ALA4R',      'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',       
-                  'PerformanceAnalytics',  'utf8',
-                  'rvest',      'magrittr',  'devtools',      'ggplot2',           'reshape2',     'rmarkdown',             'flexdashboard',
-                  'shiny',      'rgbif',     'ENMeval',       'tibble',            'ncdf4',        'Cairo',                 'taxonlookup',
-                  'kgc',        'betareg',   'gridExtra',     'grid',              'lattice',      'ConR',                  'writexl',
-                  'sf',         'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW', 'tidyverse',  'ggpubr', 'GGally', 'maptools')
-
-
-## Require packages
-sapply(package.list, require, character.only = TRUE)
-
+data("sdmgen_packages")
+sapply(sdmgen_packages, require, character.only = TRUE)
 
 
 ```
@@ -180,7 +163,6 @@ First, get some global climate data from worldclim
 ## Download global raster for minimum temperature 
 ##worldclim_annual_temp <- raster::getData('worldclim', var='bio', res = 2.5)
 worldclim_annual_temp <- raster::stack("./wc2-5/bio1.bil")
-data('template_1km_WGS84')
 sp::plot(worldclim_annual_temp)
 
 ``` 
@@ -225,6 +207,10 @@ It assumes that both files come from the combine_ala_records and combine_gbif_re
 
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## First get the raster template
+data('template_raster_1km_84')
+
 
 ## Combine GBIF and ALA data, and extract environmental values
 COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
