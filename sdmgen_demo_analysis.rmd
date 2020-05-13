@@ -59,6 +59,28 @@ https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030
 devtools::install_github("HMB3/sdmgen")
 library(sdmgen)
 
+
+## Load the packages
+## Load only the packages needed for the analysis
+sdlist <- c('ff',         
+                  'things',    'raster',        'dismo',             'rJava',        'sp',                    
+                  'latticeExtra',
+                  'data.table', 'devtools',  'roxygen2',
+                  'rgdal',      'rgeos',     'gdalUtils',     'rmaxent',           'readr',        'plyr',                  'dplyr',
+                  'tidyr',      'readr',     'rnaturalearth', 'rasterVis',         'RColorBrewer', 'latticeExtra',          'parallel',
+                  'ALA4R',      'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',       
+                  'PerformanceAnalytics',  'utf8',
+                  'rvest',      'magrittr',  'devtools',      'ggplot2',           'reshape2',     'rmarkdown',             'flexdashboard',
+                  'shiny',      'rgbif',     'ENMeval',       'tibble',            'ncdf4',        'Cairo',                 'taxonlookup',
+                  'kgc',        'betareg',   'gridExtra',     'grid',              'lattice',      'ConR',                  'writexl',
+                  'sf',         'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW', 'tidyverse',  'ggpubr', 'GGally', 'maptools')
+
+
+## Require packages
+sapply(package.list, require, character.only = TRUE)
+
+
+
 ```
 
 
@@ -158,6 +180,7 @@ First, get some global climate data from worldclim
 ## Download global raster for minimum temperature 
 ##worldclim_annual_temp <- raster::getData('worldclim', var='bio', res = 2.5)
 worldclim_annual_temp <- raster::stack("./wc2-5/bio1.bil")
+data('template_1km_WGS84')
 sp::plot(worldclim_annual_temp)
 
 ``` 

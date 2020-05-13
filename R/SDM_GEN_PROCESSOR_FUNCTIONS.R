@@ -547,8 +547,8 @@ combine_gbif_records = function(species_list, records_path, records_extension, r
 
     ## Finally, filter the cleaned GBIF data to only those points on land.
     ## This is achieved with the final [onland]
-    LAND.POINTS = filter(GBIF.CLEAN, cellFromXY(world.grids.current, GBIF.CLEAN[c("lon", "lat")]) %in%
-                           unique(cellFromXY(world.grids.current,    GBIF.CLEAN[c("lon", "lat")]))[onland])
+    LAND.POINTS = filter(GBIF.CLEAN, cellFromXY(world_raster, GBIF.CLEAN[c("lon", "lat")]) %in%
+                           unique(cellFromXY(world_raster,    GBIF.CLEAN[c("lon", "lat")]))[onland])
 
     ## how many records were on land?
     records.ocean = nrow(GBIF.CLEAN) - nrow(LAND.POINTS)  ## 91575 records are in the ocean
