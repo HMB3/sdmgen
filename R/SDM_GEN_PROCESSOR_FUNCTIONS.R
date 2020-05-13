@@ -197,7 +197,8 @@ download_ALA_all_species = function (species_list, your_email, download_path, do
 #' @param keep_cols          The columns we want to keep - a character list created by you
 #' @param world_raster       An Raster file of the enviro conditions used (assumed to be global)
 #' @export
-combine_ala_records = function(species_list, records_path, records_extension, record_type, keep_cols, world_raster) {
+combine_ala_records = function(species_list, records_path, records_extension,
+                               record_type, keep_cols, world_raster) {
 
   download = list.files(records_path, pattern = ".RData")
   length(download)
@@ -360,7 +361,7 @@ combine_ala_records = function(species_list, records_path, records_extension, re
 
     ## Now extract the temperature values for the unique 1km centroids which contain ALA data
     class(xy)
-    z   = raster::extract(world_raster[["bio_01"]], xy)
+    z   = raster::extract(world_raster, xy)
 
     ## Then track which values of Z are on land or not
     onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
@@ -522,13 +523,13 @@ combine_gbif_records = function(species_list, records_path, records_extension, r
     ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where GBIF records are found
     ## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner,
     ## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells
-    xy <- cellFromXY(world.grids.current, GBIF.CLEAN[c("lon", "lat")]) %>%
+    xy <- cellFromXY(world_raster, GBIF.CLEAN[c("lon", "lat")]) %>%
 
       ## get the unique raster cells
       unique %>%
 
       ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
-      xyFromCell(world.grids.current, .) %>%
+      xyFromCell(world_raster, .) %>%
       na.omit()
 
     ## For some reason, we need to convert the xy coords to a spatial points data frame, in order to avoid this error:
@@ -539,7 +540,7 @@ combine_gbif_records = function(species_list, records_path, records_extension, r
     ## Now extract the temperature values for the unique 1km centroids which contain GBIF data
     message('Removing GBIF points in the ocean for ', length(species_list), ' species')
     class(xy)
-    z   = raster::extract(world.grids.current[["bio_01"]], xy)
+    z   = raster::extract(world_raster, xy)
 
     ## Then track which values of Z are on land or not
     onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
