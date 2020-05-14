@@ -592,7 +592,7 @@ combine_gbif_records = function(species_list, records_path, records_extension, r
 #' @param thin_records       Do you want to thin the records out? If so, it will be 1 record per 1km*1km grid cell
 #' @param template_raster    A global R Raster used to thin records to 1 record per 1km grid cell
 #' @param world_raster       An global R Raster of the enviro conditions used to extract values for all records
-#' @param projection         The projection system used. Currently, needs to be WGS84
+#' @param prj                The projection system used. Currently, needs to be WGS84
 #' @param biocl_vars         The variables used - eg the standard bioclim names (https://www.worldclim.org/).
 #' @param env_vars           The actual variable names (e.g. bio1 = rainfall, etc.) Only needed for worldlcim
 #' @param worldclim_grids    Are you using worldclim stored as long intergers? If so, divide by 10.
@@ -610,7 +610,7 @@ combine_records_extract = function(ala_df,
                                    template_raster,
                                    thin_records,
                                    world_raster,
-                                   projection,
+                                   prj,
                                    biocl_vars,
                                    env_vars,
                                    worldclim_grids,
@@ -644,7 +644,7 @@ combine_records_extract = function(ala_df,
   ## Create points: the 'over' function seems to need geographic coordinates for this data...
   GBIF.ALA.84   = SpatialPointsDataFrame(coords      = GBIF.ALA.MATCH[c("lon", "lat")],
                                          data        = GBIF.ALA.MATCH,
-                                         proj4string = projection)
+                                         proj4string = prj)
 
   if(thin_records == TRUE) {
 
@@ -701,7 +701,7 @@ combine_records_extract = function(ala_df,
 
   } else {
 
-    message('Not rocessing worldclim data, dont divide the rasters')
+    message('Do not divide the rasters')
     COMBO.RASTER.CONVERT = COMBO.RASTER
   }
 
@@ -718,11 +718,8 @@ combine_records_extract = function(ala_df,
     saveRDS(COMBO.RASTER.CONVERT, paste0(data_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
 
   } else {
-
     return(COMBO.RASTER.CONVERT)
-
   }
-  ## get rid of some memory
   gc()
 }
 
@@ -739,7 +736,7 @@ combine_records_extract = function(ala_df,
 #' @param thin_records       Do you want to thin the records out? If so, it will be 1 record per 1km*1km grid cell
 #' @param template_raster    A global R Raster used to thin records to 1 record per 1km grid cell
 #' @param world_raster       An global R Raster of the enviro conditions used to extract values for all records
-#' @param projection         The projection system used. Currently, needs to be WGS84
+#' @param prj                The projection system used. Currently, needs to be WGS84
 #' @param biocl_vars         The variables used - eg the standard bioclim names (https://www.worldclim.org/).
 #' @param env_vars           The actual anmes of the variables (e.g. bio1 = rainfall, etc.) Only needed for worldlcim
 #' @param worldclim_grids    Are you using worldclim stored as long intergers? If so, divide by 10.
@@ -753,7 +750,7 @@ urban_records_extract = function(urban_df,
                                  thin_records,
                                  template_raster,
                                  world_raster,
-                                 projection,
+                                 prj,
                                  biocl_vars,
                                  env_vars,
                                  worldclim_grids,
@@ -770,7 +767,7 @@ urban_records_extract = function(urban_df,
   ## Create points: the 'over' function seems to need geographic coordinates for this data...
   URBAN.XY   = SpatialPointsDataFrame(coords      = URBAN.XY[c("lon", "lat")],
                                       data        = URBAN.XY,
-                                      proj4string = projection)
+                                      proj4string = prj)
 
   if(thin_records == TRUE) {
 
@@ -983,23 +980,24 @@ check_spatial_outliers = function(all_df,
                                   urban_df,
                                   land_shp,
                                   clean_path,
-                                  spatial_mult) {
+                                  spatial_mult,
+                                  prj) {
 
   ## Try plotting the points which are outliers for a subset of spp and label them
   ALL.PLOT = SpatialPointsDataFrame(coords      = all_df[c("lon", "lat")],
                                     data        = all_df,
-                                    proj4string = CRS.WGS.84)
+                                    proj4string = prj)
 
   CLEAN.TRUE = subset(all_df, coord_summary == "TRUE")
   CLEAN.PLOT = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")],
                                       data        = CLEAN.TRUE,
-                                      proj4string = CRS.WGS.84)
+                                      proj4string = prj)
 
   ## Create global and australian shapefile in the local coordinate system
   LAND.84 = land_shp %>%
-    spTransform(CRS.WGS.84)
+    spTransform(prj)
   AUS.84 = AUS %>%
-    spTransform(CRS.WGS.84)
+    spTransform(prj)
 
   ## spp = plot.taxa[1]
   plot.taxa <- as.character(unique(CLEAN.PLOT$searchTaxon))
@@ -1048,11 +1046,11 @@ check_spatial_outliers = function(all_df,
   ## Create a tibble to supply to coordinate cleaner
   test.geo = SpatialPointsDataFrame(coords      = all_df[c("lon", "lat")],
                                     data        = all_df,
-                                    proj4string = CRS.WGS.84)
+                                    proj4string = prj)
 
   SDM.COORDS  <- test.geo %>%
 
-    spTransform(., CRS.WGS.84) %>%
+    spTransform(., prj) %>%
 
     as.data.frame() %>%
 
@@ -1172,7 +1170,7 @@ check_spatial_outliers = function(all_df,
   }
 
   ## Could add the species in urban records in here
-  if(!(missing(urban_df ))) {
+  if(urban_df == TRUE) {
 
     ##
     message('Combine the Spatially cleaned data with the Urban data' )
@@ -1180,7 +1178,7 @@ check_spatial_outliers = function(all_df,
     SPAT.FLAG   <- bind_rows(SPAT.FLAG, urban_df)
     SPAT.TRUE   <- SpatialPointsDataFrame(coords      = SPAT.FLAG[c("lon", "lat")],
                                           data        = SPAT.FLAG,
-                                          proj4string = CRS.WGS.84)
+                                          proj4string = prj)
     message('Cleaned ', paste0(unique(SPAT.TRUE$SOURCE), sep = ' '), ' records')
 
   } else {
@@ -1215,6 +1213,7 @@ check_spatial_outliers = function(all_df,
 #' @param data_path          Character string - The file path used for saving the data frame
 #' @export
 calc_1km_niches = function(coord_df,
+                           prj,
                            aus_shp,
                            world_shp,
                            kop_shp,
@@ -1234,14 +1233,14 @@ calc_1km_niches = function(coord_df,
     filter(coord_summary == "TRUE")
   NICHE.1KM.84 <- SpatialPointsDataFrame(coords      = NICHE.1KM[c("lon", "lat")],
                                          data        = NICHE.1KM,
-                                         proj4string = CRS.WGS.84)
+                                         proj4string = prj)
 
   ## Use a projected, rather than geographic, coordinate system
   ## Not sure why, but this is needed for the spatial overlay step
-  AUS.WGS      = spTransform(aus_shp,      CRS.WGS.84)
-  LAND.WGS     = spTransform(world_shp,    CRS.WGS.84)
-  KOP.WGS      = spTransform(kop_shp,      CRS.WGS.84)
-  IBRA.WGS     = spTransform(ibra_shp,     CRS.WGS.84)
+  AUS.WGS      = spTransform(aus_shp,      prj)
+  LAND.WGS     = spTransform(world_shp,    prj)
+  KOP.WGS      = spTransform(kop_shp,      prj)
+  IBRA.WGS     = spTransform(ibra_shp,     prj)
 
   ## Intersect the points with the Global koppen file
   message('Intersecting points with shapefiles for ', length(species_list), ' species')
@@ -1273,7 +1272,6 @@ calc_1km_niches = function(coord_df,
   ## Run join between species records and spatial units :: SUA, POA and KOPPEN zones
   message('Joining occurence data to SUAs for ',
           length(species_list), ' species in the set ', "'", save_run, "'")
-  projection(NICHE.1KM.84);projection(AUS.WGS)
 
   ## CREATE NICHES FOR PROCESSED TAXA
   ## Create niche summaries for each environmental condition like this...commit
@@ -1588,20 +1586,12 @@ plot_range_histograms = function(coord_df,
     ## Use the 'SOURCE' column to create a histogram for each source.
     temp.hist <- ggplot(coord_spp, aes(x = Annual_mean_temp, group = RANGE, fill = RANGE)) +
 
-      # geom_histogram(position = "identity", alpha = 1, binwidth = 0.25,
-      #                aes(y =..density..))  +
       geom_density(aes(x = Annual_mean_temp, y = ..scaled.., fill = RANGE),
                    color = 'black', alpha = 1) +
 
       ## Change the colors
       scale_fill_manual(values = c('NATURAL' = 'coral2',
                                    'Mayor'   = 'gainsboro'), na.value = "grey") +
-
-      ## Add some median lines : overall, ALA and GBIF
-      # geom_vline(aes(xintercept = median(coord_spp_nat$Annual_mean_temp)),
-      #            col = 'blue', size = 1) +
-      # geom_vline(aes(xintercept = median(coord_spp_urb$Annual_mean_temp)),
-      #            col = 'red', size = 1) +
 
       ggtitle(paste0("Worldclim temp niches for ", spp)) +
 
@@ -1757,6 +1747,7 @@ prepare_sdm_table = function(coord_df,
                              species_list,
                              BG_points,
                              sdm_table_vars,
+                             prj,
                              save_run,
                              save_shp,
                              read_background,
@@ -1786,7 +1777,7 @@ prepare_sdm_table = function(coord_df,
   ## This is the mollweide projection used for the SDMs
   coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
   proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
-  COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS(sp_epsg54009))
+  COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, prj) # CRS(sp_epsg54009)
 
   ## Don't filter the data again to be 1 record per 1km, that has already happened
   SDM.DATA.ALL <- COMBO.RASTER.ALL
@@ -1817,7 +1808,7 @@ prepare_sdm_table = function(coord_df,
 
   ## Create a tibble to supply to coordinate cleaner
   SDM.COORDS  <- SDM.DATA.ALL %>%
-    spTransform(., CRS.WGS.84) %>%
+    spTransform(., prj) %>%
     as.data.frame() %>%
     dplyr::select(searchTaxon, lon, lat, SPOUT.OBS, SOURCE) %>%
     dplyr::rename(species          = searchTaxon,
@@ -1918,7 +1909,6 @@ prepare_sdm_table = function(coord_df,
   SDM.SPAT.ALL = SpatialPointsDataFrame(coords      = SDM.SPAT.ALL[c("lon", "lat")],
                                         data        = SDM.SPAT.ALL,
                                         proj4string = CRS(sp_epsg54009))
-  projection(SDM.SPAT.ALL)
   message(length(unique(SDM.SPAT.ALL$searchTaxon)),
           ' species processed through from download to SDM table')
 
@@ -1934,7 +1924,7 @@ prepare_sdm_table = function(coord_df,
   ## Then create a SPDF
   SPAT.OUT.SPDF    = SpatialPointsDataFrame(coords      = SPAT.OUT.CHECK[c("LON", "LAT")],
                                             data        = SPAT.OUT.CHECK,
-                                            proj4string = CRS.WGS.84)
+                                            proj4string = prj)
 
   ## Write the shapefile out
   if(save_shp == "TRUE") {

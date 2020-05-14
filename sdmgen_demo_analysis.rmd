@@ -231,7 +231,8 @@ template.raster.1km <- gdalwarp("./data/wc2-5/bio1.bil",
                                 r = "near", dstnodata = '-9999') %>% 
   projectRaster(., crs = '+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
 
-## 
+
+## Should be 1km*1km 
 xres(template.raster.1km)
 
 ``` 
@@ -242,7 +243,7 @@ xres(template.raster.1km)
 Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
 In this case, it's simply the biolclim variables (i.e. bio1- bio19)
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 ## Combine GBIF and ALA data, and extract environmental values
 COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
@@ -251,7 +252,7 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                thin_records    = TRUE,
                                                template_raster = template.raster.1km,
                                                world_raster    = worldclim_climate,
-                                               projection      = CRS("+init=epsg:4326"),
+                                               prj             = CRS("+init=epsg:4326"),
                                                species_list    = analysis_spp,
                                                biocl_vars      = bioclim_variables,
                                                env_vars        = env_variables,
@@ -261,9 +262,9 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
 
 ``` 
 
+\
 
-
-# STEP 4 :: extract environmental values
+# STEP 4 :: Flag institutional outliers
 
 \
 
@@ -272,14 +273,13 @@ species records, and flag records as institutional or spatial outliers. It uses 
 package https://cran.r-project.org/web/packages/CoordinateCleaner/index.html. It assumes that the 
 records data.frame is that returned by the combine_records_extract function.
 
-
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 ## :: Flag records as institutional or spatial outliers
 COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
                                   capitals   = 10000,  ## Remove records within 10km  of capitals
                                   centroids  = 5000,   ## Remove records within 5km of country centroids
-                                  save_run   = "TEST_BATS",
+                                  save_run   = "TEST_SPECIES",
                                   #data_path    = "./output/results/",
                                   save_data  = "FALSE")
 ``` 
@@ -289,16 +289,16 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
 In this case, it's simply the biolclim variables (i.e. bio1- bio19)
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 ## Step 4b :: Flag spatial outliers
 SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
                                        land_shp     = LAND,
-                                       urban_df     = URBAN.RASTER.CONVERT,
+                                       urban_df     = FALSE, #URBAN.RASTER.CONVERT,
                                        clean_path   = './data/GBIF/Check_plots/',
-                                       spatial_mult = 10)
+                                       spatial_mult = 10,
+                                       prj          = CRS("+init=epsg:4326"))
 ``` 
-
 
 \
 
@@ -309,7 +309,8 @@ In this case, it's simply the biolclim variables (i.e. bio1- bio19)
 
 ## Step 4c ::Estima ecliate niches usign pecies records
 GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLEAN
-                             country_shp      = AUS,
+                             prj          = CRS("+init=epsg:4326"),
+                             country_shp  = AUS,
                              world_shp    = LAND,
                              kop_shp      = Koppen_shp,
                              ibra_shp     = IBRA,
@@ -322,6 +323,25 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLE
 
 ``` 
 
+\
+
+Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
+In this case, it's simply the biolclim variables (i.e. bio1- bio19)
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
+plot_range_histograms(coord_df     = SPATIAL.CLEAN,
+                      species_list = analysis_spp,
+                      range_path = './data/GBIF/Check_plots/')
+``` 
+
+
+\
+
+
+# STEP 5 :: Prepare SDM table
+
 
 \
 
@@ -330,12 +350,20 @@ In this case, it's simply the biolclim variables (i.e. bio1- bio19)
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
+SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
+                                    species_list    = unique(COORD.CLEAN$searchTaxon),
+                                    sdm_table_vars  = sdm_table_vars,
+                                    prj             = CRS("+init=ESRI:54009"),
+                                    save_run        = "test_species",
+                                    read_background = "FALSE",
+                                    save_data       = "FALSE",
+                                    save_shp        = "FALSE")
 
-
-## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
-##  make GUTI color light grey,  GBIF cyan and ALA another color-blind friendly contrasting color
-plot_range_histograms(coord_df     = SPATIAL.CLEAN,
-                      species_list = analysis_spp,
-                      range_path = './data/GBIF/Check_plots/')
 ``` 
+
+
+\
+
+
+
 

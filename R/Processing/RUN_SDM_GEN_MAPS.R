@@ -215,7 +215,7 @@ plot_range_histograms(coord_df     = SPATIAL.CLEAN,
 
 
 
-## STEP 5 :: Flag spatial outliers ==============================================================================
+## STEP 5 :: Prepare SDM table ==============================================================================
 
 
 ## This code creates the table for running SDMs in 'species with data', or SWD format.
