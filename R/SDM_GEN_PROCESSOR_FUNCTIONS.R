@@ -683,7 +683,8 @@ combine_records_extract = function(ala_df,
     cbind(as.data.frame(GBIF.ALA.84.1KM), .)
 
   ## Group rename the columns
-  setnames(COMBO.RASTER, old = biocl_vars, new = env_vars)
+  ## This relies on the bioclim order, it must be the same
+  setnames(COMBO.RASTER, old = names(world_raster), new = env_vars)
   COMBO.RASTER <- COMBO.RASTER %>% dplyr::select(-lat.1, -lon.1)
 
   ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion.

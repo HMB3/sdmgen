@@ -22,14 +22,14 @@ previewLinks: true
 word_document:
   always_allow_html: yes
 ---
-  
-  
-  <style>
-  p.caption {
-    font-size: 6;
-  }
+
+
+<style>
+p.caption {
+font-size: 6;
+}
 </style>
-  
+
 
 
 \
@@ -55,7 +55,7 @@ https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
 ## The package should import all the required packges
-devtools::install_github("HMB3/sdmgen")
+#devtools::install_github("HMB3/sdmgen")
 library(sdmgen)
 
 
@@ -71,7 +71,7 @@ sapply(sdmgen_packages, require, character.only = TRUE)
 
 
 # STEP 1 :: Download species occurrence data
-            
+
 
 \
 
@@ -94,13 +94,16 @@ analysis_spp
 
 \
 
-First, we use two functions to download all species records from the Atlas and living Australia
+This species list is then supplied to a series of functions to calculate enviromnetal ranges and habitat 
+suitability. The initial functions download all species records from the Atlas and living Australia
 (https://www.ala.org.au/) and the Global Biodiversity Information Facility (GBIF, https://www.gbif.org/). 
 It downloads the species data as individual .Rdata files to the specified folders, which must exist first, 
-without returning anything. The functions are separated because the ALA and GBIF columns are slightly different, 
-but both data sources are needed to properly quantify species ranges .
+without returning anything. The functions are separated because the ALA and GBIF columns are slightly 
+different, but both data sources are needed to properly quantify species ranges .
 
 \
+
+The package functions expect these folders, create them if they don't exist
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
@@ -111,21 +114,22 @@ GBIF_dir <- './data/GBIF'
 
 ## Create ALA subfolder
 if(!dir.exists(ALA_dir)) {
-            message('Creating MESS directory for ', species)
-            dir.create(ALA_dir) } else {
-              'ALA directory already exists'}
+  message('Creating MESS directory for ', species)
+  dir.create(ALA_dir) } else {
+    'ALA directory already exists'}
 
 
 ## Create GBIF subfolder
 if(!dir.exists(GBIF_dir)) {
-            message('Creating MESS directory for ', species)
-            dir.create(GBIF_dir) } else {
-              'GBIF directory already exists'}
+  message('Creating MESS directory for ', species)
+  dir.create(GBIF_dir) } else {
+    'GBIF directory already exists'}
 
 ```
 
 \
 
+Download GBIF and ALA occurrence data for each species
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
@@ -149,21 +153,22 @@ download_ALA_all_species(species_list  = analysis_spp,
 
 \
 
-The next function combines ALA and GBIF data, and filter to records on land, taken > 1950
-The climate data (i.e. raster) used can be any worldclim layer.
+The next function combines ALA and GBIF records, filtering them to records on land, 
+and recorded after 1950. The climate (i.e. raster) data  used can be any worldclim layer.
 
 \
 
-First, get some global climate data from worldclim
+First, get some global climate data from worldclim. You need to create a 'data' folder 
+in the project directory.
 
 \
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
 ## Download global raster for minimum temperature 
-##worldclim_annual_temp <- raster::getData('worldclim', var='bio', res = 2.5)
-worldclim_annual_temp <- raster::stack("./wc2-5/bio1.bil")
-sp::plot(worldclim_annual_temp)
+worldclim_climate     <- raster::getData('worldclim', var = 'bio', res = 2.5, path = './data')
+worldclim_annual_temp <- raster::stack("./data/wc2-5/bio1.bil")
+sp::plot(worldclim_climate[["bio1"]])
 
 ``` 
 
@@ -202,24 +207,50 @@ GBIF.LAND = combine_gbif_records(species_list      = analysis_spp,
 
 \
 
-The next function combines occurrence files from ALA and GBIF into one table, and extracts enviro values.
-It assumes that both files come from the combine_ala_records and combine_gbif_records functions.
+The next function in the workflow combines occurrence files from ALA and GBIF into one table, 
+and extracts environmental values. It assumes that both files come from the combine_ala_records 
+and combine_gbif_records functions.
 
+
+\
+
+First create a template raster of 1km * 1km cells using the downloaded worlclim data.
+This raster is used to filter records to 1 per one 1km cell. This raster needs to have
+the same extent and resolution of the data used to analyse the species distributions.
+Fetch a cup of tea this takes ages.....
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
-## First get the raster template
-## need to update raster data here
-#data('template_raster_1km_84')
 
+## Use gdal to create a template raster in WGS84
+template.raster.1km <- gdalwarp("./data/wc2-5/bio1.bil",
+                                tempfile(fileext = '.bil'),
+                                t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+                                output_Raster = TRUE,
+                                tr = c(1000, 1000),
+                                r = "near", dstnodata = '-9999') %>% 
+  projectRaster(., crs = '+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
+
+## 
+xres(template.raster.1km)
+
+``` 
+
+
+\
+
+Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
+In this case, it's simply the biolclim variables (i.e. bio1- bio19)
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
 
 ## Combine GBIF and ALA data, and extract environmental values
 COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                gbif_df         = GBIF.LAND,
                                                urban_df        = 'NONE',
                                                thin_records    = TRUE,
-                                               template_raster = template.raster.1km.84,
-                                               world_raster    = worldclim_annual_temp,
+                                               template_raster = template.raster.1km,
+                                               world_raster    = worldclim_climate,
                                                projection      = CRS("+init=epsg:4326"),
                                                species_list    = analysis_spp,
                                                biocl_vars      = bioclim_variables,
@@ -232,5 +263,79 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
 
 
 
+# STEP 4 :: extract environmental values
 
+\
+
+The next stage of the process runs a series of cleaning steps. This function takes a data frame of all 
+species records, and flag records as institutional or spatial outliers. It uses the CoordinateCleaner 
+package https://cran.r-project.org/web/packages/CoordinateCleaner/index.html. It assumes that the 
+records data.frame is that returned by the combine_records_extract function.
+
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## :: Flag records as institutional or spatial outliers
+COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
+                                  capitals   = 10000,  ## Remove records within 10km  of capitals
+                                  centroids  = 5000,   ## Remove records within 5km of country centroids
+                                  save_run   = "TEST_BATS",
+                                  #data_path    = "./output/results/",
+                                  save_data  = "FALSE")
+``` 
+
+\
+
+Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
+In this case, it's simply the biolclim variables (i.e. bio1- bio19)
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Step 4b :: Flag spatial outliers
+SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
+                                       land_shp     = LAND,
+                                       urban_df     = URBAN.RASTER.CONVERT,
+                                       clean_path   = './data/GBIF/Check_plots/',
+                                       spatial_mult = 10)
+``` 
+
+
+\
+
+Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
+In this case, it's simply the biolclim variables (i.e. bio1- bio19)
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Step 4c ::Estima ecliate niches usign pecies records
+GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLEAN
+                             country_shp      = AUS,
+                             world_shp    = LAND,
+                             kop_shp      = Koppen_shp,
+                             ibra_shp     = IBRA,
+                             species_list = analysis_spp,
+                             env_vars     = env_variables,
+                             cell_size    = 2,
+                             save_run     = "Stoten_EG",
+                             data_path    = "./output/results/",
+                             save_data    = "TRUE")
+
+``` 
+
+
+\
+
+Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
+In this case, it's simply the biolclim variables (i.e. bio1- bio19)
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+
+
+## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
+##  make GUTI color light grey,  GBIF cyan and ALA another color-blind friendly contrasting color
+plot_range_histograms(coord_df     = SPATIAL.CLEAN,
+                      species_list = analysis_spp,
+                      range_path = './data/GBIF/Check_plots/')
+``` 
 
