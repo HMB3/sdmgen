@@ -1251,8 +1251,7 @@ calc_1km_niches = function(coord_df,
 
   ## Aggregate the number of Koppen zones (and IBRA regions) each species is found in
   COMBO.KOP <- NICHE.1KM.84 %>%
-    cbind.data.frame(., KOP.JOIN) %>%
-    #cbind.data.frame(., IBRA.JOIN)
+    cbind.data.frame(., KOP.JOIN)
 
   ## Aggregate the data
   KOP.AGG = tapply(COMBO.KOP$Koppen, COMBO.KOP$searchTaxon,
