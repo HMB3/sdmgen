@@ -268,10 +268,10 @@ and combine_gbif_records functions.
 First create a template raster of 1km * 1km cells using the downloaded worlclim data.
 This raster is used to filter records to 1 per one 1km cell. This raster needs to have
 the same extent and resolution of the data used to analyse the species distributions.
+It should have a value of 1 for land, and NA for the ocean
 Fetch a cup of tea this takes ages.....
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
-
 
 ## Use gdal to create a template raster in WGS84
 template.raster.1km.WGS84 <- gdalwarp("./data/wc2-5/bio1.bil",
@@ -284,6 +284,8 @@ template.raster.1km.WGS84 <- gdalwarp("./data/wc2-5/bio1.bil",
 
 
 ## Should be 1km*1km 
+template.raster.1km.WGS84[template.raster.1km.WGS84 < 0] <- NA
+template.raster.1km.WGS84[template.raster.1km.WGS84 > 0] <- 1
 xres(template.raster.1km.WGS84)
 
 ``` 
@@ -301,7 +303,7 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                gbif_df         = GBIF.LAND,
                                                urban_df        = 'NONE',
                                                thin_records    = TRUE,
-                                               template_raster = template.raster.1km,
+                                               template_raster = template.raster.1km.WGS84,
                                                world_raster    = worldclim_climate,
                                                prj             = CRS("+init=epsg:4326"),
                                                species_list    = analysis_spp,
@@ -449,7 +451,10 @@ template.raster.1km.mol <- gdalwarp("./data/wc2-5/bio1.bil",
                                     r = "near", dstnodata = '-9999') 
 
 ## Should be 1km*1km 
+template.raster.1km.mol[template.raster.1km.mol < 0] <- NA
+template.raster.1km.mol[template.raster.1km.mol > 0] <- 1
 xres(template.raster.1km.mol)
+
 
 ``` 
 
