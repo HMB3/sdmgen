@@ -283,8 +283,7 @@ template.raster.1km.WGS84 <- gdalwarp("./data/wc2-5/bio1.bil",
   projectRaster(., crs = '+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
 
 
-## Should be 1km*1km 
-template.raster.1km.WGS84[template.raster.1km.WGS84 < 0] <- NA
+## Should be 1km*1km, It should have a value of 1 for land, and NA for the ocean
 template.raster.1km.WGS84[template.raster.1km.WGS84 > 0] <- 1
 xres(template.raster.1km.WGS84)
 
@@ -433,7 +432,8 @@ It assumes that the input df is that returned by the prepare_sdm_table function
 \
 
 The function uses a rasterised version of the 1975 Koppen raster, and another template raster of the same 
-extent (global), resolution (1km*1km) and projection (mollweide) as the analysis data.
+extent (global), resolution (1km*1km) and projection (mollweide) as the analysis data. This step takes
+ages...
 
 \
 
@@ -450,8 +450,7 @@ template.raster.1km.mol <- gdalwarp("./data/wc2-5/bio1.bil",
                                     tr = c(1000, 1000),
                                     r = "near", dstnodata = '-9999') 
 
-## Should be 1km*1km 
-template.raster.1km.mol[template.raster.1km.mol < 0] <- NA
+## Should be 1km*1km, values of 0 for ocean and 1 for land 
 template.raster.1km.mol[template.raster.1km.mol > 0] <- 1
 xres(template.raster.1km.mol)
 
