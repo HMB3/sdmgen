@@ -308,8 +308,10 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 
 \
 
-Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
-In this case, it's simply the biolclim variables (i.e. bio1- bio19)
+This function takes a data frame of all species records, flags records as spatial outliers (T/F for each 
+record in the df), and saves images of the checks for each. Manual cleaning of spatial outliers is very 
+tedious, but automated cleaning makes mistakes, so checking is handy It uses the CoordinateCleaner package https://cran.r-project.org/web/packages/CoordinateCleaner/index.html. It assumes that the input dfs are 
+those returned by the coord_clean_records function
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE}
 
@@ -327,15 +329,14 @@ SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
 Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
 In this case, it's simply the biolclim variables (i.e. bio1- bio19)
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 ## Step 4c ::Estima ecliate niches usign pecies records
-GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,  ## Replace COORD.CLEAN
+GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,
                              prj          = CRS("+init=epsg:4326"),
                              country_shp  = AUS,
                              world_shp    = LAND,
                              kop_shp      = Koppen_shp,
-                             ibra_shp     = IBRA,
                              species_list = analysis_spp,
                              env_vars     = env_variables,
                              cell_size    = 2,

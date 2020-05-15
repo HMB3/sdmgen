@@ -1183,6 +1183,7 @@ check_spatial_outliers = function(all_df,
 
   } else {
     message('Dont add urban data' )
+    SPAT.TRUE <- SPAT.FLAG %>% filter(SPAT_OUT == "TRUE")
   }
 
   return(SPAT.TRUE)
@@ -1204,7 +1205,6 @@ check_spatial_outliers = function(all_df,
 #' @param aus_df             Data.frame of Urban records (only used if you have urban data, e.g. I-naturalist)
 #' @param world_shp          .Rds object. Shapefile of the worlds land (e.g. https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-land/)
 #' @param kop_shp            .Rds object. Shapefile of the worlds koppen zones (e.g. https://www.climond.org/Koppen.aspx)
-#' @param ibra_shp           .Rds object. Shapefile of Australia's IBRA zones (see https://www.environment.gov.au/land/nrs/science/ibra)
 #' @param species_list       Character string - List of species analysed, used to cut the dataframe down
 #' @param env_vars           Character string - List of environmental variables analysed
 #' @param cell_size          Numeric. Value indicating the grid size in decimal degrees used for estimating Area of Occupancy (see ?AOO.computing)
@@ -1214,10 +1214,10 @@ check_spatial_outliers = function(all_df,
 #' @export
 calc_1km_niches = function(coord_df,
                            prj,
-                           aus_shp,
+                           country_shp,
                            world_shp,
                            kop_shp,
-                           ibra_shp,
+                           #ibra_shp,
                            species_list,
                            env_vars,
                            cell_size,
@@ -1237,15 +1237,13 @@ calc_1km_niches = function(coord_df,
 
   ## Use a projected, rather than geographic, coordinate system
   ## Not sure why, but this is needed for the spatial overlay step
-  AUS.WGS      = spTransform(aus_shp,      prj)
+  AUS.WGS      = spTransform(country_shp,  prj)
   LAND.WGS     = spTransform(world_shp,    prj)
   KOP.WGS      = spTransform(kop_shp,      prj)
-  IBRA.WGS     = spTransform(ibra_shp,     prj)
 
   ## Intersect the points with the Global koppen file
   message('Intersecting points with shapefiles for ', length(species_list), ' species')
   KOP.JOIN     = over(NICHE.1KM.84, KOP.WGS)
-  IBRA.JOIN    = over(NICHE.1KM.84, IBRA.WGS)
 
   ## Create global niche and Australian niche for website - So we need a subset for Australia
   ## The ,] acts just like a clip in a GIS
@@ -1254,7 +1252,7 @@ calc_1km_niches = function(coord_df,
   ## Aggregate the number of Koppen zones (and IBRA regions) each species is found in
   COMBO.KOP <- NICHE.1KM.84 %>%
     cbind.data.frame(., KOP.JOIN) %>%
-    cbind.data.frame(., IBRA.JOIN)
+    #cbind.data.frame(., IBRA.JOIN)
 
   ## Aggregate the data
   KOP.AGG = tapply(COMBO.KOP$Koppen, COMBO.KOP$searchTaxon,
@@ -1262,12 +1260,6 @@ calc_1km_niches = function(coord_df,
     as.data.frame()
   KOP.AGG =  setDT(KOP.AGG , keep.rownames = TRUE)[]
   names(KOP.AGG) = c("searchTaxon", "KOP_count")
-
-  IBR.AGG = tapply(COMBO.KOP$REG_NAME_7, COMBO.KOP$searchTaxon,
-                   function(x) length(unique(x))) %>% ## group Koppen by species name
-    as.data.frame()
-  IBR.AGG =  setDT(IBR.AGG , keep.rownames = TRUE)[]
-  names(IBR.AGG) = c("searchTaxon", "IBRA_count")
 
   ## Run join between species records and spatial units :: SUA, POA and KOPPEN zones
   message('Joining occurence data to SUAs for ',
@@ -1392,7 +1384,7 @@ calc_1km_niches = function(coord_df,
   identical(nrow(GBIF.AOO), nrow(GLOB.NICHE))
   GLOB.NICHE <- list(GLOB.NICHE, GBIF.AOO, KOP.AGG, IBR.AGG) %>%
     reduce(left_join, by = "searchTaxon") %>%
-    dplyr::select(searchTaxon, Aus_records, AOO, KOP_count, IBRA_count, everything())
+    dplyr::select(searchTaxon, Aus_records, AOO, KOP_count, everything())
 
   if(save_data == "TRUE") {
 
