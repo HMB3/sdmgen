@@ -163,7 +163,7 @@ bioclim_variables = c('bio_01',
 
 
 ## Names of the sdm data table ---
-sdm_table_vars <- c('searchTaxon', 'lon', 'lat', 'SOURCE', 'CC.OBS',
+sdm_table_vars <- c('searchTaxon', 'lon', 'lat', 'SOURCE',
 
                     'Annual_mean_temp',     'Mean_diurnal_range',  'Isothermality', 'Temp_seasonality',
                     'Max_temp_warm_month',  'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',

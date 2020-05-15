@@ -1738,17 +1738,16 @@ prepare_sdm_table = function(coord_df,
                              species_list,
                              BG_points,
                              sdm_table_vars,
-                             prj,
+                             #prj,
                              save_run,
                              save_shp,
                              read_background,
                              save_data,
                              data_path) {
 
-  ## Just add clean_df to this step
-  coord_df <- subset(coord_df, coord_summary == "TRUE")
-  message(round(nrow(coord_df)/nrow(coord_df)*100, 2), " % records retained")
-  message(table(coord_df$coord_summary))
+
+  ## Define Mollweide here. This is hard-wired, not user supplied
+  sp_epsg54009 <- "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
 
   ## RESTRICT DATA TABLE TO ONE RECORD PER 1KM GRID CELL
   ## Create a table with all the variables needed for SDM analysis
@@ -1757,179 +1756,8 @@ prepare_sdm_table = function(coord_df,
           'using ', unique(coord_df$SOURCE), ' data')
 
   ## Select only the columns needed. This also needs to use the variable names
-  coord_df         <- coord_df[coord_df$searchTaxon %in% species_list, ]
-  length(unique(coord_df$searchTaxon))
-
-  COMBO.RASTER.ALL  <- coord_df %>%
+  SDM.SPAT.ALL <- coord_df[coord_df$searchTaxon %in% species_list, ] %>%
     dplyr::select(one_of(sdm_table_vars))
-
-
-  ## Create a spatial points object, and change to a projected system to calculate distance more accurately
-  ## This is the mollweide projection used for the SDMs
-  coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
-  proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
-  COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, prj) # CRS(sp_epsg54009)
-
-  ## Don't filter the data again to be 1 record per 1km, that has already happened
-  SDM.DATA.ALL <- COMBO.RASTER.ALL
-
-  ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
-  message(round(nrow(SDM.DATA.ALL)/nrow(coord_df)*100, 2), " % records retained at 1km resolution")
-
-  ## What resolution is the template raster at?
-  xres(template.raster.1km);yres(template.raster.1km)
-
-  ## TRY CLEANING FILTERED DATA FOR SPATIAL OUTLIERS
-  ## The cc_outl function has been tweaked and sped up.
-
-  ## Create a unique identifier for spatial cleaning.
-  ## This is used for automated cleaing of the records, and also saving shapefiles
-  ## But this will not be run for all species linearly.
-  ## So, it probably needs to be a combination of species and number
-  SDM.DATA.ALL$SPOUT.OBS <- 1:nrow(SDM.DATA.ALL)
-  SDM.DATA.ALL$SPOUT.OBS <- paste0(SDM.DATA.ALL$SPOUT.OBS, "_SPOUT_", SDM.DATA.ALL$searchTaxon)
-  SDM.DATA.ALL$SPOUT.OBS <- gsub(" ",     "_",  SDM.DATA.ALL$SPOUT.OBS, perl = TRUE)
-  length(SDM.DATA.ALL$SPOUT.OBS);length(unique(SDM.DATA.ALL$SPOUT.OBS))
-
-  ## Check dimensions
-  dim(SDM.DATA.ALL)
-  length(unique(SDM.DATA.ALL$searchTaxon))
-  length(unique(SDM.DATA.ALL$SPOUT.OBS))
-  unique(SDM.DATA.ALL$SOURCE)
-
-  ## Create a tibble to supply to coordinate cleaner
-  SDM.COORDS  <- SDM.DATA.ALL %>%
-    spTransform(., prj) %>%
-    as.data.frame() %>%
-    dplyr::select(searchTaxon, lon, lat, SPOUT.OBS, SOURCE) %>%
-    dplyr::rename(species          = searchTaxon,
-                  decimallongitude = lon,
-                  decimallatitude  = lat) %>%
-    timetk::tk_tbl()
-
-  ## Check
-  message(identical(SDM.COORDS$index, SDM.COORDS$SPOUT.OBS))
-  length(unique(SDM.COORDS$species))
-
-  ## Check how many records each species has
-  COMBO.LUT <- SDM.COORDS %>%
-    as.data.frame() %>%
-    dplyr::select(species) %>%
-    table() %>%
-    as.data.frame()
-  COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = FALSE)[]
-  names(COMBO.LUT) = c("species", "FREQUENCY")
-  COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ]
-
-  ## Watch out here - this sorting could cause problems for the order of
-  ## the data frame once it's stitched back together
-  LUT.100K = as.character(subset(COMBO.LUT, FREQUENCY < 100000)$species)
-  LUT.100K = trimws(LUT.100K [order(LUT.100K)])
-  length(LUT.100K)
-
-  ## Create a data frame of species name and spatial outlier
-  SPAT.OUT <- LUT.100K  %>%
-
-    ## pipe the list of species into lapply
-    ## x = LUT.100K[1]
-    lapply(function(x) {
-
-      ## Create the species df by subsetting by species
-      f <- subset(SDM.COORDS, species == x)
-
-      ## Run the spatial outlier detection
-      message("Running spatial outlier detection for ", nrow(f), " records for ", x)
-      sp.flag <- cc_outl(f,
-                         lon     = "decimallongitude",
-                         lat     = "decimallatitude",
-                         species = "species",
-                         method  = "quantile",
-                         mltpl   = 10,
-                         value   = "flagged",
-                         verbose = "TRUE")
-
-      ## Now add attache column for species, and the flag for each record
-      d = cbind(searchTaxon = x,
-                SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "SPOUT.OBS")]
-
-      ## Remeber to explicitly return the df at the end of loop, so we can bind
-      return(d)
-
-    }) %>%
-
-    ## Finally, bind all the rows together
-    bind_rows
-
-  gc()
-
-  ## How many species are flagged as spatial outliers?
-  print(table(SPAT.OUT$SPAT_OUT, exclude = NULL))
-  length(unique(SPAT.OUT$searchTaxon))
-  head(SPAT.OUT)
-
-  ## FILTER DATA TO REMOVE SPATIAL OUTLIERS
-  ## Join data :: Best to use the 'OBS' column here
-  message('Is the order or records identical before joining?',
-          identical(nrow(SDM.COORDS), nrow(SPAT.OUT)))
-  message('Is the order or records identical after joining?',
-          identical(SDM.DATA.ALL$searchTaxon, SPAT.OUT$searchTaxon))
-  length(unique(SPAT.OUT$searchTaxon))
-
-  ## This explicit join is required. Check the species have been analysed in exactly the same order
-  SPAT.FLAG <- join(as.data.frame(SDM.DATA.ALL), SPAT.OUT,
-                    by = c("SPOUT.OBS", "searchTaxon") ,
-                    type = "left", match = "first")
-  message('Is the order or records identical after joining?',
-          identical(SDM.DATA.ALL$searchTaxon, SPAT.FLAG$searchTaxon))
-
-  ## Check the join is working
-  message('Checking spatial flags for ', length(unique(SPAT.FLAG$searchTaxon)),
-          ' species in the set ', "'", save_run, "'")
-  message(table(SPAT.FLAG$SPAT_OUT, exclude = NULL))
-
-  ## Just get the records that were not spatial outliers.
-  SDM.SPAT.ALL <- subset(SPAT.FLAG, SPAT_OUT == "TRUE")
-  unique(SDM.SPAT.ALL$SPAT_OUT)
-  unique(SDM.SPAT.ALL$SOURCE)
-  length(unique(SDM.SPAT.ALL$searchTaxon))
-
-  ## What percentage of records are retained?
-  message(round(nrow(SDM.SPAT.ALL)/nrow(SPAT.FLAG)*100, 2),
-          " % records retained after spatial outlier detection")
-
-  ## Convert back to format for SDMs :: use Mollweide projection
-  SDM.SPAT.ALL = SpatialPointsDataFrame(coords      = SDM.SPAT.ALL[c("lon", "lat")],
-                                        data        = SDM.SPAT.ALL,
-                                        proj4string = CRS(sp_epsg54009))
-  message(length(unique(SDM.SPAT.ALL$searchTaxon)),
-          ' species processed through from download to SDM table')
-
-  ## CREATE SHAPEFILES TO CHECK OUTLIERS ARCMAP
-  ## Rename the fields so that ArcMap can handle them
-  SPAT.OUT.CHECK = SPAT.FLAG %>%
-    dplyr::select(SPOUT.OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT) %>%
-    dplyr::rename(TAXON     = searchTaxon,
-                  LAT       = lat,
-                  LON       = lon)
-  names(SPAT.OUT.CHECK)
-
-  ## Then create a SPDF
-  SPAT.OUT.SPDF    = SpatialPointsDataFrame(coords      = SPAT.OUT.CHECK[c("LON", "LAT")],
-                                            data        = SPAT.OUT.CHECK,
-                                            proj4string = prj)
-
-  ## Write the shapefile out
-  if(save_shp == "TRUE") {
-
-    ## save .shp for future refrence
-    writeOGR(obj    = SPAT.OUT.SPDF,
-             dsn    = "./data/ANALYSIS/CLEAN_GBIF",
-             layer  = paste0('SPAT_OUT_CHECK_', save_run),
-             driver = "ESRI Shapefile", overwrite_layer = TRUE)
-
-  } else {
-    message(' skip file saving, not many species analysed')   ##
-  }
 
   ## CREATE BACKGROUND POINTS AND VARIBALE NAMES
   ## Use one data frame for all species analysis,
@@ -1954,9 +1782,16 @@ prepare_sdm_table = function(coord_df,
 
   ## Now select the final columns needed
   message(length(unique(SDM.SPAT.OCC.BG$searchTaxon)), ' Species in occurrence and BG data')
-  drops <- c('CC.OBS', 'SPOUT.OBS')
-  sdm_cols <- names(dplyr::select(SDM.SPAT.OCC.BG@data, searchTaxon, lon, lat, SOURCE, everything()))
-  SDM.SPAT.OCC.BG <- SDM.SPAT.OCC.BG[,!(names(SDM.SPAT.OCC.BG) %in% drops)]
+  sdm_cols <- names(dplyr::select(SDM.SPAT.OCC.BG, searchTaxon, lon, lat, SOURCE, everything()))
+  SDM.SPAT.OCC.BG <- SDM.SPAT.OCC.BG[,(names(SDM.SPAT.OCC.BG) %in% sdm_table_vars)]
+
+  ## Create final table
+  SDM.SPAT.OCC.BG = SpatialPointsDataFrame(coords      = SDM.SPAT.OCC.BG[c("lon", "lat")],
+                                           data        = SDM.SPAT.OCC.BG,
+                                           proj4string = CRS(sp_epsg54009))
+  message(length(unique(SDM.SPAT.ALL$searchTaxon)),
+          ' species processed through from download to SDM table')
+
 
   ## save data
   if(save_data == "TRUE") {

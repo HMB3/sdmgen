@@ -30,13 +30,9 @@
 #' @param features           Character string - Which features should be used? (e.g. linear, product, quadratic 'lpq')
 #' @param replicates         Numeric - The number of replicates to use
 #' @param responsecurves     Logical - Save response curves of the maxent models (T/F)?
-#' @param aus_shp            .Rds object - SpatialPolygonsDataFrame of Australia for mapping maxent points
+#' @param country_shp             .Rds object - SpatialPolygonsDataFrame of Australia for mapping maxent points
 #' @param Koppen_raster      RasterLayer of global koppen zones, in Mollweide54009 projection
 #' @param Koppen_zones       Dataframe of global koppen zones, with columns : GRIDCODE, Koppen
-#' @export
-
-
-
 #' @export
 run_sdm_analysis = function(species_list,
                             sdm_df,
@@ -57,7 +53,7 @@ run_sdm_analysis = function(species_list,
                             responsecurves,
                             Koppen_raster,
                             Koppen_zones,
-                            aus_shp) {
+                            country_shp ) {
 
   ## Loop over all the species
   lapply(species_list, function(species){
@@ -115,7 +111,7 @@ run_sdm_analysis = function(species_list,
                                     replicates              = replicates,
                                     responsecurves          = responsecurves,
                                     #shp_path                = shp_path,
-                                    aus_shp                 = aus_shp),
+                                    country_shp             = country_shp ),
 
 
         ## Save error message
@@ -169,7 +165,7 @@ run_sdm_analysis = function(species_list,
 #' @param features           Character string - Which features should be used? (e.g. linear, product, quadratic 'lpq')
 #' @param replicates         Numeric - The number of replicates to use
 #' @param responsecurves     Logical - Save response curves of the maxent models (T/F)?
-#' @param aus_shp            .Rds object - SpatialPolygonsDataFrame of Australia for mapping maxent points
+#' @param country_shp             .Rds object - SpatialPolygonsDataFrame of Australia for mapping maxent points
 #' @param rep_args             RasterLayer of global koppen zones, in Mollweide54009 projection
 #' @param full_args          Dataframe of global koppen zones, with columns : GRIDCODE, Koppen
 #' @export
@@ -195,7 +191,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
                                         features,
                                         replicates,
                                         responsecurves,
-                                        aus_shp) {
+                                        country_shp ) {
 
 
   ## First, stop if the outdir file exists,
@@ -297,7 +293,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     ## This is useful to quality control the models
     save_name = gsub(' ', '_', name)
 
-    aus.mol = aus_shp %>%
+    aus.mol = country_shp  %>%
       spTransform(projection(buffer))
 
     aus.kop = crop(Koppen_crop, aus.mol)

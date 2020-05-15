@@ -94,12 +94,29 @@ analysis_spp
 
 \
 
+Also load the shapefiles needed for running the analysis functions. This workfow uses three shapefiles :
+Australia, the world and the Significant Urban areas of Australia (or SUAs). The SUAs are taken from
+the ABS : https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.004July%202016?OpenDocument.
+The Koppen data are from CliMond, centred on 1975 : https://www.climond.org/Core/Authenticated/KoppenGeiger.aspx
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Three shapefiles used in the analysis
+data('AUS')
+data('LAND')
+data('Koppen_shp')
+data('SUA')
+
+```
+
+\
+
 This species list is then supplied to a series of functions to calculate enviromnetal ranges and habitat 
 suitability. The initial functions download all species records from the Atlas and living Australia
 (https://www.ala.org.au/) and the Global Biodiversity Information Facility (GBIF, https://www.gbif.org/). 
 It downloads the species data as individual .Rdata files to the specified folders, which must exist first, 
 without returning anything. The functions are separated because the ALA and GBIF columns are slightly 
-different, but both data sources are needed to properly quantify species ranges .
+different, but both data sources are needed to properly quantify species ranges.
 
 \
 
@@ -111,9 +128,14 @@ The package functions expect these folders, create them if they don't exist
 ALA_dir     <- './data/ALA'
 GBIF_dir    <- './data/GBIF'
 
+
+## Results dir
 back_dir    <- './output/maxent/back_sel_models'
 full_dir    <- './output/maxent/full_models'
 results_dir <- './output/results'
+
+## Checking dir 
+check_dir <-'./data/GBIF/Check_plots/'
 
 
 ## Create ALA subfolder
@@ -140,11 +162,18 @@ if(!dir.exists(full_dir)) {
   dir.create(full_dir) } else {
     'Full directory already exists'}
 
-## Create Full subfolder
+## Create Results subfolder
 if(!dir.exists(results_dir)) {
   message('Creating results directory for ', species)
   dir.create(results_dir) } else {
     'Results directory already exists'}
+
+
+## Create Checking subfolder
+if(!dir.exists(check_dir)) {
+  message('Creating results directory for ', species)
+  dir.create(check_dir) } else {
+    'Checking directory already exists'}
 
 
 ```
@@ -245,17 +274,17 @@ Fetch a cup of tea this takes ages.....
 
 
 ## Use gdal to create a template raster in WGS84
-template.raster.1km <- gdalwarp("./data/wc2-5/bio1.bil",
-                                tempfile(fileext = '.bil'),
-                                t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
-                                output_Raster = TRUE,
-                                tr = c(1000, 1000),
-                                r = "near", dstnodata = '-9999') %>% 
+template.raster.1km.WGS84 <- gdalwarp("./data/wc2-5/bio1.bil",
+                                      tempfile(fileext = '.bil'),
+                                      t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+                                      output_Raster = TRUE,
+                                      tr = c(1000, 1000),
+                                      r = "near", dstnodata = '-9999') %>% 
   projectRaster(., crs = '+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
 
 
 ## Should be 1km*1km 
-xres(template.raster.1km)
+xres(template.raster.1km.WGS84)
 
 ``` 
 
@@ -298,20 +327,6 @@ records data.frame is that returned by the combine_records_extract function.
 
 \
 
-First load the shapefiles needed for running the analysis functions. This workfow uses three shapefiles :
-Australia, the world and the Significant Urban areas of Australia (or SUAs). The SUAs are taken from
-the ABS : https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.004July%202016?OpenDocument
-
-```{r message=FALSE, echo=FALSE, warning=FALSE}
-
-## Use the first 10 plant species in the Stoten list
-data("AUS")
-data("LAND")
-data("SUA")
-
-```
-
-\
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE}
 
@@ -320,7 +335,6 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
                                   capitals   = 10000,  ## Remove records within 10km  of capitals
                                   centroids  = 5000,   ## Remove records within 5km of country centroids
                                   save_run   = "TEST_SPECIES",
-                                  #data_path    = "./output/results/",
                                   save_data  = "FALSE")
 ``` 
 
@@ -336,7 +350,7 @@ those returned by the coord_clean_records function
 ## Step 4b :: Flag spatial outliers
 SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
                                        land_shp     = LAND,
-                                       urban_df     = FALSE, #URBAN.RASTER.CONVERT,
+                                       urban_df     = FALSE, 
                                        clean_path   = './data/GBIF/Check_plots/',
                                        spatial_mult = 10,
                                        prj          = CRS("+init=epsg:4326"))
@@ -349,7 +363,7 @@ In this case, it's simply the biolclim variables (i.e. bio1- bio19)
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE}
 
-## Step 4c ::Estima ecliate niches usign pecies records
+## Step 4c ::Estimate climate niches usign species records
 GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,
                              prj          = CRS("+init=epsg:4326"),
                              country_shp  = AUS,
@@ -369,36 +383,101 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,
 Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
 In this case, it's simply the biolclim variables (i.e. bio1- bio19)
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 ## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
 plot_range_histograms(coord_df     = SPATIAL.CLEAN,
                       species_list = analysis_spp,
-                      range_path = './data/GBIF/Check_plots/')
+                      range_path   = check_dir)
 ``` 
 
 
 \
 
-
 # STEP 5 :: Prepare SDM table
+
+\
+
+This function takes a data frame of all species records, and prepares a table in the 'species with data' 
+(swd) format for modelling uses the Maxent algorithm. It assumes that the input df is that returned by the 
+coord_clean_records function . There is a switch in the function, that adds additional bakground points from 
+other taxa, if specified. In this example for bats, we'll just use the species supplied
+
+\
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = SPATIAL.CLEAN,
+                                    species_list    = unique(SPATIAL.CLEAN$searchTaxon),
+                                    sdm_table_vars  = sdm_table_vars,
+                                    save_run        = "Stoten_EG",
+                                    read_background = "FALSE",
+                                    save_data       = "FALSE",
+                                    save_shp        = "FALSE")
+
+``` 
 
 
 \
 
-Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
-In this case, it's simply the biolclim variables (i.e. bio1- bio19)
+# STEP  6 :: Run Global SDMs
+
+\
+
+This function takes a data frame of all species records, and runs a specialised maxent analysis for each species.
+It uses the rmaxent package https://github.com/johnbaums/rmaxent
+It assumes that the input df is that returned by the prepare_sdm_table function
+
+\
+
+The function uses a rasterised version of the 1975 Koppen raster, and another template raster of the same 
+extent (global), resolution (1km*1km) and projection (mollweide) as the analysis data.
+
+\
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
-SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
-                                    species_list    = unique(COORD.CLEAN$searchTaxon),
-                                    sdm_table_vars  = sdm_table_vars,
-                                    prj             = CRS("+init=ESRI:54009"),
-                                    save_run        = "test_species",
-                                    read_background = "FALSE",
-                                    save_data       = "FALSE",
-                                    save_shp        = "FALSE")
+Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
+
+
+## Use gdal to create a template raster in mollweide
+template.raster.1km.mol <- gdalwarp("./data/wc2-5/bio1.bil",
+                                    tempfile(fileext = '.bil'),
+                                    t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+                                    output_Raster = TRUE,
+                                    tr = c(1000, 1000),
+                                    r = "near", dstnodata = '-9999') 
+
+## Should be 1km*1km 
+xres(template.raster.1km.mol)
+
+``` 
+
+\
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+run_sdm_analysis(species_list            = analysis_spp,
+                 maxent_dir              = 'output/maxent/full_models',     
+                 bs_dir                  = 'output/maxent/back_sel_models',
+                 sdm_df                  = SDM.SPAT.OCC.BG,
+                 sdm_predictors          = bs_predictors,
+                 backwards_sel           = "TRUE",      
+                 template_raster         = template.raster.1km.mol,
+                 cor_thr                 = 0.8,  
+                 pct_thr                 = 5, 
+                 k_thr                   = 4, 
+                 
+                 min_n                   = 20,  
+                 max_bg_size             = 70000,
+                 background_buffer_width = 200000,
+                 shapefiles              = TRUE,
+                 features                = 'lpq',
+                 replicates              = 5,
+                 responsecurves          = TRUE,
+                 country_shp             = AUS,
+                 Koppen_zones            = Koppen_zones,
+                 Koppen_raster           = Koppen_1975_1km)
 
 ``` 
 
