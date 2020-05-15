@@ -285,6 +285,7 @@ template.raster.1km.WGS84 <- gdalwarp("./data/wc2-5/bio1.bil",
 
 ## Should be 1km*1km, It should have a value of 1 for land, and NA for the ocean
 template.raster.1km.WGS84[template.raster.1km.WGS84 > 0] <- 1
+template.raster.1km.WGS84[template.raster.1km.WGS84 < 0] <- 1
 xres(template.raster.1km.WGS84)
 
 ``` 
@@ -433,16 +434,18 @@ It assumes that the input df is that returned by the prepare_sdm_table function
 
 The function uses a rasterised version of the 1975 Koppen raster, and another template raster of the same 
 extent (global), resolution (1km*1km) and projection (mollweide) as the analysis data. This step takes
-ages...
+ages...https://drive.google.com/open?id=1oY5ZWCV3eoKAWShCaApgLvV6Mb9G0HFQ 
 
 \
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
+## Get this data from google drive
+## https://drive.google.com/open?id=1oY5ZWCV3eoKAWShCaApgLvV6Mb9G0HFQ
 Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 
 
-## Use gdal to create a template raster in mollweide
+## Use gdal to create a template raster in the mollweide projection, using one of the bioclim layers
 template.raster.1km.mol <- gdalwarp("./data/wc2-5/bio1.bil",
                                     tempfile(fileext = '.bil'),
                                     t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
@@ -452,6 +455,7 @@ template.raster.1km.mol <- gdalwarp("./data/wc2-5/bio1.bil",
 
 ## Should be 1km*1km, values of 0 for ocean and 1 for land 
 template.raster.1km.mol[template.raster.1km.mol > 0] <- 1
+template.raster.1km.mol[template.raster.1km.mol < 0] <- 1
 xres(template.raster.1km.mol)
 
 
