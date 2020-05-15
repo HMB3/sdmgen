@@ -295,6 +295,24 @@ species records, and flag records as institutional or spatial outliers. It uses 
 package https://cran.r-project.org/web/packages/CoordinateCleaner/index.html. It assumes that the 
 records data.frame is that returned by the combine_records_extract function.
 
+
+\
+
+First load the shapefiles needed for running the analysis functions. This workfow uses three shapefiles :
+Australia, the world and the Significant Urban areas of Australia (or SUAs). The SUAs are taken from
+the ABS : https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.004July%202016?OpenDocument
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Use the first 10 plant species in the Stoten list
+data("AUS")
+data("LAND")
+data("SUA")
+
+```
+
+\
+
 ```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 ## :: Flag records as institutional or spatial outliers
