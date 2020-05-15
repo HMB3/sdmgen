@@ -55,11 +55,11 @@ https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
 ## The package should import all the required packges
-#devtools::install_github("HMB3/sdmgen")
+devtools::install_github("HMB3/sdmgen")
 library(sdmgen)
 
 
-## Load the packages
+## Load the required packages
 data("sdmgen_packages")
 sapply(sdmgen_packages, require, character.only = TRUE)
 
@@ -108,22 +108,44 @@ The package functions expect these folders, create them if they don't exist
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
 ## The functions expect these folders, create them if they don't exist
-ALA_dir  <- './data/ALA'
-GBIF_dir <- './data/GBIF'
+ALA_dir     <- './data/ALA'
+GBIF_dir    <- './data/GBIF'
+
+back_dir    <- './output/maxent/back_sel_models'
+full_dir    <- './output/maxent/full_models'
+results_dir <- './output/results'
 
 
 ## Create ALA subfolder
 if(!dir.exists(ALA_dir)) {
-  message('Creating MESS directory for ', species)
+  message('Creating ALA directory for ', species)
   dir.create(ALA_dir) } else {
     'ALA directory already exists'}
 
-
 ## Create GBIF subfolder
 if(!dir.exists(GBIF_dir)) {
-  message('Creating MESS directory for ', species)
+  message('Creating GBIF directory for ', species)
   dir.create(GBIF_dir) } else {
     'GBIF directory already exists'}
+
+## Create BS subfolder
+if(!dir.exists(back_dir)) {
+  message('Creating Backwards selected directory for ', species)
+  dir.create(back_dir) } else {
+    'Backwards selection directory already exists'}
+
+## Create Full subfolder
+if(!dir.exists(full_dir)) {
+  message('Creating Full directory for ', species)
+  dir.create(full_dir) } else {
+    'Full directory already exists'}
+
+## Create Full subfolder
+if(!dir.exists(results_dir)) {
+  message('Creating results directory for ', species)
+  dir.create(results_dir) } else {
+    'Results directory already exists'}
+
 
 ```
 
