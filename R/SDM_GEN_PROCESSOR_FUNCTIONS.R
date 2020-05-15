@@ -1381,21 +1381,21 @@ calc_1km_niches = function(coord_df,
 
   ## Now join on the geographic range and glasshouse data
   identical(nrow(GBIF.AOO), nrow(GLOB.NICHE))
-  GLOB.NICHE <- list(GLOB.NICHE, GBIF.AOO, KOP.AGG, IBR.AGG) %>%
+  GLOB.NICHE <- list(GLOB.NICHE, GBIF.AOO, KOP.AGG) %>%
     reduce(left_join, by = "searchTaxon") %>%
     dplyr::select(searchTaxon, Aus_records, AOO, KOP_count, everything())
 
   if(save_data == "TRUE") {
 
     ## save .rds file for the next session
-    message('Writing 1km resolution niche and raster data for ', length(species_list), ' species in the set ', "'", save_run, "'")
+    message('Writing 1km resolution niche and raster data for ',
+            length(species_list), ' species in the set ', "'", save_run, "'")
     saveRDS(GLOB.NICHE, paste0(data_path, 'GLOBAL_NICHES_',  save_run, '.rds'))
-
-  } else {
-
-    message(' Return niches to the environment for ', length(species_list), ' species analysed')
     return(GLOB.NICHE)
 
+  } else {
+    message(' Return niches to the environment for ', length(species_list), ' species analysed')
+    return(GLOB.NICHE)
   }
 
 }
@@ -1831,6 +1831,7 @@ prepare_sdm_table = function(coord_df,
   SPAT.OUT <- LUT.100K  %>%
 
     ## pipe the list of species into lapply
+    ## x = LUT.100K[1]
     lapply(function(x) {
 
       ## Create the species df by subsetting by species
