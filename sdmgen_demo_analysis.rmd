@@ -310,6 +310,7 @@ template_raster_1km_mol <- gdalwarp("./data/wc2-5/bio1.bil",
                                     tr = c(1000, 1000),
                                     r = "near", dstnodata = '-9999')
 
+
 ## Use gdal WGS84 
 template_raster_1km_WGS84 <- template_raster_1km_mol %>% 
   projectRaster(., crs = CRS("+init=epsg:4326"))
@@ -342,8 +343,8 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                species_list    = analysis_spp,
                                                biocl_vars      = bioclim_variables,
                                                env_vars        = env_variables,
-                                               worldclim_grids = "TRUE",
-                                               save_data       = "FALSE",
+                                               worldclim_grids = TRUE,
+                                               save_data       = FALSE,
                                                save_run        = "TEST_BATS")
 
 ``` 
@@ -368,7 +369,7 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
                                   capitals   = 10000,  ## Remove records within 10km  of capitals
                                   centroids  = 5000,   ## Remove records within 5km of country centroids
                                   save_run   = "TEST_SPECIES",
-                                  save_data  = "FALSE")
+                                  save_data  = FALSE)
 ``` 
 
 \
@@ -413,7 +414,7 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,
                              cell_size    = 2,
                              save_run     = "Stoten_EG",
                              data_path    = "./output/results/",
-                             save_data    = "TRUE")
+                             save_data    = TRUE)
 
 ``` 
 
@@ -451,9 +452,9 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
                                     species_list    = unique(COORD.CLEAN$searchTaxon),
                                     sdm_table_vars  = sdm_table_vars,
                                     save_run        = "Stoten_EG",
-                                    read_background = "FALSE",
-                                    save_data       = "FALSE",
-                                    save_shp        = "FALSE")
+                                    read_background = FALSE,
+                                    save_data       = FALSE,
+                                    save_shp        = FALSE)
 
 ``` 
 
@@ -517,7 +518,7 @@ run_sdm_analysis(species_list            = analysis_spp,
                  bs_dir                  = 'output/maxent/back_sel_models',
                  sdm_df                  = SDM.SPAT.OCC.BG,
                  sdm_predictors          = bs_predictors,
-                 backwards_sel           = "TRUE",      
+                 backwards_sel           = TRUE,      
                  template_raster         = template_raster_1km_mol,
                  cor_thr                 = 0.8,  
                  pct_thr                 = 5, 

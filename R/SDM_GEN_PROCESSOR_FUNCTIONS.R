@@ -14,7 +14,6 @@
 #' This function downloads species occurrence files from GBIF (https://www.gbif.org/).
 #' It assumes that the species list supplied is taxonomically correct (haha!).
 #' It downloads the species to the specified folders without returning anything
-#'
 #' @param species_list   Character vector - List of species binomials to download
 #' @param download_path  Character string - File path for species downloads
 #' @param download_limit Numeric - How many records can be downloaded at one time? Set by server
@@ -689,7 +688,7 @@ combine_records_extract = function(ala_df,
 
   ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion.
   ## All worldclim temperature variables were multiplied by 10, so then divide by 10 to reverse it.
-  if (worldclim_grids == "TRUE") {
+  if (worldclim_grids == TRUE) {
 
     ## Convert the worldclim grids
     message('Processing worldclim 1.0 data, divide the rasters by 10')
@@ -712,7 +711,7 @@ combine_records_extract = function(ala_df,
           ' species processed of ', length(species_list), ' original species')
 
   ## save data
-  if(save_data == "TRUE") {
+  if(save_data == TRUE) {
 
     ## save .rds file for the next session
     saveRDS(COMBO.RASTER.CONVERT, paste0(data_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
@@ -811,7 +810,7 @@ urban_records_extract = function(urban_df,
 
   ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion.
   ## All worldclim temperature variables were multiplied by 10, so then divide by 10 to reverse it.
-  if (worldclim_grids == "TRUE") {
+  if (worldclim_grids == TRUE) {
 
     ## Convert the worldclim grids
     message('Processing worldclim 1.0 data, divide the rasters by 10')
@@ -834,7 +833,7 @@ urban_records_extract = function(urban_df,
           ' species processed of ', length(species_list), ' original species')
 
   ## save data
-  if(save_data == "TRUE") {
+  if(save_data == TRUE) {
 
     ## save .rds file for the next session
     saveRDS(COMBO.RASTER.CONVERT, paste0(data_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
@@ -938,12 +937,12 @@ coord_clean_records = function(records,
   COORD.CLEAN <- COORD.CLEAN[ , !(names(COORD.CLEAN) %in% drops)]
   unique(COORD.CLEAN$SOURCE)
 
-  CLEAN.TRUE <- subset(COORD.CLEAN, coord_summary == "TRUE")
+  CLEAN.TRUE <- subset(COORD.CLEAN, coord_summary == TRUE)
   message(round(nrow(CLEAN.TRUE)/nrow(COORD.CLEAN)*100, 2), " % records retained")
   message(table(COORD.CLEAN$coord_summary))
 
 
-  if(save_data == "TRUE") {
+  if(save_data == TRUE) {
 
     ## save .rds file for the next session
     saveRDS(COORD.CLEAN, paste0(data_path, 'COORD_CLEAN_', save_run, '.rds'))
@@ -988,7 +987,7 @@ check_spatial_outliers = function(all_df,
                                     data        = all_df,
                                     proj4string = prj)
 
-  CLEAN.TRUE = subset(all_df, coord_summary == "TRUE")
+  CLEAN.TRUE = subset(all_df, coord_summary == TRUE)
   CLEAN.PLOT = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")],
                                       data        = CLEAN.TRUE,
                                       proj4string = prj)
@@ -1018,7 +1017,7 @@ check_spatial_outliers = function(all_df,
         16, 10, units = 'in', res = 500)
 
     par(mfrow = c(1,2))
-    plot(LAND.84, main = paste0(nrow(subset(CLEAN.PLOT.PI, coord_summary == "FALSE")),
+    plot(LAND.84, main = paste0(nrow(subset(CLEAN.PLOT.PI, coord_summary == FALSE)),
                                 " Global clean_coord 'FALSE' points for ", spp),
          lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
 
@@ -1030,7 +1029,7 @@ check_spatial_outliers = function(all_df,
     ## Plot true and false points for the world
     ## Black == FALSE
     ## Red   == TRUE
-    plot(AUS.84, main = paste0(nrow(subset(CLEAN.PLOT.PI, coord_summary == "FALSE")),
+    plot(AUS.84, main = paste0(nrow(subset(CLEAN.PLOT.PI, coord_summary == FALSE)),
                                " Global clean_coord 'FALSE' points for ", spp),
          lwd = 0.01, asp = 1, bg = 'sky blue', col = 'grey')
 
@@ -1105,7 +1104,7 @@ check_spatial_outliers = function(all_df,
                          method  = "quantile",
                          mltpl   = spatial_mult,
                          value   = "flagged",
-                         verbose = "TRUE")
+                         verbose = TRUE)
 
       ## Now add attach column for spp, and the flag for each record
       d = cbind(searchTaxon = x,
@@ -1145,7 +1144,7 @@ check_spatial_outliers = function(all_df,
         16, 10, units = 'in', res = 500)
 
     par(mfrow = c(1,2))
-    plot(LAND.84, main = paste0(nrow(subset(CLEAN.PLOT.PI, SPAT_OUT == "FALSE")),
+    plot(LAND.84, main = paste0(nrow(subset(CLEAN.PLOT.PI, SPAT_OUT == FALSE)),
                                 " Spatial outlier 'FALSE' points for ", spp),
          lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
 
@@ -1174,7 +1173,7 @@ check_spatial_outliers = function(all_df,
 
     ##
     message('Combine the Spatially cleaned data with the Urban data' )
-    SPAT.FLAG   <- SPAT.FLAG %>% filter(SPAT_OUT == "TRUE")
+    SPAT.FLAG   <- SPAT.FLAG %>% filter(SPAT_OUT == TRUE)
     SPAT.FLAG   <- bind_rows(SPAT.FLAG, urban_df)
     SPAT.TRUE   <- SpatialPointsDataFrame(coords      = SPAT.FLAG[c("lon", "lat")],
                                           data        = SPAT.FLAG,
@@ -1183,7 +1182,7 @@ check_spatial_outliers = function(all_df,
 
   } else {
     message('Dont add urban data' )
-    SPAT.TRUE <- SPAT.FLAG %>% filter(SPAT_OUT == "TRUE")
+    SPAT.TRUE <- SPAT.FLAG %>% filter(SPAT_OUT == TRUE)
   }
 
   return(SPAT.TRUE)
@@ -1230,7 +1229,7 @@ calc_1km_niches = function(coord_df,
           length(env_vars), ' climate variables')
 
   NICHE.1KM    <- coord_df %>% as.data.frame () %>%
-    filter(coord_summary == "TRUE")
+    filter(coord_summary == TRUE)
   NICHE.1KM.84 <- SpatialPointsDataFrame(coords      = NICHE.1KM[c("lon", "lat")],
                                          data        = NICHE.1KM,
                                          proj4string = prj)
@@ -1385,7 +1384,7 @@ calc_1km_niches = function(coord_df,
     reduce(left_join, by = "searchTaxon") %>%
     dplyr::select(searchTaxon, Aus_records, AOO, KOP_count, everything())
 
-  if(save_data == "TRUE") {
+  if(save_data == TRUE) {
 
     ## save .rds file for the next session
     message('Writing 1km resolution niche and raster data for ',
@@ -1748,7 +1747,7 @@ prepare_sdm_table = function(coord_df,
   sp_epsg54009 <- "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
 
   ## Just add clean_df to this step
-  coord_df <- subset(coord_df, coord_summary == "TRUE")
+  coord_df <- subset(coord_df, coord_summary == TRUE)
   message(round(nrow(coord_df)/nrow(coord_df)*100, 2), " % records retained")
   message(table(coord_df$coord_summary))
 
@@ -1842,7 +1841,7 @@ prepare_sdm_table = function(coord_df,
                          method  = "quantile",
                          mltpl   = 10,
                          value   = "flagged",
-                         verbose = "TRUE")
+                         verbose = TRUE)
 
       ## Now add attache column for species, and the flag for each record
       d = cbind(searchTaxon = x,
@@ -1884,7 +1883,7 @@ prepare_sdm_table = function(coord_df,
   message(table(SPAT.FLAG$SPAT_OUT, exclude = NULL))
 
   ## Just get the records that were not spatial outliers.
-  SDM.SPAT.ALL <- subset(SPAT.FLAG, SPAT_OUT == "TRUE")
+  SDM.SPAT.ALL <- subset(SPAT.FLAG, SPAT_OUT == TRUE)
   unique(SDM.SPAT.ALL$SPAT_OUT)
   unique(SDM.SPAT.ALL$SOURCE)
   length(unique(SDM.SPAT.ALL$searchTaxon))
@@ -1916,7 +1915,7 @@ prepare_sdm_table = function(coord_df,
                                             proj4string = CRS("+init=epsg:4326"))
 
   ## Write the shapefile out
-  if(save_shp == "TRUE") {
+  if(save_shp == TRUE) {
 
     ## save .shp for future refrence
     writeOGR(obj    = SPAT.OUT.SPDF,
@@ -1932,7 +1931,7 @@ prepare_sdm_table = function(coord_df,
   ## Use one data frame for all species analysis,
   ## to save mucking around with background points
   ## Here we are using a dataframe of mammals, reptiles and birds.
-  if(read_background == "TRUE") {
+  if(read_background == TRUE) {
 
     Message('Read in background data for taxa analaysed')
     background.points = readRDS(paste0(data_path, BG_points)) %>%
@@ -1956,7 +1955,7 @@ prepare_sdm_table = function(coord_df,
   SDM.SPAT.OCC.BG <- SDM.SPAT.OCC.BG[,!(names(SDM.SPAT.OCC.BG) %in% drops)]
 
   ## save data
-  if(save_data == "TRUE") {
+  if(save_data == TRUE) {
 
     ## Save .rds file of the occurrence and BG points for the next session
     saveRDS(SDM.SPAT.OCC.BG, paste0(data_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
