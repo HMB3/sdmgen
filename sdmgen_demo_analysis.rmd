@@ -112,7 +112,15 @@ data('SUA')
 
 \
 
-The species list is then supplied to a series of functions to calculate enviromnetal ranges and habitat 
+The code also uses 1km worldclim raster data. Put this folder in your 'data' project folder :
+
+\
+
+https://drive.google.com/open?id=1T5ET5MUX3-lkqiN5nNL3SZZagoJlEOal
+
+\
+
+The species list is supplied to a series of functions to calculate enviromnetal ranges and habitat 
 suitability. The initial functions download all species records from the Atlas and living Australia
 (https://www.ala.org.au/) and the Global Biodiversity Information Facility (GBIF, https://www.gbif.org/). 
 The species data are downloaded as individual .Rdata files to the specified folders, which must exist first, 
@@ -287,7 +295,6 @@ First create a template raster of 1km * 1km cells using the downloaded worlclim 
 This raster is used to filter records to 1 per one 1km cell. This raster needs to have
 the same extent and resolution of the data used to analyse the species distributions.
 It should have a value of 1 for land, and NA for the ocean. This takes ages in R.....
-here is a prepared one https://drive.google.com/open?id=1tb0-r-0SMI5SytFcWNGojyvuA7QHX8Gb 
 
 \
 
@@ -298,7 +305,6 @@ sp_epsg54009 <- '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +un
 
 
 ## Get the template raster
-## https://drive.google.com/open?id=1tb0-r-0SMI5SytFcWNGojyvuA7QHX8Gb 
 #template_raster_1km_WGS84 = raster("./data/world_koppen/template_1km_WGS84.tif")
 
 
@@ -472,19 +478,14 @@ It assumes that the input df is that returned by the prepare_sdm_table function
 \
 
 It uses a rasterised version of the 1975 Koppen raster, and another template raster of the same extent (global), 
-resolution (1km*1km) and projection (mollweide) as the analysis data. This step takes ages...https://drive.google.com/open?id=1oY5ZWCV3eoKAWShCaApgLvV6Mb9G0HFQ 
+resolution (1km*1km) and projection (mollweide) as the analysis data. This step takes ages...
 
 \
 
-It also uses another template raster of 1km*1km, this time in Mollweide projection
-https://drive.google.com/open?id=1urJuHfkVtUz6fBLcbvgUhcO_G-d51MZL
-
-\
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
 ## Get this data from google drive
-## https://drive.google.com/open?id=1oY5ZWCV3eoKAWShCaApgLvV6Mb9G0HFQ
 Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 
 
@@ -579,32 +580,119 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 
 \
 
+
+```{r message=FALSE, echo=TRUE, warning=FALSE}
+
+## The final dataset is a spatial points dataframe in the Mollwiede projection
+## https://drive.google.com/open?id=1B14Jdv_NK2iWnmsqCxlKcEXkKIqwmRL_
+aus.grids.current <- stack(
+  file.path('./data/worldclim/aus/current',   ## ./green_cities_sdm/data/base/worldclim/aus/1km/bio
+            sprintf('bio_%02d.tif', 1:19)))
+
+``` 
+
+\
+
+```{r message=FALSE, echo=TRUE, warning=FALSE}
+
+## Create 2070 sdm map projections
+tryCatch(
+  project_maxent_grids_mess(country_shp   = AUS, 
+                            world_shp     = LAND,   
+                            country_prj   = CRS("+init=EPSG:3577"),
+                            world_prj     = CRS("+init=epsg:4326"),
+
+                            scen_list     = scen_2070, 
+                            species_list  = map_spp,    
+                            maxent_path   = './output/maxent/back_sel_models/',
+                            climate_path  = './data/worldclim/aus/',               
+
+                            grid_names    = env_variables,             
+                            time_slice    = 70,                       
+                            current_grids = aus.grids.current,         
+                            create_mess   = TRUE,
+                            OSGeo_path    = 'C:/OSGeo4W64/OSGeo4W.bat', 
+                            nclust        = 1),
+
+  ## If the species fails, write a fail message to file.
+  error = function(cond) {
+
+    ## This will write the error message inside the text file, but it won't include the species
+    file.create(file.path("output/maxent/back_sel_models/mapping_failed_2070.txt"))
+    cat(cond$message, file = file.path("output/maxent/back_sel_models/mapping_failed_2070.txt"))
+    warning(cond$message)
+
+  })
+
+``` 
+
+
+\
+
+
+# STEP 8 :: Aggregate SDM projections within Spatial units
+
+\
+
 First, extract the SDM results from the models. We need the model results to run the maps.
 Each model generates a 'threshold' of probability of occurrence (see), which we use to
 create map of habitat suitability across Australia (). 
 
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
 
-## Create a table of maxent results
-## This function will just aggregate the results for models that ran successfully
-MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp,
-                                     results_dir  = 'output/maxent/back_sel_models',
-                                     save_data    = FALSE,
-                                     data_path    = "./output/results/",
-                                     save_run     = "TEST_BATS")
+```{r message=FALSE, echo=TRUE, warning=FALSE}
+
+## Can't use the .rda, must use the file path
+areal_unit_vec <- shapefile_vector_from_raster(shp_file = SUA,
+                                               prj      = CRS("+init=EPSG:3577"),
+                                               agg_var  = 'SUA_CODE16',
+                                               temp_ras = aus.grids.current[[1]],
+                                               targ_ras = './data/SUA_2016_AUST.tif')
 
 
-## First, get map_spp from the maxent results table above, change the species column,
-## and create a list of logistic thresholds - These values are debateable, need a few references from the literature...
-map_spp         <- MAXENT.RESULTS$searchTaxon %>% gsub(" ", "_", .,)
-percent.10.log  <- MAXENT.RESULTS$Logistic_threshold
-sdm.results.dir <- MAXENT.RESULTS$results_dir
+## This is a vector of all the cells that either are or aren't in the rasterized shapefile
+## Need to join here
+summary(areal_unit_vec)
 
 ``` 
 
+\
+
+```{r message=FALSE, echo=TRUE, warning=FALSE}
+
+## Combine GCM predictions and calculate gain and loss for 2030 
+## Then loop over the species folders and climate scenarios
+tryCatch(mapply(sdm_area_cell_count,                              ## Function aggreagating GCM predictions by spatial unit
+                unit_shp      = './data/SUA_albers.rds',          ## Spatial unit of analysis - E.G. SUAs, in Australian Albers
+                unit_vec      = areal_unit_vec,                   ## Vector of rasterized unit cells
+                sort_var      = "SUA_NAME16",
+                agg_var       = "SUA_CODE16",
+                world_shp     = './data/LAND_albers.rds',         ## Polygon for AUS maps
+                country_shp   = './data/AUS_albers.rds',          ## Polygon for World maps
+
+                DIR_list      = sdm.results.dir,                  ## List of directories with rasters
+                species_list  = map_spp,                          ## List of species' directories
+                number_gcms   = 6,
+                maxent_path   = 'output/maxent/back_sel_models/', ## Directory of maxent results
+                thresholds    = percent.10.log,                   ## List of maxent thresholds
+                time_slice    = 30,                               ## Time period, eg 2030
+                write_rasters = TRUE),
+
+         ## If the species fails, write a fail message to file.
+         error = function(cond) {
+
+           ## This will write the error message inside the text file,
+           ## but it won't include the species
+           file.create(file.path("output/maxent/back_sel_models/sua_count_failed_2030.txt"))
+           cat(cond$message, file=file.path("output/maxent/back_sel_models/sua_count_failed_2030.txt"))
+           warning(cond$message)
+
+         })
+
+``` 
 
 \
+
 
 
