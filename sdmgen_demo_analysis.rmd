@@ -50,7 +50,7 @@ https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030
 \
 
 
-### To install, run :
+To install, run :
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
