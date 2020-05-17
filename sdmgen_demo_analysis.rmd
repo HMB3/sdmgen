@@ -94,8 +94,8 @@ analysis_spp
 
 \
 
-Also load the shapefiles needed for running the analysis functions. This workfow uses three shapefiles :
-Australia, the world and the Significant Urban areas of Australia (or SUAs). The SUAs are taken from
+Also load the shapefiles needed for running the analysis. This workfow uses four shapefiles :
+Australia, the World and the Significant Urban areas of Australia (or SUAs). The SUAs are taken from
 the ABS : https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.004July%202016?OpenDocument.
 The Koppen data are from CliMond, centred on 1975 : https://www.climond.org/Core/Authenticated/KoppenGeiger.aspx
 
@@ -109,12 +109,14 @@ data('SUA')
 
 ```
 
+
+
 \
 
-This species list is then supplied to a series of functions to calculate enviromnetal ranges and habitat 
+The species list is then supplied to a series of functions to calculate enviromnetal ranges and habitat 
 suitability. The initial functions download all species records from the Atlas and living Australia
 (https://www.ala.org.au/) and the Global Biodiversity Information Facility (GBIF, https://www.gbif.org/). 
-It downloads the species data as individual .Rdata files to the specified folders, which must exist first, 
+The species data are downloaded as individual .Rdata files to the specified folders, which must exist first, 
 without returning anything. The functions are separated because the ALA and GBIF columns are slightly 
 different, but both data sources are needed to properly quantify species ranges.
 
@@ -225,6 +227,20 @@ sp::plot(worldclim_climate[["bio1"]])
 
 \
 
+Finer resolution (1km) current worldclim grids are available here :https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Download global raster for minimum temperature 
+## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
+world.grids.current = stack(
+  file.path('./data/worldclim/world/current',
+            sprintf('bio_%02d', 1:19)))
+``` 
+
+
+\
+
 Then trim the occurrence records to those inside the raster boundaries (i.e. species records in the ocean
 according to the Raster boundaries will be excluded)
 
@@ -239,7 +255,7 @@ ALA.LAND = combine_ala_records(species_list      = analysis_spp,
                                records_extension = "_ALA_records.RData",
                                record_type       = "ALA",
                                keep_cols         = ALA_keep,
-                               world_raster      = worldclim_annual_temp)
+                               world_raster      = world.grids.current[[1]])
 
 
 ## Combine GBIF data and filter to records on land taken > 1950
@@ -248,7 +264,7 @@ GBIF.LAND = combine_gbif_records(species_list      = analysis_spp,
                                  records_extension = "_GBIF_records.RData",
                                  record_type       = "GBIF",
                                  keep_cols         = gbif_keep,
-                                 world_raster      = worldclim_annual_temp)
+                                 world_raster      =  world.grids.current[[1]])
 
 ``` 
 
@@ -268,25 +284,36 @@ and combine_gbif_records functions.
 First create a template raster of 1km * 1km cells using the downloaded worlclim data.
 This raster is used to filter records to 1 per one 1km cell. This raster needs to have
 the same extent and resolution of the data used to analyse the species distributions.
-It should have a value of 1 for land, and NA for the ocean
-Fetch a cup of tea this takes ages.....
+
+It should have a value of 1 for land, and NA for the ocean. This takes ages in R.....
+here is a prepared one https://drive.google.com/open?id=1tb0-r-0SMI5SytFcWNGojyvuA7QHX8Gb 
+
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
+## Set the Molleweide projection
+sp_epsg54009 <- '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0'
+
+
+## Get the template raster
+## https://drive.google.com/open?id=1tb0-r-0SMI5SytFcWNGojyvuA7QHX8Gb 
+template.raster.1km.WGS84 = raster("./data/world_koppen/template_1km_WGS84.tif")
+
+
 ## Use gdal to create a template raster in WGS84
-template.raster.1km.WGS84 <- gdalwarp("./data/wc2-5/bio1.bil",
-                                      tempfile(fileext = '.bil'),
-                                      t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
-                                      output_Raster = TRUE,
-                                      tr = c(1000, 1000),
-                                      r = "near", dstnodata = '-9999') %>% 
-  projectRaster(., crs = '+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
+# template.raster.1km.WGS84 <- gdalwarp("./data/wc2-5/bio1.bil",
+#                                       tempfile(fileext = '.bil'),
+#                                       t_srs = sp_epsg54009,
+#                                       output_Raster = TRUE,
+#                                       tr = c(1000, 1000),
+#                                       r = "near", dstnodata = '-9999') %>% 
+#   projectRaster(., crs = '+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
 
 
 ## Should be 1km*1km, It should have a value of 1 for land, and NA for the ocean
-template.raster.1km.WGS84[template.raster.1km.WGS84 > 0] <- 1
-template.raster.1km.WGS84[template.raster.1km.WGS84 < 0] <- 1
-xres(template.raster.1km.WGS84)
+# template.raster.1km.WGS84[template.raster.1km.WGS84 > 0] <- 1
+# template.raster.1km.WGS84[template.raster.1km.WGS84 < 0] <- 1
+xres(template.raster.1km.WGS84);projection(template.raster.1km.WGS84)
 
 ``` 
 
@@ -294,7 +321,7 @@ xres(template.raster.1km.WGS84)
 \
 
 Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
-In this case, it's simply the biolclim variables (i.e. bio1- bio19)
+In this case, it's simply the biolclim variables (i.e. bio1-bio19)
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE}
 
@@ -304,7 +331,7 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                urban_df        = 'NONE',
                                                thin_records    = TRUE,
                                                template_raster = template.raster.1km.WGS84,
-                                               world_raster    = worldclim_climate,
+                                               world_raster    =  world.grids.current,
                                                prj             = CRS("+init=epsg:4326"),
                                                species_list    = analysis_spp,
                                                biocl_vars      = bioclim_variables,
@@ -350,6 +377,7 @@ those returned by the coord_clean_records function
 ```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 ## Step 4b :: Flag spatial outliers
+## This is working, but it's just not plotting the ones that are being removed
 SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
                                        land_shp     = LAND,
                                        urban_df     = FALSE, 
@@ -360,8 +388,11 @@ SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
 
 \
 
-Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
-In this case, it's simply the biolclim variables (i.e. bio1- bio19)
+This function takes a data frame of all species records,
+estimates geographic and environmental ranges for each, and creates a table of each.
+It uses the AOO.computing function in the ConR package https://cran.r-project.org/web/packages/ConR/index.html
+It assumes that the input df is that returned by the check_spatial_outliers function
+
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE}
 
@@ -409,6 +440,7 @@ other taxa, if specified. In this example for bats, we'll just use the species s
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
 
+## The final dataset is a spatial points dataframe in the Mollwiede projection
 SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = SPATIAL.CLEAN,
                                     species_list    = unique(SPATIAL.CLEAN$searchTaxon),
                                     sdm_table_vars  = sdm_table_vars,
@@ -436,6 +468,10 @@ The function uses a rasterised version of the 1975 Koppen raster, and another te
 extent (global), resolution (1km*1km) and projection (mollweide) as the analysis data. This step takes
 ages...https://drive.google.com/open?id=1oY5ZWCV3eoKAWShCaApgLvV6Mb9G0HFQ 
 
+
+It also uses another template raster of 1km*1km, this time in Mollweide projection
+https://drive.google.com/open?id=1urJuHfkVtUz6fBLcbvgUhcO_G-d51MZL
+
 \
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE}
@@ -445,18 +481,22 @@ ages...https://drive.google.com/open?id=1oY5ZWCV3eoKAWShCaApgLvV6Mb9G0HFQ
 Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 
 
+## Read in the template raster at 1km*1km resolution
+template_raster_1km_mol = raster("./data/world_koppen/template_has_data_1km.tif")
+
+
 ## Use gdal to create a template raster in the mollweide projection, using one of the bioclim layers
-template.raster.1km.mol <- gdalwarp("./data/wc2-5/bio1.bil",
-                                    tempfile(fileext = '.bil'),
-                                    t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
-                                    output_Raster = TRUE,
-                                    tr = c(1000, 1000),
-                                    r = "near", dstnodata = '-9999') 
+# template.raster.1km.mol <- gdalwarp("./data/wc2-5/bio1.bil",
+#                                     tempfile(fileext = '.bil'),
+#                                     t_srs = sp_epsg54009,
+#                                     output_Raster = TRUE,
+#                                     tr = c(1000, 1000),
+#                                     r = "near", dstnodata = '-9999') 
 
 ## Should be 1km*1km, values of 0 for ocean and 1 for land 
-template.raster.1km.mol[template.raster.1km.mol > 0] <- 1
-template.raster.1km.mol[template.raster.1km.mol < 0] <- 1
-xres(template.raster.1km.mol)
+# template.raster.1km.mol[template.raster.1km.mol > 0] <- 1
+# template.raster.1km.mol[template.raster.1km.mol < 0] <- 1
+# xres(template.raster.1km.mol)
 
 
 ``` 
@@ -471,11 +511,10 @@ run_sdm_analysis(species_list            = analysis_spp,
                  sdm_df                  = SDM.SPAT.OCC.BG,
                  sdm_predictors          = bs_predictors,
                  backwards_sel           = "TRUE",      
-                 template_raster         = template.raster.1km.mol,
+                 template_raster         = template_raster_1km_mol,
                  cor_thr                 = 0.8,  
                  pct_thr                 = 5, 
                  k_thr                   = 4, 
-                 
                  min_n                   = 20,  
                  max_bg_size             = 70000,
                  background_buffer_width = 200000,
