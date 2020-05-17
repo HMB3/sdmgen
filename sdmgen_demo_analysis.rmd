@@ -595,12 +595,17 @@ aus.grids.current <- stack(
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE}
 
+## Local projection : Australian Albers
+aus_albers  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
+
+
 ## Create 2070 sdm map projections
 tryCatch(
   project_maxent_grids_mess(country_shp   = AUS, 
                             world_shp     = LAND,   
                             country_prj   = CRS("+init=EPSG:3577"),
                             world_prj     = CRS("+init=epsg:4326"),
+                            local_prj     = aus_albers,
 
                             scen_list     = scen_2070, 
                             species_list  = map_spp,    

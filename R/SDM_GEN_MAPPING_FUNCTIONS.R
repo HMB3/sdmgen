@@ -18,6 +18,7 @@
 #' @param world_shp          SpatialPolygonsDataFrame - Spdf of the world for mapping maxent results
 #' @param country_prj        CRS object  - Local projection for mapping maxent results
 #' @param world_prj          CRS object  - Global projection for mapping maxent results
+#' @param local_prj          CRS object  - Local projection for mapping maxent results
 #' @param scen_list          Character string - The list of global circulation models to create predictions for
 #' @param species_list       Character string - The species to run maxent predictions for
 #' @param maxent_path        Character string - The file path containin the existing maxent models
@@ -31,7 +32,7 @@
 #' you need to download the OSGeo4W64 setup, see https://www.osgeo.org/)
 #' @export
 project_maxent_grids_mess = function(country_shp,   world_shp,
-                                     country_prj,   world_prj,
+                                     country_prj,   world_prj, local_prj,
                                      scen_list,     species_list,
                                      maxent_path,   climate_path,
                                      grid_names,    time_slice,
@@ -235,9 +236,6 @@ project_maxent_grids_mess = function(country_shp,   world_shp,
               hs_future_not_novel = sprintf('%s%s/full/%s%s%s.tif', maxent_path,
                                             species, species, "_future_not_novel_", x)
 
-
-              #if(!file.exists(hs_future_not_novel)) {
-
               ## Set the names of the rasters to match the occ data, and subset both
               ## Watch the creation of objects in each run
               sdm_vars             = names(m@presence)
@@ -305,16 +303,6 @@ project_maxent_grids_mess = function(country_shp,   world_shp,
                                                        species, species, "_future_not_novel_", x),
                           overwrite = TRUE)
 
-              # } else {
-              #   message('Future SDM maps for ', species, ' under scenario ',  x , 'already run, read them in from file')
-              #
-              #   ## Here we need to read in all the layers used in the plots below, which should have been saved to file
-              #   ## Read in ras1, ras2, etc
-              #   hs_future_not_novel = raster(sprintf('%s%s/full/%s%s%s.tif', maxent_path,
-              #                                        species, species, "_future_not_novel_", x))
-              #
-              # }
-
             } else {
               message('Dont run future MESS maps for ', species, ' under scenario ',  x )
             }
@@ -356,7 +344,7 @@ project_maxent_grids_mess = function(country_shp,   world_shp,
             if(!file.exists(novel_future_shp)) {
 
               novel_future_poly = novel_future_poly %>%
-                spTransform(ALB.CONICAL)
+                spTransform(local_prj)
 
               message('Saving current MESS maps to polygons for ', species)
               writeOGR(obj    = novel_future_poly,
