@@ -539,6 +539,64 @@ run_sdm_analysis(species_list            = analysis_spp,
 
 \
 
+# STEP 7 :: Project SDMs across Australia
 
+\
+
+First, extract the SDM results from the models. We need the model results to run the maps.
+Each model generates a 'threshold' of probability of occurrence (see), which we use to
+create map of habitat suitability across Australia (). 
+
+\
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Create a table of maxent results
+## This function will just aggregate the results for models that ran successfully
+MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp,
+                                     results_dir  = 'output/maxent/back_sel_models',
+                                     save_data    = FALSE,
+                                     data_path    = "./output/results/",
+                                     save_run     = "TEST_BATS")
+
+
+## First, get map_spp from the maxent results table above, change the species column,
+## and create a list of logistic thresholds - These values are debateable, need a few references from the literature...
+map_spp         <- MAXENT.RESULTS$searchTaxon %>% gsub(" ", "_", .,)
+percent.10.log  <- MAXENT.RESULTS$Logistic_threshold
+sdm.results.dir <- MAXENT.RESULTS$results_dir
+
+``` 
+
+
+\
+
+First, extract the SDM results from the models. We need the model results to run the maps.
+Each model generates a 'threshold' of probability of occurrence (see), which we use to
+create map of habitat suitability across Australia (). 
+
+\
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+## Create a table of maxent results
+## This function will just aggregate the results for models that ran successfully
+MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp,
+                                     results_dir  = 'output/maxent/back_sel_models',
+                                     save_data    = FALSE,
+                                     data_path    = "./output/results/",
+                                     save_run     = "TEST_BATS")
+
+
+## First, get map_spp from the maxent results table above, change the species column,
+## and create a list of logistic thresholds - These values are debateable, need a few references from the literature...
+map_spp         <- MAXENT.RESULTS$searchTaxon %>% gsub(" ", "_", .,)
+percent.10.log  <- MAXENT.RESULTS$Logistic_threshold
+sdm.results.dir <- MAXENT.RESULTS$results_dir
+
+``` 
+
+
+\
 
 

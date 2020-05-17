@@ -656,10 +656,8 @@ local_simplify = function (occ, bg, path, species_column = "species", response_c
 ## Compile the SDM data ----
 
 
-#' This function takes a data frame of all species records,
-#' and runs a specialised maxent analysis for each species.
-#' It uses the rmaxent package https://github.com/johnbaums/rmaxent
-#' It assumes that the input df is that returned by the prepare_sdm_table function
+#' This function extracts the SDM results from the folders.
+#' It assumes that the input folders are those returned by the 'fit_maxent_targ_bg_back_sel' function
 #' @param species_list      Character string - the species to run maxent models for
 #' @param results_dir       Character string - The file path used for saving the maxent output
 #' @param save_data         Logical or character - do you want to save the data frame?
