@@ -140,9 +140,9 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
                                                gbif_df         = GBIF.LAND,
                                                urban_df        = 'NONE',
                                                thin_records    = TRUE,
-                                               template_raster = template.raster.1km.84,
+                                               template_raster = template.raster.1km.WGS84,
                                                world_raster    = world.grids.current,
-                                               prj             = CRS.WGS.84,
+                                               prj             = CRS("+init=epsg:4326"),
                                                species_list    = analysis_spp,
                                                biocl_vars      = bioclim_variables,
                                                env_vars        = env_variables,
@@ -155,9 +155,9 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
 ## If needed, extract urban data (i.e. if the species analaysed are in Alessandro's urban dataset)
 ## This needs to be separate, so that the urban records aren't removed by spatial cleaning
 URBAN.RASTER.CONVERT = urban_records_extract(urban_df        = TI.XY,
-                                             template_raster = template.raster.1km.84,
+                                             template_raster = template.raster.1km.WGS84,
                                              world_raster    = world.grids.current,
-                                             prj      = CRS.WGS.84,
+                                             prj             = CRS("+init=epsg:4326"),
                                              species_list    = analysis_spp,
                                              thin_records    = TRUE,
                                              biocl_vars      = bioclim_variables,
@@ -188,7 +188,8 @@ SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
                                        land_shp     = LAND,
                                        urban_df     = URBAN.RASTER.CONVERT,
                                        clean_path   = './data/GBIF/Check_plots/',
-                                       spatial_mult = 10)
+                                       spatial_mult = 10,
+                                       prj          = CRS("+init=epsg:4326"))
 
 
 ## Step 4c ::Estima ecliate niches usign pecies records
@@ -254,7 +255,7 @@ run_sdm_analysis(species_list            = analysis_spp,
                  sdm_df                  = SDM.SPAT.OCC.BG,
                  sdm_predictors          = bs_predictors,
                  backwards_sel           = "TRUE",        ## If TRUE, run both full models, and backwards selected models
-                 template_raster         = template.raster.1km,
+                 template_raster         = template_raster_1km_mol,
                  cor_thr                 = 0.8,           ## The maximum allowable pairwise correlation between predictor variables
                  pct_thr                 = 5,             ## The minimum allowable percent variable contribution
                  k_thr                   = 4,             ## The minimum number of variables to be kept in the model.
