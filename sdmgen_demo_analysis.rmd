@@ -445,7 +445,7 @@ other taxa, if specified. In this example for bats, we'll just use the species s
 
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 ## The final dataset is a spatial points dataframe in the Mollwiede projection
 SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
@@ -471,10 +471,10 @@ It assumes that the input df is that returned by the prepare_sdm_table function
 
 \
 
-The function uses a rasterised version of the 1975 Koppen raster, and another template raster of the same 
-extent (global), resolution (1km*1km) and projection (mollweide) as the analysis data. This step takes
-ages...https://drive.google.com/open?id=1oY5ZWCV3eoKAWShCaApgLvV6Mb9G0HFQ 
+It uses a rasterised version of the 1975 Koppen raster, and another template raster of the same extent (global), 
+resolution (1km*1km) and projection (mollweide) as the analysis data. This step takes ages...https://drive.google.com/open?id=1oY5ZWCV3eoKAWShCaApgLvV6Mb9G0HFQ 
 
+\
 
 It also uses another template raster of 1km*1km, this time in Mollweide projection
 https://drive.google.com/open?id=1urJuHfkVtUz6fBLcbvgUhcO_G-d51MZL
@@ -506,12 +506,20 @@ template_raster_1km_mol[template_raster_1km_mol > 0] <- 1
 template_raster_1km_mol[template_raster_1km_mol < 0] <- 1
 xres(template_raster_1km_mol)
 
-
 ``` 
 
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+The function runs two maxent models: a full model using all variables, and backwards selection. 
+Given a candidate set of predictor variables, the function identifies 
+a subset of variables that meets specified multicollinearity criteria. Subsequently, backward stepwise variable selection is 
+used to iteratively drop the variable that contributes least to the model, until the 
+contribution of each variable meets a specified minimum, or until a predetermined minimum 
+number of predictors remains
+
+\
+
+```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 run_sdm_analysis(species_list            = analysis_spp,
                  maxent_dir              = 'output/maxent/full_models',     
