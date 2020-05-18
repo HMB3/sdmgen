@@ -418,7 +418,7 @@ project_maxent_grids_mess = function(country_shp,   world_shp,
 
           ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY
           occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, species)) %>%
-            spTransform(CRS.WGS.84)
+            spTransform(world_prj)
 
           ## If the global map of occurrence points hasn't been created, create it
           global_occ_map = sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "global_occ_records")
