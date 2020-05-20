@@ -1,5 +1,5 @@
 ---
-title: "sdmgen : a pacakge for rapidly estimating multiple species ranges and habit sutiability"
+title: "sdmgen : a pacakge for rapidly estimating multiple species ranges and habitat suitability"
 authors: "Hugh Burley, John Baumgartner, Linda Beaumont"
 date: "March 2020"
 output:
@@ -34,10 +34,9 @@ font-size: 6;
 
 \
 
-The text and code below summarises a workflow in R that can be used to relatively rapidly assess the effect
-of climate change on a species within Australia, from downloading occurrence records, through to creating
-maps of predicted climatic suitability across Australia at 1km*1km resolution. An example of this work is 
-published in Science of the Total Environment ::
+The text and code below summarises a workflow in R that can be used to relatively rapidly assess the environmental range
+of a species within Australia, from downloading occurrence records, through to creating maps of predicted climatic 
+suitability across Australia at 1km*1km resolution. An example of this work is published in Science of the Total Environment ::
 
 \
 
@@ -58,6 +57,14 @@ library(sdmgen)
 sapply(sdmgen_packages, require, character.only = TRUE)
 
 ```
+
+\
+
+# Background
+
+This code was developed at Macquarie University in Sydney, as part of the 'which plant where' project.
+
+
 
 
 \
