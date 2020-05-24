@@ -260,11 +260,12 @@ sp::plot(worldclim_climate[["bio1"]])
 
 Finer resolution (1km) current worldclim grids are available here :https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=TRUE}
+```{r message=FALSE, echo=FALSE, warning=FALSE}
 
 ## Download global raster for minimum temperature
 ## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
-worldclim_climate = stack(
+setwd("")
+worldclim_climate = raster::stack(
   file.path('./data/worldclim/world/current',
             sprintf('bio_%02d', 1:19)))
 
