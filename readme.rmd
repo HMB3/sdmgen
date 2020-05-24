@@ -55,7 +55,7 @@ https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030
 
 To install, run :
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## The package should import all the required packges
 #devtools::install_github("HMB3/sdmgen")
@@ -104,10 +104,9 @@ using a sample of 10 plant species from the Stoten publication above.
 \
 \
 
-```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=TRUE}
 
 ## Use the first 10 plant species in the Stoten list
-data("plant.spp")
 analysis_spp <- plant.spp[1:5]
 analysis_spp
 
@@ -155,7 +154,7 @@ The package functions expect these folders (a typical R project structure), crea
 
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## The functions expect these folders, create them if they don't exist
 ALA_dir     <- './data/ALA'
@@ -235,7 +234,7 @@ Now download GBIF and ALA occurrence data for each species
 \
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## Download GBIF occurrence data for each species
 download_GBIF_all_species(species_list  = analysis_spp,
@@ -275,7 +274,7 @@ in the project directory.
 \
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## Download global raster for minimum temperature 
 worldclim_climate     <- raster::getData('worldclim', var = 'bio', res = 2.5, path = './data/')
@@ -290,7 +289,7 @@ sp::plot(worldclim_climate[["bio1"]])
 
 Finer resolution (1km) current worldclim grids are available here :https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE}
 
 ## Download global raster for minimum temperature
 ## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
@@ -313,7 +312,7 @@ according to the Raster boundaries will be excluded)
 \
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## Combine ALA data, and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
@@ -400,7 +399,7 @@ https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
 \
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## Download global raster for minimum temperature
 ## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
@@ -601,7 +600,7 @@ resolution (1km*1km) and projection (mollweide) as the analysis data. This step 
 \
 
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## Get this data from google drive
 Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
@@ -633,7 +632,7 @@ https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
 \
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## Download global raster for minimum temperature
 ## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
@@ -657,7 +656,7 @@ minimum number of predictors remains.
 \
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 run_sdm_analysis(species_list            = analysis_spp,
                  maxent_dir              = 'output/maxent/full_models',     
@@ -700,7 +699,7 @@ create map of habitat suitability across Australia ().
 \
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## Create a table of maxent results
 ## This function aggregates the results for models that ran successfully
@@ -730,7 +729,7 @@ The stoten publication uses climate projections under six global circulation mod
 \
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## List of scenarios that we used in the Stoten article
 scen_list <- c('AC', 'CC', 'HG', 'GF', 'MC', 'NO')
@@ -824,6 +823,14 @@ tryCatch(
 \
 \
 \
+
+
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
+
+## Can't use the .rda, must use the file path
+
+
+``` 
 
 ![](output/maxent/back_sel_models/Acacia_dealbata/full/Acacia_dealbata_mess_panel.png)
 
