@@ -90,7 +90,7 @@ using a sample of 10 plant species from the Stoten publication above.
 
 ## Use the first 10 plant species in the Stoten list
 data("plant.spp")
-analysis_spp <- plant.spp[1:10]
+analysis_spp <- plant.spp[1:5]
 analysis_spp
 
 ```
@@ -112,6 +112,7 @@ data('AUS')
 data('LAND')
 data('Koppen_shp')
 data('SUA')
+#data('SUA_2016_AUST')
 
 ```
 
@@ -200,7 +201,7 @@ if(!dir.exists(check_dir)) {
     'Checking directory already exists'}
 
 ## Create Checking subfolder
-if(!dir.exists(check_dir)) {
+if(!dir.exists(climate_dir)) {
   message('Creating results directory ')
   dir.create(climate_dir) } else {
     'Checking directory already exists'}
@@ -246,10 +247,10 @@ in the project directory.
 
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
 
 ## Download global raster for minimum temperature 
-worldclim_climate     <- raster::getData('worldclim', var = 'bio', res = 2.5, path = './data')
+worldclim_climate     <- raster::getData('worldclim', var = 'bio', res = 2.5, path = './data/')
 worldclim_annual_temp <- raster::stack("./data/wc2-5/bio1.bil")
 sp::plot(worldclim_climate[["bio1"]])
 
@@ -257,26 +258,27 @@ sp::plot(worldclim_climate[["bio1"]])
 
 \
 
-<!-- Finer resolution (1km) current worldclim grids are available here :https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C -->
+Finer resolution (1km) current worldclim grids are available here :https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
 
-<!-- ```{r message=FALSE, echo=FALSE, warning=FALSE} -->
+```{r message=FALSE, echo=FALSE, warning=FALSE, eval=TRUE}
 
-<!-- ## Download global raster for minimum temperature  -->
-<!-- ## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C -->
-<!-- world.grids.current = stack( -->
-<!--   file.path('./data/worldclim/world/current', -->
-<!--             sprintf('bio_%02d', 1:19))) -->
-<!-- ```  -->
+## Download global raster for minimum temperature
+## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
+worldclim_climate = stack(
+  file.path('./data/worldclim/world/current',
+            sprintf('bio_%02d', 1:19)))
+
+```
 
 
-<!-- \ -->
+\
 
 Then trim the occurrence records to those inside the raster boundaries (i.e. species records in the ocean
 according to the Raster boundaries will be excluded)
 
 \
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=FALSE, warning=FALSE, eval=TRUE}
 
 ## Combine ALA data, and filter to records on land taken > 1950
 ## The climate data is the worldclim version 1.0
@@ -317,14 +319,10 @@ It should have a value of 1 for land, and NA for the ocean. This takes ages in R
 
 \
 
-```{r message=FALSE, echo=TRUE, warning=FALSE}
+```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## Set the Molleweide projection
 sp_epsg54009 <- '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0'
-
-
-## Get the template raster
-#template_raster_1km_WGS84 = raster("./data/world_koppen/template_1km_WGS84.tif")
 
 
 ## Use gdal to create a template raster in Mollweide
@@ -350,8 +348,23 @@ xres(template_raster_1km_WGS84);projection(template_raster_1km_WGS84)
 
 \
 
-Note that the order of the raster names in 'world_raster' must match the order of names in env_variables.
-In this case, it's simply the biolclim variables (i.e. bio1-bio19)
+A pre-prepared template raster is found on google drive :
+https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
+
+\
+
+```{r message=FALSE, echo=FALSE, warning=FALSE, eval=TRUE}
+
+## Download global raster for minimum temperature
+## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
+template_raster_1km_WGS84 = raster("./data/world_koppen/template_1km_WGS84.tif")
+
+```
+
+\
+
+Note that the order of the raster names in 'world_raster' must match the order of names 
+in env_variables. In this case, it's simply the biolclim variables (i.e. bio1-bio19)
 
 \
 
@@ -502,15 +515,10 @@ resolution (1km*1km) and projection (mollweide) as the analysis data. This step 
 \
 
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=FALSE, warning=FALSE, eval=FALSE}
 
 ## Get this data from google drive
 Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
-
-
-## Read in the template raster at 1km*1km resolution
-# template_raster_1km_mol = raster("./data/world_koppen/template_has_data_1km.tif")
-
 
 ## Use gdal to create a template raster in the mollweide projection, using one of the bioclim layers
 template_raster_1km_mol <- gdalwarp("./data/wc2-5/bio1.bil",
@@ -527,6 +535,22 @@ template_raster_1km_mol[template_raster_1km_mol < 0] <- 1
 xres(template_raster_1km_mol)
 
 ``` 
+
+\
+
+A pre-prepared template raster in the Mollweide projection is found on google drive :
+https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
+
+\
+
+```{r message=FALSE, echo=FALSE, warning=FALSE, eval=TRUE}
+
+## Download global raster for minimum temperature
+## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
+Koppen_1975_1km         = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
+template_raster_1km_mol = raster("./data/world_koppen/template_has_data_1km.tif")
+
+```
 
 \
 
@@ -727,20 +751,20 @@ The aggregation function
 
 ## Combine GCM predictions and calculate gain and loss for 2030 
 ## Then loop over the species folders and climate scenarios
-tryCatch(mapply(sdm_area_cell_count,                              ## Function aggreagating GCM predictions by spatial unit
-                unit_shp      = './data/SUA_albers.rds',          ## Spatial unit of analysis - E.G. SUAs, in Australian Albers
-                unit_vec      = areal_unit_vec,                   ## Vector of rasterized unit cells
+tryCatch(mapply(sdm_area_cell_count,                      
+                unit_shp      = './data/SUA_albers.rds',  ## This would have to change
+                unit_vec      = areal_unit_vec, 
                 sort_var      = "SUA_NAME16",
                 agg_var       = "SUA_CODE16",
-                world_shp     = './data/LAND_albers.rds',         ## Polygon for AUS maps
-                country_shp   = './data/AUS_albers.rds',          ## Polygon for World maps
+                world_shp     = './data/LAND_albers.rds', ## This would have to change
+                country_shp   = './data/AUS_albers.rds',  ## This would have to change
                 
-                DIR_list      = sdm.results.dir,                  ## List of directories with rasters
-                species_list  = map_spp,                          ## List of species' directories
+                DIR_list      = sdm.results.dir,  
+                species_list  = map_spp,
                 number_gcms   = 6,
-                maxent_path   = 'output/maxent/back_sel_models/', ## Directory of maxent results
-                thresholds    = percent.10.log,                   ## List of maxent thresholds
-                time_slice    = 30,                               ## Time period, eg 2030
+                maxent_path   = 'output/maxent/back_sel_models/', 
+                thresholds    = percent.10.log,
+                time_slice    = 30,                     
                 write_rasters = TRUE),
          
          ## If the species fails, write a fail message to file.
