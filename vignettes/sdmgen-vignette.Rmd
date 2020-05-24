@@ -3,7 +3,7 @@ title: "sdmgen : a pacakge for rapidly estimating multiple species ranges and ha
 authors: "Hugh Burley, John Baumgartner, Linda Beaumont"
 date: "March 2020"
 output:
-  html_document:
+  github_document:
   toc: true             # Table of content true
 toc_depth: 4            # Up to three depths of headings (specified by #, ## and html_document
 toc_float: true
@@ -14,6 +14,7 @@ css: styles.css
 revealjs::revealjs_presentation:
   dev: 'svg'
 css: styles.css
+chunk_output_type: console
 self_contained: false
 reveal_plugins: ["notes", "search"]
 reveal_options:
@@ -34,9 +35,7 @@ font-size: 6;
 
 \
 
-The text and code below summarises a workflow in R that can be used to relatively rapidly assess the environmental range
-of a species within Australia, from downloading occurrence records, through to creating maps of predicted climatic 
-suitability across Australia at 1km*1km resolution. An example of this work is published in Science of the Total Environment ::
+The text and code below summarises a workflow in R that can be used to relatively rapidly assess the environmental range of a species within Australia, from downloading occurrence records, through to creating maps of predicted climatic suitability across Australia at 1km*1km resolution. An example of this work is published in Science of the Total Environment ::
 
 \
 
@@ -63,8 +62,8 @@ sapply(sdmgen_packages, require, character.only = TRUE)
 # Background
 
 This code was developed at Macquarie University in Sydney, as part of the 'which plant where' project.
-
-
+The aim was to create a pipeline to rapidly assess the climatic suitability of large suites of horticultural
+species
 
 
 \
@@ -143,6 +142,8 @@ GBIF_dir    <- './data/GBIF'
 back_dir    <- './output/maxent/back_sel_models'
 full_dir    <- './output/maxent/full_models'
 results_dir <- './output/results'
+climate_dir <- './data/worldclim/world/2070'
+
 
 ## Checking dir 
 check_dir <-'./data/GBIF/Check_plots/'
@@ -150,39 +151,51 @@ check_dir <-'./data/GBIF/Check_plots/'
 
 ## Create ALA subfolder
 if(!dir.exists(ALA_dir)) {
-  message('Creating ALA directory for ', species)
+  message('Creating ALA directory ')
   dir.create(ALA_dir) } else {
     'ALA directory already exists'}
 
 ## Create GBIF subfolder
 if(!dir.exists(GBIF_dir)) {
-  message('Creating GBIF directory for ', species)
+  message('Creating GBIF directory ')
   dir.create(GBIF_dir) } else {
     'GBIF directory already exists'}
 
 ## Create BS subfolder
 if(!dir.exists(back_dir)) {
-  message('Creating Backwards selected directory for ', species)
+  message('Creating Backwards selected directory ')
   dir.create(back_dir) } else {
     'Backwards selection directory already exists'}
 
 ## Create Full subfolder
 if(!dir.exists(full_dir)) {
-  message('Creating Full directory for ', species)
+  message('Creating Full directory ')
   dir.create(full_dir) } else {
     'Full directory already exists'}
 
 ## Create Results subfolder
 if(!dir.exists(results_dir)) {
-  message('Creating results directory for ', species)
+  message('Creating results directory ')
   dir.create(results_dir) } else {
     'Results directory already exists'}
 
 
 ## Create Checking subfolder
 if(!dir.exists(check_dir)) {
-  message('Creating results directory for ', species)
+  message('Creating results directory ')
   dir.create(check_dir) } else {
+    'Checking directory already exists'}
+
+## Create Checking subfolder
+if(!dir.exists(check_dir)) {
+  message('Creating results directory ')
+  dir.create(check_dir) } else {
+    'Checking directory already exists'}
+
+## Create Checking subfolder
+if(!dir.exists(check_dir)) {
+  message('Creating results directory ')
+  dir.create(climate_dir) } else {
     'Checking directory already exists'}
 
 
@@ -190,7 +203,7 @@ if(!dir.exists(check_dir)) {
 
 \
 
-Download GBIF and ALA occurrence data for each species
+Now download GBIF and ALA occurrence data for each species
 
 \
 
@@ -578,7 +591,8 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 
 \
 
-Now we need some climate raster data for future projections. We can download the data using the raster package:
+Now we need some future climate projections. We can download raster worldclim data using the raster package.
+The stoten publication uses climate projections under six global circulation models.
 
 \
 
@@ -598,6 +612,9 @@ for(scen in scen_list)
                   model = scen, 
                   year  = 70,
                   path = './data/worldclim/world/2070')
+
+
+## That data would then need to be subset to Australia, etc.
 
 
 ``` 
