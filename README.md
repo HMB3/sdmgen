@@ -3,12 +3,6 @@ habitat suitability
 ================
 March 2020
 
-<style>
-p.caption {
-font-size: 6;
-}
-</style>
-
   
 
 The text and code below summarises a workflow in R that can be used to
@@ -30,6 +24,13 @@ of The Total Environment, 685, 451-462.
 
 To install, run :
 
+``` r
+## The package should import all the required packges
+devtools::install_github("HMB3/sdmgen")
+library(sdmgen)
+sapply(sdmgen_packages, require, character.only = TRUE)
+```
+
   
   
   
@@ -37,21 +38,17 @@ To install, run :
 # Background
 
 This code was developed at Macquarie University in Sydney, as part of
-the ‘which plant where’ project. The aim was to create a pipeline to
-rapidly assess the climatic suitability of large suites of horticultural
-species.
-
-  
-  
-  
-
-All over the world, local government authorities are increasing their
-investment in urban greening interventions, yet there is little
-consideration of whether the current palette of species for these
-plantings will be resilient to climate change. This pipeline was created
-to assessed the distribution of climatically suitable habitat, now and
-in the future, for the tree species most commonly grown by nurseries and
-planted across Australia’s urban landscapes.
+the ‘which plant where’ project (<https://www.whichplantwhere.com.au/>).
+The aim was to create a pipeline to rapidly assess the climatic
+suitability of large suites of horticultural species. All over the
+world, local governments are increasing their investment in urban
+greening interventions, yet there is little consideration of whether the
+current palette of species for these plantings will be resilient to
+climate change. This pipeline was created to assess the distribution of
+climatically suitable habitat, now and in the future, for the tree
+species most commonly grown by nurseries and planted across Australia’s
+urban landscapes. However, it can be used to assess the distribution of
+any species (e.g. bats, reptiles, etc).
 
   
   
@@ -60,17 +57,13 @@ planted across Australia’s urban landscapes.
 # STEP 1 :: Download species occurrence data
 
   
-  
-  
 
 The backbone of the R workflow is a list of (taxonomically
 Ridgey-Didge\!) species names that we supply. The analysis is designed
 to process data for one species at a time, allowing species results to
 be updated as required. We can demonstrate the workflow using a sample
-of 10 plant species from the Stoten publication above.
+of 5 plant species from the Stoten publication above.
 
-  
-  
   
 
 ``` r
@@ -80,33 +73,8 @@ analysis_spp <- plant.spp[1:5]
 analysis_spp
 ```
 
-  
-  
-  
-
-This workfow uses four shapefiles : Australia, the World, the global
-Koppen Zones, and the Significant Urban areas of Australia (or SUAs).
-The SUAs are taken from the ABS :
-<https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.004July%202016?OpenDocument>.
-The Koppen data are from CliMond, centred on 1975 :
-<https://www.climond.org/Core/Authenticated/KoppenGeiger.aspx>
-
-  
-  
-  
-
-The code also uses 1km worldclim raster data. Put this folder in your
-‘data’ project folder :
-
-  
-  
-  
-
-<https://drive.google.com/open?id=1T5ET5MUX3-lkqiN5nNL3SZZagoJlEOal>
-
-  
-  
-  
+    ## [1] "Acacia baileyana" "Acacia boormanii" "Acacia cognata"   "Acacia dealbata" 
+    ## [5] "Acacia decurrens"
 
 The species list is supplied to a series of functions to calculate
 enviromnetal ranges and habitat suitability. The initial functions
@@ -116,98 +84,176 @@ Facility (GBIF, <https://www.gbif.org/>). The species data are
 downloaded as individual .Rdata files to the specified folders, which
 must exist first, without returning anything. The functions are
 separated because the ALA and GBIF columns are slightly different, but
-both data sources are needed to properly quantify species ranges.
-
-  
-  
-  
-
-The package functions expect these folders (a typical R project
-structure), create them if they don’t exist
+both data sources are needed to properly quantify species ranges. The
+package functions expect these folders (a typical R project structure),
+create them if they don’t exist
 
   
 
-  
-  
+``` r
+## The functions expect these folders, create them if they don't exist
+ALA_dir     <- './data/ALA'
+GBIF_dir    <- './data/GBIF'
+
+## Results dir
+back_dir    <- './output/maxent/back_sel_models'
+full_dir    <- './output/maxent/full_models'
+results_dir <- './output/results'
+climate_dir <- './data/worldclim/world/2070'
+
+## Checking dir 
+check_dir <-'./data/GBIF/Check_plots/'
+
+## Create ALA subfolder
+if(!dir.exists(ALA_dir)) {
+  message('Creating ALA directory ')
+  dir.create(ALA_dir) } else {
+    'ALA directory already exists'}
+
+## Create GBIF subfolder
+if(!dir.exists(GBIF_dir)) {
+  message('Creating GBIF directory ')
+  dir.create(GBIF_dir) } else {
+    'GBIF directory already exists'}
+
+## Create BS subfolder
+if(!dir.exists(back_dir)) {
+  message('Creating Backwards selected directory ')
+  dir.create(back_dir) } else {
+    'Backwards selection directory already exists'}
+
+## Create Full subfolder
+if(!dir.exists(full_dir)) {
+  message('Creating Full directory ')
+  dir.create(full_dir) } else {
+    'Full directory already exists'}
+
+## Create Results subfolder
+if(!dir.exists(results_dir)) {
+  message('Creating results directory ')
+  dir.create(results_dir) } else {
+    'Results directory already exists'}
+
+## Create Checking subfolder
+if(!dir.exists(check_dir)) {
+  message('Creating results directory ')
+  dir.create(check_dir) } else {
+    'Checking directory already exists'}
+
+## Create Checking subfolder
+if(!dir.exists(check_dir)) {
+  message('Creating results directory ')
+  dir.create(check_dir) } else {
+    'Checking directory already exists'}
+
+## Create Checking subfolder
+if(!dir.exists(climate_dir)) {
+  message('Creating results directory ')
+  dir.create(climate_dir) } else {
+    'Checking directory already exists'}
+```
+
   
 
 Now download GBIF and ALA occurrence data for each species
 
   
-  
-  
 
-  
-  
+``` r
+## Download GBIF occurrence data for each species
+download_GBIF_all_species(species_list  = analysis_spp,
+                          download_path = "./data/GBIF/",
+                          download_limit = 20000)
+
+## Download ALA occurrence data for each species
+download_ALA_all_species(species_list  = analysis_spp,
+                         your_email    = 'hugh.burley@gmail.com',
+                         download_path = "./data/ALA/",
+                         download_limit = 20000)
+```
+
   
 
 # STEP 2 :: Combine species occurrence data
 
   
-  
-  
 
-The next function combines ALA and GBIF records, filtering them to
-records on land, and recorded after 1950. The climate (i.e. raster) data
-used can be any worldclim layer.
-
-  
-  
-  
-
-First, get some global climate data from worldclim. You need to create a
-‘data’ folder in the project directory.
+This pipeline was developed using worldclim climate raster data, but it
+can take any set of climate rasters. The spatial data used to develop
+the workflow are on google drive - put this folder in your ‘data’
+project folder:
+<https://drive.google.com/open?id=1T5ET5MUX3-lkqiN5nNL3SZZagoJlEOal>. We
+can also get some global climate data from the worldclim website using
+raster::getData:
 
   
-  
-  
+
+``` r
+## Download global raster for minimum temperature 
+worldclim_climate     <- raster::getData('worldclim', var = 'bio', res = 2.5, path = './data/')
+worldclim_annual_temp <- raster::stack("./data/wc2-5/bio1.bil")
+sp::plot(worldclim_climate[["bio1"]])
+```
 
   
-  
-  
 
-Finer resolution (1km) current worldclim grids are available here
-:<https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C>
+1km worldclim grids for current conditions are also available here:
+<https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C>
 
   
-  
+
+``` r
+## Download global raster for minimum temperature
+## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
+worldclim_climate = raster::stack(
+  file.path('./data/worldclim/world/current',
+            sprintf('bio_%02d', 1:19)))
+
+worldclim_annual_temp <- worldclim_climate[[1]]
+```
+
   
 
-Then trim the occurrence records to those inside the raster boundaries
-(i.e. species records in the ocean according to the Raster boundaries
-will be excluded)
+The next function in the workflow combines ALA and GBIF records,
+filtering them to records on land, and recorded after 1950. The climate
+(i.e. raster) data used can be any worldclim layer. It then trims the
+occurrence records to those inside the raster boundaries (i.e. species
+records in the ocean according to the Raster boundaries will be
+excluded).
 
   
-  
-  
 
-  
-  
+``` r
+## Combine ALA data, and filter to records on land taken > 1950
+## The climate data is the worldclim version 1.0
+ALA.LAND = combine_ala_records(species_list      = analysis_spp,
+                               records_path      = "./data/ALA/",
+                               records_extension = "_ALA_records.RData",
+                               record_type       = "ALA",
+                               keep_cols         = ALA_keep,
+                               world_raster      = worldclim_annual_temp)
+
+## Combine GBIF data and filter to records on land taken > 1950
+GBIF.LAND = combine_gbif_records(species_list      = analysis_spp,
+                                 records_path      = "./data/GBIF/",
+                                 records_extension = "_GBIF_records.RData",
+                                 record_type       = "GBIF",
+                                 keep_cols         = gbif_keep,
+                                 world_raster      =  worldclim_annual_temp)
+```
+
   
 
 # STEP 3 :: extract environmental values
 
   
-  
-  
 
-The next function in the workflow combines occurrence files from ALA and
-GBIF into one table, and extracts environmental values. It assumes that
-both files come from the combine\_ala\_records and
-combine\_gbif\_records functions.
-
-  
-  
-  
-
-First create a template raster of 1km \* 1km cells using the downloaded
-worlclim data. This raster is used to filter records to 1 per one 1km
-cell. This raster needs to have the same extent and resolution of the
+The next step requires a template raster of 1km \* 1km cells, which is
+used to filter records to 1 per one 1km cell. This raster needs to have
+the same extent (global) resolution (1km) and projection (WGS84) of the
 data used to analyse the species distributions. It should have a value
 of 1 for land, and NA for the ocean. This takes ages in R…..
 
-  
-  
   
 
 ``` r
@@ -236,26 +282,27 @@ xres(template_raster_1km_WGS84);projection(template_raster_1km_WGS84)
 ```
 
   
-  
-  
 
-A pre-prepared template raster is found on google drive :
+A pre-prepared template raster is found on google drive:
 <https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C>
 
   
-  
-  
+
+``` r
+## This raster has nodata for the ocean, 1 for land, 1km*1Km resolution in WGS84
+template_raster_1km_WGS84 = raster("./data/world_koppen/template_1km_WGS84.tif")
+```
 
   
-  
-  
 
-Note that the order of the raster names in ‘world\_raster’ must match
-the order of names in env\_variables. In this case, it’s simply the
-biolclim variables (i.e. bio1-bio19)
+The next function in the workflow combines occurrence files from ALA and
+GBIF into one table, and extracts environmental values. It assumes that
+both files come from the combine\_ala\_records and
+combine\_gbif\_records functions. Note that the order of the raster
+names in ‘world\_raster’ must match the order of names in the character
+vector ‘env\_variables’. In this case, it’s simply the biolclim
+variables (i.e. bio1-bio19)
 
-  
-  
   
 
 ``` r
@@ -276,29 +323,32 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
 ```
 
   
-  
-  
 
 # STEP 4 :: Flag institutional outliers
 
   
-  
+
+The workfow uses four shapefiles as part of analysis and mapping:
+Australia, the World, the global Koppen Zones, and the Significant Urban
+areas of Australia (or SUAs). The SUAs are taken from the ABS:
+<https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.004July%202016?OpenDocument>.
+The Koppen data are from CliMond, centred on 1975:
+<https://www.climond.org/Core/Authenticated/KoppenGeiger.aspx>
+
   
 
-The next stage of the process runs a series of cleaning steps. This
-function takes a data frame of all species records, and flag records as
-institutional or spatial outliers. This function uses the
-CoordinateCleaner package
+The next stage of the workflow runs a series of cleaning steps. The
+first cleaning function takes a data frame of all species records, and
+flag records as institutional or spatial outliers. This function uses
+the CoordinateCleaner package:
 <https://cran.r-project.org/web/packages/CoordinateCleaner/index.html>.
 It assumes that the records data.frame is that returned by the
 combine\_records\_extract function.
 
   
-  
-  
 
 ``` r
-## :: Flag records as institutional or spatial outliers
+## Step 4a :: Flag records as institutional or spatial outliers
 COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
                                   capitals   = 10000,  ## Remove records within 10km  of capitals
                                   centroids  = 5000,   ## Remove records within 5km of country centroids
@@ -307,25 +357,20 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 ```
 
   
-  
-  
 
-This function takes a data frame of all species records, flags records
-as spatial outliers (T/F for each record in the df), and saves images of
-the checks for each. Manual cleaning of spatial outliers is very
-tedious, but automated cleaning makes mistakes, so checking is handy.
-This funct uses the CoordinateCleaner package
+The next cleaning function takes a data frame of all species records,
+flags records as spatial outliers (T/F for each record in the df), and
+saves images of the checks for each. Manual cleaning of spatial outliers
+is very tedious, but automated cleaning makes mistakes, so checking is
+handy. This funct uses the CoordinateCleaner package
 <https://cran.r-project.org/web/packages/CoordinateCleaner/index.html>.
 It assumes that the input dfs are those returned by the
 coord\_clean\_records function.
 
   
-  
-  
 
 ``` r
 ## Step 4b :: Flag spatial outliers
-## This is working, but it's just not plotting the ones that are being removed
 SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
                                        land_shp     = LAND,
                                        urban_df     = FALSE, 
@@ -335,22 +380,19 @@ SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
 ```
 
   
-  
-  
 
-This function takes a data frame of all species records, estimates
-geographic and environmental ranges for each, and creates a table of
-each. It uses the AOO.computing function in the ConR package :
+The next cleaning function takes a data frame of all species records,
+estimates the geographic and environmental ranges for each species, and
+creates a table of all species ranges. It uses the AOO.computing
+function in the ConR package:
 <https://cran.r-project.org/web/packages/ConR/index.html> It assumes
 that the input df is that returned by the check\_spatial\_outliers
 function.
 
   
-  
-  
 
 ``` r
-## Step 4c ::Estimate climate niches usign species records
+## Step 4c :: estimate climate niches using species records
 GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,
                              prj          = CRS("+init=epsg:4326"),
                              country_shp  = AUS,
@@ -365,17 +407,13 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,
 ```
 
   
-  
-  
 
-We can also plot the environmental ranges of each species. This function
-takes a data frame of all species records, and plots histograms and
-convex hulls for each species in global enviromental space It assumes
-that the input df is that prepared by the check\_spatial\_outliers
-function
+We can also plot the environmental ranges of each species. The nex
+cleaning function takes a data frame of all species records, and plots
+histograms and convex hulls for each species in global enviromental
+space It assumes that the input df is that prepared by the
+check\_spatial\_outliers function
 
-  
-  
   
 
 ``` r
@@ -386,26 +424,20 @@ plot_range_histograms(coord_df     = SPATIAL.CLEAN,
 ```
 
   
-  
-  
 
 # STEP 5 :: Prepare SDM table
 
   
-  
-  
 
-The final step before modelling is to create at table we can use for
-species distribution modelling. This function takes a data frame of all
-species records, and prepares a table in the ‘species with data’ (swd)
-format for modelling uses the Maxent algorithm. It assumes that the
-input df is that returned by the coord\_clean\_records function. There
-is a switch in the function, that adds additional bakground points from
-other taxa, if specified. In this example for bats, we’ll just use the
-species supplied
+The final step in the workflow before modelling is to create at table we
+can use for species distribution modelling. This function takes a data
+frame of all species records, and prepares a table in the ‘species with
+data’ (swd) format for modelling uses the Maxent algorithm. It assumes
+that the input df is that returned by the coord\_clean\_records
+function. There is a switch in the function, that adds additional
+bakground points from other taxa, if specified. In this example for
+bats, we’ll just use the species supplied
 
-  
-  
   
 
 ``` r
@@ -420,34 +452,36 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
 ```
 
   
-  
-  
 
 # STEP 6 :: Run Global SDMs
 
   
-  
-  
 
-This function takes a data frame of all species records, and runs a
-specialised maxent analysis for each species. It uses the rmaxent
-package <https://github.com/johnbaums/rmaxent> It assumes that the input
-df is that returned by the prepare\_sdm\_table function
-
-  
-  
-  
-
-It uses a rasterised version of the 1975 Koppen raster, and another
-template raster of the same extent (global), resolution (1km\*1km) and
-projection (mollweide) as the analysis data. This step takes ages…
+The next stage in the workflow is to run species distribution models
+using global records of each species. In order to sample species records
+thoroughly, we use a rasterised version of the 1975 Koppen raster, and
+another template raster of the same extent (global), resolution
+(1km\*1km) and projection (mollweide) as the analysis data. This step
+takes ages…
 
   
-  
-  
 
-  
-  
+``` r
+## Use gdal to create a template raster in the mollweide projection, using one of the bioclim layers
+template_raster_1km_mol <- gdalwarp("./data/wc2-5/bio1.bil",
+                                    tempfile(fileext = '.bil'),
+                                    t_srs = sp_epsg54009,
+                                    output_Raster = TRUE,
+                                    tr = c(1000, 1000),
+                                    r = "near", 
+                                    dstnodata = '-9999')
+
+## Should be 1km*1km, values of 0 for ocean and 1 for land 
+template_raster_1km_mol[template_raster_1km_mol > 0] <- 1
+template_raster_1km_mol[template_raster_1km_mol < 0] <- 1
+xres(template_raster_1km_mol)
+```
+
   
 
 A pre-prepared template raster in the Mollweide projection is found on
@@ -455,11 +489,15 @@ google drive :
 <https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C>
 
   
-  
-  
 
-  
-  
+``` r
+## Download the template and koppen rasters from google drive
+## https://drive.google.com/open?id=1mQHVmYxSMw_cw1iGvfU9M7Pq6Kl6nz-C
+## https://drive.google.com/open?id=1oY5ZWCV3eoKAWShCaApgLvV6Mb9G0HFQ
+Koppen_1975_1km         = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
+template_raster_1km_mol = raster("./data/world_koppen/template_has_data_1km.tif")
+```
+
   
 
 The sdm function runs two maxent models: a full model using all
@@ -472,17 +510,34 @@ meets a specified minimum, or until a predetermined minimum number of
 predictors remains.
 
   
-  
-  
 
-  
-  
+``` r
+run_sdm_analysis(species_list            = analysis_spp,
+                 maxent_dir              = 'output/maxent/full_models',     
+                 bs_dir                  = 'output/maxent/back_sel_models',
+                 sdm_df                  = SDM.SPAT.OCC.BG,
+                 sdm_predictors          = bs_predictors,
+                 backwards_sel           = TRUE,      
+                 template_raster         = template_raster_1km_mol,
+                 cor_thr                 = 0.8,  
+                 pct_thr                 = 5, 
+                 k_thr                   = 4, 
+                 min_n                   = 20,  
+                 max_bg_size             = 70000,
+                 background_buffer_width = 200000,
+                 shapefiles              = TRUE,
+                 features                = 'lpq',
+                 replicates              = 5,
+                 responsecurves          = TRUE,
+                 country_shp             = AUS,
+                 Koppen_zones            = Koppen_zones,
+                 Koppen_raster           = Koppen_1975_1km)
+```
+
   
 
 # STEP 7 :: Project SDMs across Australia
 
-  
-  
   
 
 First, extract the SDM results from the models. We need the model
@@ -491,11 +546,24 @@ probability of occurrence (see), which we use to create map of habitat
 suitability across Australia ().
 
   
-  
-  
 
-  
-  
+``` r
+## Create a table of maxent results
+## This function aggregates the results for models that ran successfully
+MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp,
+                                     results_dir  = 'output/maxent/back_sel_models',
+                                     save_data    = FALSE,
+                                     data_path    = "./output/results/",
+                                     save_run     = "TEST_BATS")
+
+
+## Get map_spp from the maxent results table above, change the species column,
+## then create a list of logistic thresholds
+map_spp         <- MAXENT.RESULTS$searchTaxon %>% gsub(" ", "_", .,)
+percent.10.log  <- MAXENT.RESULTS$Logistic_threshold
+sdm.results.dir <- MAXENT.RESULTS$results_dir
+```
+
   
 
 Now we need some future climate projections. We can download raster
@@ -503,18 +571,29 @@ worldclim data using the raster package. The stoten publication uses
 climate projections under six global circulation models :
 
   
-  
-  
 
+``` r
+## List of scenarios that we used in the Stoten article
+scen_list <- c('AC', 'CC', 'HG', 'GF', 'MC', 'NO')
+
+## For all the scenarios in the list
+for(scen in scen_list)
   
-  
+  ## Get the worldclim data
+  raster::getData('CMIP5', 
+                  var   = 'bio', 
+                  res   = 2.5, 
+                  rcp   = 85, 
+                  model = scen, 
+                  year  = 70,
+                  path = './data/worldclim/world/2070')
+```
+
   
 
 Or, we can load in some 1km\*1km Worldclim rasters for current
 environmental conditions :
 
-  
-  
   
 
 ``` r
@@ -526,8 +605,6 @@ aus.grids.current <- stack(
 ```
 
   
-  
-  
 
 The projection function takes the maxent models created by the
 ‘fit\_maxent\_targ\_bg\_back\_sel’ function, and projects the models
@@ -537,8 +614,6 @@ the maxent models were generated by the
 ’fit\_maxent\_targ\_bg\_back\_sel’function. Note that this step is
 quite memory heavy, and is best run with 32GB of RAM.
 
-  
-  
   
 
 ``` r
@@ -580,6 +655,10 @@ tryCatch(
   
   
   
+
+``` r
+## Can't use the .rda, must use the file path
+```
 
 ![](output/maxent/back_sel_models/Acacia_dealbata/full/Acacia_dealbata_mess_panel.png)
 
