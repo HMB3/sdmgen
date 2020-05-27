@@ -414,7 +414,7 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,
 We can also plot the environmental ranges of each species. The nex
 cleaning function takes a data frame of all species records, and plots
 histograms and convex hulls for each species in global enviromental
-space It assumes that the input df is that prepared by the
+space. It assumes that the input df is that prepared by the
 check\_spatial\_outliers function
 
   
@@ -460,12 +460,11 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
 
   
 
-The next stage in the workflow is to run species distribution models
-using global records of each species. In order to sample species records
-thoroughly, we use a rasterised version of the 1975 Koppen raster, and
-another template raster of the same extent (global), resolution
-(1km\*1km) and projection (mollweide) as the analysis data. This step
-takes ages…
+The next porcess is to run species distribution models using global
+records of each species. In order to sample species records thoroughly,
+we use a rasterised version of the 1975 Koppen raster, and another
+template raster of the same extent (global), resolution (1km\*1km) and
+projection (mollweide) as the analysis data. This step takes ages…
 
   
 
@@ -505,12 +504,12 @@ template_raster_1km_mol = raster("./data/world_koppen/template_has_data_1km.tif"
 
 The sdm function runs two maxent models: a full model using all
 variables, and backwards selection. Given a candidate set of predictor
-variables, the function identifies a subset of variables that meets
-specified multicollinearity criteria. Subsequently, backward stepwise
-variable selection is used to iteratively drop the variable that
-contributes least to the model, until the contribution of each variable
-meets a specified minimum, or until a predetermined minimum number of
-predictors remains.
+variables, the backwards selecion function identifies a subset of
+variables that meets specified multicollinearity criteria. Subsequently,
+backward stepwise variable selection is used to iteratively drop the
+variable that contributes least to the model, until the contribution of
+each variable meets a specified minimum, or until a predetermined
+minimum number of predictors remains.
 
   
 
@@ -543,10 +542,11 @@ run_sdm_analysis(species_list            = analysis_spp,
 
   
 
-First, extract the SDM results from the models. We need the model
-results to run the maps. Each model generates a ‘threshold’ of
-probability of occurrence (see), which we use to create map of habitat
-suitability across Australia ().
+The next stage of the process is to project the SDM predictions across
+geographic space. First, we need to extract the SDM results from the
+models. Each model generates a ‘threshold’ of probability of occurrence
+(see), which we use to create map of habitat suitability across
+Australia ().
 
   
 
