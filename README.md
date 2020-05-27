@@ -324,7 +324,7 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
 
   
 
-# STEP 4 :: Flag institutional outliers
+# STEP 4 :: Automated cleanin of outlier records
 
   
 
@@ -337,10 +337,13 @@ The Koppen data are from CliMond, centred on 1975:
 
   
 
-The next stage of the workflow runs a series of cleaning steps. The
-first cleaning function takes a data frame of all species records, and
-flag records as institutional or spatial outliers. This function uses
-the CoordinateCleaner package:
+The next stage of the workflow use a series of cleaning functions to
+automate the removal of records for each species which are outliers.
+Doing this manually is extremely tedious, and although errors will be
+made, autmation is preferable across large suites of taxa. runs a series
+of cleaning steps. The first cleaning function takes a data frame of all
+species records, and flag records as institutional or spatial outliers.
+This function uses the CoordinateCleaner package:
 <https://cran.r-project.org/web/packages/CoordinateCleaner/index.html>.
 It assumes that the records data.frame is that returned by the
 combine\_records\_extract function.
