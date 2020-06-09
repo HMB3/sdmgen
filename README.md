@@ -603,7 +603,7 @@ tryCatch(
                             OSGeo_path    = 'C:/OSGeo4W64/OSGeo4W.bat', 
                             nclust        = 1),
   
-  ## If the species fails, write a fail message to file.
+  ## If the species fails, write a fail message to file
   error = function(cond) {
     
     ## This will write the error message inside the text file, but it won't include the species
@@ -616,11 +616,7 @@ tryCatch(
 
   
 
-``` r
-knitr::include_graphics("output/maxent/back_sel_models/Acacia_dealbata/full/Acacia_dealbata_mess_panel.png")
-```
-
-<img src="output/maxent/back_sel_models/Acacia_dealbata/full/Acacia_dealbata_mess_panel.png" width="3300" />
+![fig1](https://github.com/HMB3/sdmgen/blob/master/output/Acacia_dealbata_mess_panel.png?raw=true)
 
 **Figure 2.** Example of a continuous climatic suitability map for one
 plant species under current conditions. Species occurrence points are
@@ -706,11 +702,7 @@ tryCatch(mapply(sdm_area_cell_count,
 
   
 
-``` r
-knitr::include_graphics("output/maxent/back_sel_models/Acacia_dealbata/full/Acacia_dealbata_gain_loss_0.3799_2030.png")
-```
-
-<img src="output/maxent/back_sel_models/Acacia_dealbata/full/Acacia_dealbata_gain_loss_0.3799_2030.png" width="8000" />
+![fig1](https://github.com/HMB3/sdmgen/blob/master/output/Acacia_dealbata_gain_loss_0.3799_2030.png?raw=true)
 
 **Figure 3.** Example of a combined map of change in climatic
 suitability from current conditions to 2070. Species occurrence points
