@@ -9,13 +9,12 @@ toc_depth: 4            # Up to three depths of headings (specified by #, ## and
 toc_float: true
 number_sections: false  # If you want number sections at each table header
 
-vignette: >
-%\VignetteIndexEntry{README}
+vignette:>
+%\VignetteIndexEntry{readme}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
   
-  keep_md: true
-
+keep_md: true
 theme: united           # Many options for theme, this one is my favorite.
 highlight: tango        # Specifies the syntax highlighting style
 css: styles.css
@@ -565,13 +564,13 @@ scen_list <- c('AC', 'CC', 'HG', 'GF', 'MC', 'NO')
 for(scen in scen_list)
   
   message('Get the worldclim data for ', scen)
-  raster::getData('CMIP5', 
-                  var   = 'bio', 
-                  res   = 2.5, 
-                  rcp   = 85, 
-                  model = scen, 
-                  year  = 70,
-                  path = './data/worldclim/world/2070')
+raster::getData('CMIP5', 
+                var   = 'bio', 
+                res   = 2.5, 
+                rcp   = 85, 
+                model = scen, 
+                year  = 70,
+                path = './data/worldclim/world/2070')
 
 ``` 
 
