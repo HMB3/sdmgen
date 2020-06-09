@@ -9,10 +9,12 @@ toc_depth: 4            # Up to three depths of headings (specified by #, ## and
 toc_float: true
 number_sections: false  # If you want number sections at each table header
 
-vignette:>
-%\VignetteIndexEntry{readme}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+vignette: >
+%\VignetteIndexEntry{README}
+\usepackage[utf8]{inputenc}
+%\VignetteEngine{knitr::rmarkdown}
+editor_options:
+chunk_output_type: console
   
 keep_md: true
 theme: united           # Many options for theme, this one is my favorite.
