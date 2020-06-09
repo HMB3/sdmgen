@@ -689,7 +689,7 @@ tryCatch(
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
-## Can't use the .rda, must use the file path
+## Copy this across from the NSWEC example
 
 
 ``` 
