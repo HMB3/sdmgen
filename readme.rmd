@@ -10,8 +10,8 @@ toc_float: true
 number_sections: false  # If you want number sections at each table header
 vignette: >
 %\VignetteIndexEntry{README}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+\usepackage[utf8]{inputenc}
+%\VignetteEngine{knitr::rmarkdown}
   keep_md: true
 theme: united           # Many options for theme, this one is my favorite.
 highlight: tango        # Specifies the syntax highlighting style
@@ -558,9 +558,9 @@ scen_list <- c('AC', 'CC', 'HG', 'GF', 'MC', 'NO')
 
 ## For all the scenarios in the list
 for(scen in scen_list)
- 
-## Download each to the specified folder, for EG 2070   
-message('Get the worldclim data for ', scen)
+  
+  ## Download each to the specified folder, for EG 2070   
+  message('Get the worldclim data for ', scen)
 raster::getData('CMIP5', 
                 var   = 'bio', 
                 res   = 2.5, 
