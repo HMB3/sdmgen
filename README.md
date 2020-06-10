@@ -40,15 +40,15 @@ sapply(sdmgen_packages, require, character.only = TRUE)
 This code was developed at Macquarie University in Sydney, as part of
 the ‘which plant where’ project (<https://www.whichplantwhere.com.au/>).
 The aim was to create a pipeline to rapidly assess the climatic
-suitability of large suites of horticultural species. All over the
-world, local governments are increasing their investment in urban
-greening interventions, yet there is little consideration of whether the
-current palette of species for these plantings will be resilient to
-climate change. This pipeline was created to assess the distribution of
-climatically suitable habitat, now and in the future, for the tree
-species most commonly grown by nurseries and planted across Australia’s
-urban landscapes. However, it can be used to assess the distribution of
-any species (e.g. bats, reptiles, etc).
+suitability of large suites of horticultural plant species under climate
+change predictions. All over the world, local governments are increasing
+their investment in urban greening interventions, yet there is little
+consideration of whether the current palette of species for these
+plantings will be resilient to climate change. This pipeline was created
+to assess the distribution of climatically suitable habitat, now and in
+the future, for the tree species most commonly grown by nurseries and
+planted across Australia’s urban landscapes. However, it can be used to
+assess the distribution of any species (e.g. bats, reptiles, etc).
 
   
   
@@ -82,11 +82,7 @@ download all species records from the Atlas and living Australia
 (<https://www.ala.org.au/>) and the Global Biodiversity Information
 Facility (GBIF, <https://www.gbif.org/>). The species data are
 downloaded as individual .Rdata files to the specified folders, which
-must exist first, without returning anything. The functions are
-separated because the ALA and GBIF columns are slightly different, but
-both data sources are needed to properly quantify species ranges. The
-package functions expect these folders (a typical R project structure),
-create them if they don’t exist
+must exist first, without returning anything.
 
   
 
@@ -114,7 +110,11 @@ for(i in dir_lists) {
 
   
 
-Now download GBIF and ALA occurrence data for each species
+Now download GBIF and ALA occurrence data for each species. The
+downloading functions are separated, because the ALA and GBIF columns
+are slightly different, but both data sources are needed to properly
+quantify species ranges. The package functions expect these folders (a
+typical R project structure), create them if they don’t exist
 
   
 
@@ -504,7 +504,7 @@ run_sdm_analysis(species_list            = analysis_spp,
 The next stage of the process is to project the SDM predictions across
 geographic space. First, we need to extract the SDM results from the
 models. Each model generates a ‘threshold’ of probability of occurrence
-(see), which we use to create map of habitat suitability across
+(see ref), which we use to create map of habitat suitability across
 Australia ().
 
   
@@ -518,7 +518,6 @@ MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp,
                                      data_path    = "./output/results/",
                                      save_run     = "TEST_BATS")
 
-
 ## Get map_spp from the maxent results table above, change the species column,
 ## then create a list of logistic thresholds
 map_spp         <- MAXENT.RESULTS$searchTaxon %>% gsub(" ", "_", .,)
@@ -530,7 +529,8 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 
 Now we need some future climate projections. We can download raster
 worldclim data using the raster package. The stoten publication uses
-climate projections under six global circulation models :
+climate projections under six global circulation models (create a table
+here) :
 
   
 
@@ -541,6 +541,7 @@ scen_list <- c('AC', 'CC', 'HG', 'GF', 'MC', 'NO')
 ## For all the scenarios in the list
 for(scen in scen_list)
   
+  ## Download each to the specified folder, for EG 2070   
   message('Get the worldclim data for ', scen)
 raster::getData('CMIP5', 
                 var   = 'bio', 
@@ -580,7 +581,7 @@ quite memory heavy, and is best run with 32GB of RAM.
 
 ``` r
 ## Create a local projection for mapping : Australian Albers
-aus_albers  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 
+aus_albers <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 
                    +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
 
 ## Create 2070 sdm map projections
@@ -636,7 +637,7 @@ to aggregate them across all six global circulation models. In order to
 aggregate the results, we need a shapefile to aggregate to. In this
 example, we’ll use the Australian Significant Urban Areas, which were
 used in the Stoten article. A geo-tif of the Significant Areas is on
-Google drive :
+Google drive:
 
   
 
@@ -656,7 +657,7 @@ summary(areal_unit_vec)
 
 This aggregation function uses the 10th% Logistic threshold for each
 species from the maxent models to threhsold the rasters of habitat
-suitability (0-1) For each GCM. For each species, summ the 6 GCMS to
+suitability (0-1) For each GCM. For each species, it sums the 6 GCMS to
 create a binary raster with cell values between 0-6. These cell values
 represent the number of GCMs where that cell had a suitability value
 above the threshold determined by maxent. We classify a cell has
@@ -664,8 +665,9 @@ suitable if it met the threshold in \> 4 GCMs, and use this combined
 raster to compare current and future suitability, measuring if the
 suitability of each cell is changing over time, remaining stable or was
 never suitable It assumes that the maxent predictions were generated by
-the ‘project\_maxent\_grids\_mess’ function. Note that this step is
-quite memory heavy, and is best run with 32GB of RAM.
+the ‘project\_maxent\_grids\_mess’  
+function. Note that this step is quite memory heavy, and is best run
+with 32GB of RAM.
 
   
 
@@ -692,9 +694,9 @@ tryCatch(mapply(sdm_area_cell_count,
          error = function(cond) {
            
            ## This will write the error message inside the text file,
-           ## but it won't include the species
            file.create(file.path("output/maxent/back_sel_models/sua_count_failed_2030.txt"))
-           cat(cond$message, file=file.path("output/maxent/back_sel_models/sua_count_failed_2030.txt"))
+           cat(cond$message, 
+               file=file.path("output/maxent/back_sel_models/sua_count_failed_2030.txt"))
            warning(cond$message)
            
          })

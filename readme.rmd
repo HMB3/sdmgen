@@ -1,5 +1,5 @@
 ---
-title: "sdmgen : a pacakge for rapidly estimating multiple species ranges and habitat suitability"
+title: "sdmgen : a package for rapidly estimating multiple species ranges and habitat suitability"
 authors: "Hugh Burley, John Baumgartner, Linda Beaumont"
 date: "March 2020"
 output:
@@ -303,12 +303,12 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
 
 \
 
-# STEP 4 :: Automated cleanin of outlier records
+# STEP 4 :: Automated cleanin' of outlier records
 
 \
 
 
-The workfow uses four shapefiles as part of analysis and mapping: Australia, the World, 
+The workfow uses four shape-files as part of analysis and mapping: Australia, the World, 
 the global Koppen Zones, and the Significant Urban areas of Australia (or SUAs). The SUAs 
 are taken from the ABS: https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/1270.0.55.004July%202016?OpenDocument.
 The Koppen data are from CliMond, centred on 1975: 
@@ -318,7 +318,7 @@ https://www.climond.org/Core/Authenticated/KoppenGeiger.aspx
 
 The next stage of the workflow use a series of cleaning functions to automate the removal 
 of records for each species which are outliers. Doing this manually is extremely tedious, 
-and although errors will be made, autmation is preferable across large suites of taxa. 
+and although errors will be made, automation is preferable across large suites of taxa. 
 runs a series of cleaning steps. The first cleaning function takes a data frame of all 
 species records, and flag records as institutional or spatial outliers. This function 
 uses the CoordinateCleaner package: 
@@ -344,7 +344,7 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 The next cleaning function takes a data frame of all species records, flags records as 
 spatial outliers (T/F for each record in the df), and saves images of the checks for each. 
 Manual cleaning of spatial outliers is very tedious, but automated cleaning makes mistakes, 
-so checking is handy. This funct uses the CoordinateCleaner package https://cran.r-project.org/web/packages/CoordinateCleaner/index.html. It assumes that the 
+so checking is handy. This function uses the CoordinateCleaner package https://cran.r-project.org/web/packages/CoordinateCleaner/index.html. It assumes that the 
 input dfs are those returned by the coord_clean_records function.
 
 \
@@ -388,9 +388,9 @@ GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,
 
 \
 
-We can also plot the environmental ranges of each species. The nex cleaning function takes 
+We can also plot the environmental ranges of each species. The next cleaning function takes 
 a data frame of all species records, and plots histograms and convex hulls for 
-each species in global enviromental space. It assumes that the input df is that 
+each species in global environmental space. It assumes that the input df is that 
 prepared by the check_spatial_outliers function
 
 \
@@ -412,7 +412,7 @@ plot_range_histograms(coord_df     = SPATIAL.CLEAN,
 The final step in the workflow before modelling is to create at table we can use for species distribution modelling. This function takes a data frame of all species records, and prepares a table in the 'species 
 with data' (swd) format for modelling uses the Maxent algorithm. It assumes that the input df is that 
 returned by the coord_clean_records function. There is a switch in the function, that adds additional 
-bakground points from other taxa, if specified. In this example for bats, we'll just use the species supplied
+background points from other taxa, if specified. In this example for bats, we'll just use the species supplied
 
 \
 
@@ -435,8 +435,8 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
 
 \
 
-The next porcess is to run species distribution models using global records of each species.
-In order to sample species records thoroughly, we use a rasterised version of the 1975 Koppen raster, and another template raster of the same extent (global), resolution (1km*1km) and projection (mollweide) as the analysis data. This step takes ages...
+The next process is to run species distribution models using global records of each species.
+In order to sample species records thoroughly, we use a rasterized version of the 1975 Koppen raster, and another template raster of the same extent (global), resolution (1km*1km) and projection (Mollweide) as the analysis data. This step takes ages...
 
 \
 
@@ -480,7 +480,7 @@ template_raster_1km_mol = raster("./data/world_koppen/template_has_data_1km.tif"
 \
 
 The sdm function runs two maxent models: a full model using all variables, and backwards selection. 
-Given a candidate set of predictor variables, the backwards selecion function identifies a subset of variables that meets specified multicollinearity criteria. Subsequently, backward stepwise variable 
+Given a candidate set of predictor variables, the backwards selection function identifies a subset of variables that meets specified multi-collinearity criteria. Subsequently, backward step-wise variable 
 selection is used to iteratively drop the variable that contributes least to the model, 
 until the contribution of each variable meets a specified minimum, or until a predetermined 
 minimum number of predictors remains.
@@ -545,8 +545,8 @@ sdm.results.dir <- MAXENT.RESULTS$results_dir
 
 \
 
-Now we need some future climate projections. We can download raster worldclim data using the raster package.
-The stoten publication uses climate projections under six global circulation models (create a table here) :
+Now we need some future climate projections. We can download raster Worldclim data using the raster package.
+The Stoten publication uses climate projections under six global circulation models (create a table here) :
 
 \
 
@@ -678,7 +678,7 @@ summary(areal_unit_vec)
 \
 
 This aggregation function uses the 10th% Logistic threshold for each species 
-from the maxent models to threhsold the rasters of habitat suitability (0-1) 
+from the maxent models to threshold the rasters of habitat suitability (0-1) 
 For each GCM. For each species, it sums the 6 GCMS to create a binary raster with 
 cell values between 0-6. These cell values represent the number of GCMs where that 
 cell had a suitability value above the threshold determined by maxent. We classify 
