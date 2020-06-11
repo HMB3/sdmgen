@@ -139,6 +139,9 @@ Suggests:
     utf8,
     writexl,
     knitr
+Remotes: 
+    johnbaums/rmaxent,
+    johnbaums/things
 URL: https://github.com/HMB3/sdmgen
 RoxygenNote: 7.1.0
 VignetteBuilder: knitr
