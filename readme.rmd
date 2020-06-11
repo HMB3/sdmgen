@@ -51,6 +51,7 @@ To install, run :
 devtools::install_github("HMB3/sdmgen")
 library(sdmgen)
 sapply(sdmgen_packages, require, character.only = TRUE)
+install_github('johnbaums/rmaxent')
 
 ```
 
