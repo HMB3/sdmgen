@@ -74,16 +74,16 @@ This code was developed at Macquarie University in Sydney, as part of the 'which
 The backbone of the R workflow is a list of (taxonomically Ridgey-Didge!) species names 
 that we supply. The analysis is designed to process data for one species at a time, 
 allowing species results to be updated as required. We can demonstrate the workflow 
-using a sample of 5 plant species from the Stoten publication above. 
+using a sample of 3 plant species from the Stoten publication above. 
 
 \
 
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=TRUE}
 
-## Use the first 10 plant species in the Stoten list
+## Use the first 3 plant species in the Stoten list
 data("plant.spp")
-analysis_spp <- plant.spp[1:5]
+analysis_spp <- plant.spp[1:3]
 analysis_spp
 
 ```
