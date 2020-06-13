@@ -4,10 +4,10 @@ authors: "Hugh Burley, John Baumgartner, Linda Beaumont"
 date: "March 2020"
 output:
   github_document:
-  toc: true             # Table of content true
-toc_depth: 4            # Up to three depths of headings
+  toc: true   
+toc_depth: 4            
 toc_float: true
-number_sections: false  # If you want number sections at each table header
+number_sections: false  
 vignette: >
   %\VignetteIndexEntry{README}
   %\VignetteEngine{knitr::rmarkdown}
@@ -51,7 +51,6 @@ To install, run :
 devtools::install_github("HMB3/sdmgen")
 library(sdmgen)
 sapply(sdmgen_packages, require, character.only = TRUE)
-install_github('johnbaums/rmaxent')
 
 ```
 
