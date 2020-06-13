@@ -907,7 +907,7 @@ coord_clean_records = function(records,
 
     ## The select the relevant columns and rename
     dplyr::select(., coord_spp, CC.OBS, .val,  .equ, .zer, .cap,
-           .cen,    .gbf,   .inst, .summary)
+                  .cen,    .gbf,   .inst, .summary)
 
   ## Then rename
   summary(TIB.GBIF)
@@ -998,7 +998,7 @@ check_spatial_outliers = function(all_df,
   AUS.84 = AUS %>%
     spTransform(prj)
 
-  ## spp = plot.taxa[1]
+  ## spp = spat.taxa[1]
   plot.taxa <- as.character(unique(CLEAN.PLOT$searchTaxon))
   for (spp in plot.taxa) {
 
@@ -1126,12 +1126,15 @@ check_spatial_outliers = function(all_df,
 
   ## Try plotting the points which are outliers for a subset of spp and label them
   ## Get the first 10 spp
-  ## spp = plot.taxa[1]
-  plot.taxa <- as.character(unique(SPAT.FLAG$searchTaxon))
-  for (spp in plot.taxa) {
+  ## spp = spat.taxa[1]
+  spat.taxa <- as.character(unique(SPAT.FLAG$searchTaxon))
+  for (spp in spat.taxa) {
 
     ## Plot a subset of taxa
-    SPAT.PLOT   = subset(SPAT.FLAG, searchTaxon == spp)
+    SPAT.PLOT <- SPAT.FLAG %>% filter(searchTaxon == spp) %>%
+      SpatialPointsDataFrame(coords      = .[c("lon", "lat")],
+                             data        = .,
+                             proj4string = prj)
 
     message("plotting occ data for ", spp, ", ",
             nrow(SPAT.PLOT ), " records")
