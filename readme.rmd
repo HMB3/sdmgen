@@ -340,7 +340,6 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 
 \
 
-
 The next cleaning function takes a data frame of all species records, flags records as 
 spatial outliers (T/F for each record in the df), and saves images of the checks for each. 
 Manual cleaning of spatial outliers is very tedious, but automated cleaning makes mistakes, 
