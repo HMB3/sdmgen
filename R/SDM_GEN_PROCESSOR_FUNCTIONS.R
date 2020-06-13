@@ -1017,26 +1017,26 @@ check_spatial_outliers = function(all_df,
         16, 10, units = 'in', res = 500)
 
     par(mfrow = c(1,2))
-    plot(LAND.84, main = paste0(nrow(subset(CLEAN.PLOT.PI, coord_summary == FALSE)),
+    plot(LAND.84, main = paste0(nrow(subset(ALL.PLOT, coord_summary == FALSE)),
                                 " Global clean_coord 'FALSE' points for ", spp),
          lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
 
     points(CLEAN.PLOT.PI,
            pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
            xlab = "", ylab = "", asp = 1,
-           col = factor(CLEAN.PLOT.PI$coord_summary))
+           col = factor(ALL.PLOT$coord_summary))
 
     ## Plot true and false points for the world
     ## Black == FALSE
     ## Red   == TRUE
-    plot(AUS.84, main = paste0(nrow(subset(CLEAN.PLOT.PI, coord_summary == FALSE)),
+    plot(AUS.84, main = paste0(nrow(subset(ALL.PLOT, coord_summary == FALSE)),
                                " Global clean_coord 'FALSE' points for ", spp),
          lwd = 0.01, asp = 1, bg = 'sky blue', col = 'grey')
 
-    points(CLEAN.PLOT.PI,
+    points(ALL.PLOT,
            pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
            xlab = "", ylab = "", asp = 1,
-           col = factor(CLEAN.PLOT.PI$coord_summary))
+           col = factor(ALL.PLOT$coord_summary))
 
     dev.off()
 
@@ -1131,10 +1131,10 @@ check_spatial_outliers = function(all_df,
   for (spp in plot.taxa) {
 
     ## Plot a subset of taxa
-    CLEAN.PLOT.PI   = subset(SPAT.FLAG, searchTaxon == spp)
+    SPAT.PLOT   = subset(SPAT.FLAG, searchTaxon == spp)
 
     message("plotting occ data for ", spp, ", ",
-            nrow(CLEAN.PLOT.PI ), " clean records")
+            nrow(SPAT.PLOT ), " records")
 
     ## Plot true and false points for the world
     ## Black == FALSE
@@ -1144,14 +1144,14 @@ check_spatial_outliers = function(all_df,
         16, 10, units = 'in', res = 500)
 
     par(mfrow = c(1,2))
-    plot(LAND.84, main = paste0(nrow(subset(CLEAN.PLOT.PI, SPAT_OUT == FALSE)),
+    plot(LAND.84, main = paste0(nrow(subset(SPAT.PLOT, SPAT_OUT == FALSE)),
                                 " Spatial outlier 'FALSE' points for ", spp),
          lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
 
-    points(CLEAN.PLOT.PI,
+    points(SPAT.PLOT,
            pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
            xlab = "", ylab = "", asp = 1,
-           col = factor(CLEAN.PLOT.PI$SPAT_OUT))
+           col = factor(SPAT.PLOT$SPAT_OUT))
 
     ## Plot true and false points for the world
     ## Black == FALSE
@@ -1159,10 +1159,10 @@ check_spatial_outliers = function(all_df,
     plot(AUS.84, main = paste0("Australian points for ", spp),
          lwd = 0.01, asp = 1, bg = 'sky blue', col = 'grey')
 
-    points(CLEAN.PLOT.PI,
+    points(SPAT.PLOT,
            pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
            xlab = "", ylab = "", asp = 1,
-           col = factor(CLEAN.PLOT.PI$SPAT_OUT))
+           col = factor(SPAT.PLOT$SPAT_OUT))
 
     dev.off()
 
