@@ -110,7 +110,6 @@ check_dir   <-'./data/GBIF/Check_plots/'
 dir_lists   <- c(ALA_dir,  GBIF_dir,    back_dir, check_dir,
                  full_dir, results_dir, climate_dir)
 
-
 ## Create the folders if they don't exist
 for(i in dir_lists) {
   if(!dir.exists(i)) {
@@ -150,7 +149,6 @@ download_ALA_all_species(species_list  = analysis_spp,
 # STEP 2 :: Combine species occurrence data
 
 \
-
 
 This pipeline was developed using worldclim climate raster data, but it can take any set of 
 climate rasters. The spatial data used to develop the workflow are on google drive - put this 
@@ -216,6 +214,7 @@ GBIF.LAND = combine_gbif_records(species_list      = analysis_spp,
                                  world_raster      =  worldclim_annual_temp)
 
 ``` 
+
 
 \
 
@@ -301,6 +300,7 @@ COMBO.RASTER.CONVERT = combine_records_extract(ala_df          = ALA.LAND,
 
 ``` 
 
+
 \
 
 # STEP 4 :: Automated cleanin' of outlier records
@@ -330,10 +330,10 @@ records data.frame is that returned by the combine_records_extract function.
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
-## Step 4a :: Flag records as institutional or spatial outliers
+## Flag records as institutional or spatial outliers
 COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
-                                  capitals   = 10000,  ## Remove records within 10km  of capitals
-                                  centroids  = 5000,   ## Remove records within 5km of country centroids
+                                  capitals   = 10000,  
+                                  centroids  = 5000,   
                                   save_run   = "TEST_SPECIES",
                                   save_data  = FALSE)
 ``` 
@@ -351,7 +351,7 @@ input dfs are those returned by the coord_clean_records function.
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
-## Step 4b :: Flag spatial outliers
+## Flag spatial outliers
 SPATIAL.CLEAN = check_spatial_outliers(all_df       = COORD.CLEAN,
                                        land_shp     = LAND,
                                        urban_df     = FALSE, 
@@ -371,7 +371,7 @@ It assumes that the input df is that returned by the check_spatial_outliers func
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
-## Step 4c :: estimate climate niches using species records
+## Estimate climate niches using species records
 GLOB.NICHE = calc_1km_niches(coord_df     = SPATIAL.CLEAN,
                              prj          = CRS("+init=epsg:4326"),
                              country_shp  = AUS,
@@ -397,7 +397,7 @@ prepared by the check_spatial_outliers function
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
-## Step 4d :: plot species ranges using histograms and convex hulls for rainfall and temperature distributions
+## Plot species ranges using histograms and convex hulls for rainfall and temperature distributions
 plot_range_histograms(coord_df     = SPATIAL.CLEAN,
                       species_list = analysis_spp,
                       range_path   = check_dir)
@@ -418,7 +418,7 @@ background points from other taxa, if specified. In this example for bats, we'll
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
-## The final dataset is a spatial points dataframe in the Mollwiede projection
+## Final dataset is a spatial points dataframe in the Mollwiede projection
 SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
                                     species_list    = unique(COORD.CLEAN$searchTaxon),
                                     sdm_table_vars  = sdm_table_vars,
