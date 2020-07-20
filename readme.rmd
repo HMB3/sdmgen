@@ -80,6 +80,8 @@ using a sample of 3 plant species from the Stoten publication above.
 
 ## Use the first 3 plant species in the Stoten list
 data("plant.spp")
+data("bat.spp")
+bat_spp <- str_trim(bat.spp)
 analysis_spp <- plant.spp[1:3]
 analysis_spp
 
@@ -480,7 +482,7 @@ minimum number of predictors remains.
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
-run_sdm_analysis(species_list            = analysis_spp,
+run_sdm_analysis(species_list            = analysis_spp[1],
                  maxent_dir              = 'output/maxent/full_models',     
                  bs_dir                  = 'output/maxent/back_sel_models',
                  sdm_df                  = SDM.SPAT.OCC.BG,

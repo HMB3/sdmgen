@@ -48,7 +48,7 @@ download_GBIF_all_species = function(species_list, download_path, download_limit
       ## this is slow, but it works for now
       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
-      skip.spp.list <- c(skip.spp.list, nomenclature)
+      #skip.spp.list <- c(skip.spp.list, nomenclature)
       next
 
     }
@@ -59,7 +59,7 @@ download_GBIF_all_species = function(species_list, download_path, download_limit
       ## now append the species which had no records to the skipped list
       print (paste ("No GBIF records for", sp.n, "skipping"))
       records = paste ("No GBIF records |", sp.n)
-      skip.spp.list <- c(skip.spp.list, records)
+      #skip.spp.list <- c(skip.spp.list, records)
       next
 
     }
@@ -143,7 +143,7 @@ download_ALA_all_species = function (species_list, your_email, download_path, do
       ## Now, append the species which had incorrect nomenclature to the skipped list
       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
-      skip.spp.list <- c(skip.spp.list, nomenclature)
+      #skip.spp.list <- c(skip.spp.list, nomenclature)
       next
 
     }
@@ -155,7 +155,7 @@ download_ALA_all_species = function (species_list, your_email, download_path, do
       ## now append the species which had no records to the skipped list
       print (paste ("No ALA records for", sp.n, "skipping"))
       records = paste ("No ALA records |", sp.n)
-      skip.spp.list <- c(skip.spp.list, records)
+      #skip.spp.list <- c(skip.spp.list, records)
       next
 
     }
