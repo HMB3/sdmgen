@@ -428,10 +428,11 @@ SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
 \
 
 The next process is to run species distribution models using global records of each species.
-In order to sample species records thoroughly, we use a rasterized version of the 1975 Koppen raster, and another template raster of the same extent (global), resolution (1km*1km) and projection (Mollweide) as the analysis data. This step takes ages...
+In order to sample species records thoroughly, we use a rasterized version of the 1975 
+Koppen raster, and another template raster of the same extent (global), resolution (1km*1km) 
+and projection (Mollweide) as the analysis data. This step takes ages...
 
 \
-
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
@@ -482,7 +483,7 @@ minimum number of predictors remains.
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
-run_sdm_analysis(species_list            = analysis_spp[1],
+run_sdm_analysis(species_list            = analysis_spp[66],
                  maxent_dir              = 'output/maxent/full_models',     
                  bs_dir                  = 'output/maxent/back_sel_models',
                  sdm_df                  = SDM.SPAT.OCC.BG,
@@ -522,7 +523,7 @@ across Australia ().
 
 ## Create a table of maxent results
 ## This function aggregates the results for models that ran successfully
-MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp,
+MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp[66],
                                      results_dir  = 'output/maxent/back_sel_models',
                                      save_data    = FALSE,
                                      data_path    = "./output/results/",
@@ -591,6 +592,7 @@ Note that this step is quite memory heavy, and is best run with 32GB of RAM.
 ```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
 
 ## Create a local projection for mapping : Australian Albers
+gc()
 aus_albers <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 
                    +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
 
