@@ -209,6 +209,7 @@ download_ALA_all_species = function (species_list, your_email, download_path, al
 combine_ala_records = function(species_list, records_path, records_extension,
                                record_type, keep_cols, world_raster) {
 
+  ##
   download = list.files(records_path, pattern = ".RData")
   length(download)
 
