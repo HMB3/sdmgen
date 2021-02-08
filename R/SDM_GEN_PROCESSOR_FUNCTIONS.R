@@ -24,6 +24,7 @@ download_GBIF_all_species = function(species_list, download_path, download_limit
   GBIF.download.limit = download_limit
 
   ## for every species in the list
+  ## sp.n = species_list[1]
   for(sp.n in species_list){
 
     ## First, check if the f*&%$*# file exists
@@ -111,15 +112,21 @@ download_GBIF_all_species = function(species_list, download_path, download_limit
 #' @param download_path  Character string - File path for species downloads
 #' @param download_limit Numeric - How many records can be downloaded at one time? Set by server
 #' @export
-download_ALA_all_species = function (species_list, your_email, download_path, download_limit) {
+download_ALA_all_species = function (species_list, your_email, download_path, ala_temp_dir, download_limit) {
 
   ## create variables
   download_limit  = 200000
 
   ## for every species in the list
+  ## sp.n = species_list[1]
   for(sp.n in species_list){
 
     ## Get the ID?
+    if(!dir.exists(ala_temp_dir)) {
+      message('Creating ', ala_temp_dir)
+      dir.create(ala_temp_dir) } else {
+        message('temp ALA directory already exists')}
+
     lsid <- ALA4R::specieslist(sp.n)$taxonConceptLsid
 
     ## First, check if the f*&%$*# file exists
@@ -137,6 +144,9 @@ download_ALA_all_species = function (species_list, your_email, download_path, do
     save (dummy, file = file_name)
 
     ## Then check the spelling...incorrect nomenclature will return NULL result
+
+    dir.create(ala_temp_dir)
+
     if (is.null(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"', sep = ""),
                                    download_reason_id = 7, email = your_email)$data) == TRUE) {
 

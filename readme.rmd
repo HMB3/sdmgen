@@ -81,8 +81,9 @@ using a sample of 3 plant species from the Stoten publication above.
 ## Use the first 3 plant species in the Stoten list
 data("plant.spp")
 data("bat.spp")
-analysis_spp <- str_trim(bat.spp)
-analysis_spp <- plant.spp[1:3]
+data("insect.spp")
+analysis_spp <- str_trim(insect.spp)
+analysis_spp <- insect.genus
 analysis_spp
 
 ```
@@ -139,6 +140,7 @@ download_GBIF_all_species(species_list  = analysis_spp,
 download_ALA_all_species(species_list  = analysis_spp,
                          your_email    = 'hugh.burley@gmail.com',
                          download_path = "./data/ALA/",
+                         ala_temp_dir  = 'C:/Users/hughb/AppData/Local/Temp/RtmpCmco7x',
                          download_limit = 20000)
 
 ``` 
