@@ -281,7 +281,7 @@ combine_ala_records = function(species_list, records_path, records_extension,
 
       }
 
-      ## Create the searchTaxon column
+      ## Create the searchTaxon column - check how to put the data in here
       message ('Formatting occurrence data for ', x)
       d[,"searchTaxon"] = x
       d[,"searchTaxon"] = gsub(records_extension, "", d[,"searchTaxon"])
