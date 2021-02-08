@@ -83,7 +83,7 @@ data("plant.spp")
 data("bat.spp")
 data("insect.spp")
 analysis_spp <- str_trim(insect.spp)
-analysis_spp <- insect.genus
+analysis_spp <- insect.spp
 analysis_spp
 
 ```
@@ -155,6 +155,7 @@ This pipeline was developed using worldclim climate raster data, but it can take
 climate rasters. The spatial data used to develop the workflow are on google drive - put this 
 folder in your 'data' project folder:
 https://drive.google.com/open?id=1T5ET5MUX3-lkqiN5nNL3SZZagoJlEOal. 
+
 We can also get some global climate data from the worldclim website using raster::getData:
 
 \
