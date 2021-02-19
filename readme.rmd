@@ -61,7 +61,13 @@ sapply(sdmgen_packages, require, character.only = TRUE)
 # Background
 
 This code was developed at Macquarie University in Sydney, as part of the 'which plant where' project
-(https://www.whichplantwhere.com.au/). The aim was to create a pipeline to rapidly assess the climatic suitability of large suites of horticultural plant species under climate change predictions. All over the world, local governments are increasing their investment in urban greening interventions, yet there is little consideration of whether the current palette of species for these plantings will be resilient to climate change. This pipeline was created to assess the distribution of climatically suitable habitat, now and in the future, for the tree species most commonly grown by nurseries and planted across Australia's urban landscapes. However, it can be used to assess the distribution of any species (e.g. bats, reptiles, etc).
+(https://www.whichplantwhere.com.au/). The aim was to create a pipeline to rapidly assess the climatic 
+suitability of large suites of horticultural plant species under climate change predictions. All over the 
+world, local governments are increasing their investment in urban greening interventions, yet there is 
+little consideration of whether the current palette of species for these plantings will be resilient to 
+climate change. This pipeline was created to assess the distribution of climatically suitable habitat, 
+now and in the future, for the tree species most commonly grown by nurseries and planted across Australia's 
+urban landscapes. However, it can be used to assess the distribution of any species (e.g. bats, reptiles, etc).
 
 \
 
@@ -339,8 +345,8 @@ COORD.CLEAN = coord_clean_records(records    = COMBO.RASTER.CONVERT,
 The next cleaning function takes a data frame of all species records, flags records as 
 spatial outliers (T/F for each record in the df), and saves images of the checks for each. 
 Manual cleaning of spatial outliers is very tedious, but automated cleaning makes mistakes, 
-so checking is handy. This function uses the CoordinateCleaner package https://cran.r-project.org/web/packages/CoordinateCleaner/index.html. It assumes that the 
-input dfs are those returned by the coord_clean_records function.
+so checking is handy. This function uses the CoordinateCleaner package https://cran.r-project.org/web/packages/CoordinateCleaner/index.html. 
+It assumes that the input dfs are those returned by the coord_clean_records function.
 
 \
 
@@ -417,7 +423,7 @@ background points from other taxa, if specified. In this example for bats, we'll
 SDM.SPAT.OCC.BG = prepare_sdm_table(coord_df        = COORD.CLEAN,
                                     species_list    = unique(COORD.CLEAN$searchTaxon),
                                     sdm_table_vars  = sdm_table_vars,
-                                    save_run        = "Stoten_EG",
+                                    save_run        = "INSECT_EG",
                                     read_background = FALSE,
                                     save_data       = FALSE,
                                     save_shp        = FALSE)
@@ -484,9 +490,9 @@ minimum number of predictors remains.
 
 \
 
-```{r message=FALSE, echo=TRUE, warning=FALSE, eval=FALSE}
+```{r message=TRUE, echo=TRUE, warning=FALSE, eval=FALSE}
 
-run_sdm_analysis(species_list            = analysis_spp[66],
+run_sdm_analysis(species_list            = analysis_spp[1:3],
                  maxent_dir              = 'output/maxent/full_models',     
                  bs_dir                  = 'output/maxent/back_sel_models',
                  sdm_df                  = SDM.SPAT.OCC.BG,
@@ -526,11 +532,11 @@ across Australia ().
 
 ## Create a table of maxent results
 ## This function aggregates the results for models that ran successfully
-MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp[66],
+MAXENT.RESULTS = compile_sdm_results(species_list = analysis_spp[1:3],
                                      results_dir  = 'output/maxent/back_sel_models',
                                      save_data    = FALSE,
                                      data_path    = "./output/results/",
-                                     save_run     = "TEST_BATS")
+                                     save_run     = "TEST_INSECT")
 
 ## Get map_spp from the maxent results table above, change the species column,
 ## then create a list of logistic thresholds
