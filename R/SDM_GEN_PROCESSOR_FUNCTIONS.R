@@ -127,24 +127,21 @@ download_ALA_all_species = function (species_list, your_email, download_path, al
       dir.create(ala_temp_dir) } else {
         message('temp ALA directory already exists')}
 
-    lsid <- ALA4R::specieslist(sp.n)$taxonConceptLsid
+    # lsid <- ALA4R::specieslist(sp.n)$taxonConceptLsid
 
     ## First, check if the f*&%$*# file exists
     file_name = paste0(download_path, sp.n, "_ALA_records.RData")
 
     ## If it's already downloaded, skip
     if (file.exists (file_name)) {
-
       print (paste ("file exists for species", sp.n, "skipping"))
       next
-
     }
     ## create a dummy file
     dummy = data.frame()
     save (dummy, file = file_name)
 
     ## Then check the spelling...incorrect nomenclature will return NULL result
-
     dir.create(ala_temp_dir)
 
     if (is.null(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"', sep = ""),
@@ -152,10 +149,9 @@ download_ALA_all_species = function (species_list, your_email, download_path, al
 
       ## Now, append the species which had incorrect nomenclature to the skipped list
       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
-      nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
+      # nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
       #skip.spp.list <- c(skip.spp.list, nomenclature)
       next
-
     }
 
     ## Skip species with no records
@@ -167,7 +163,6 @@ download_ALA_all_species = function (species_list, your_email, download_path, al
       records = paste ("No ALA records |", sp.n)
       #skip.spp.list <- c(skip.spp.list, records)
       next
-
     }
 
     ## Download ALL records from ALA ::
@@ -175,14 +170,12 @@ download_ALA_all_species = function (species_list, your_email, download_path, al
     ALA = ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""), download_reason_id = 7, email = your_email)
     ALA = ALA[["data"]]
 
-    cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")
+    # cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")
     message(dim(ALA[1]), " Records returned for ", sp.n)
 
     ## Save records to .Rdata file
     save(ALA, file = file_name)
-
   }
-
 }
 
 

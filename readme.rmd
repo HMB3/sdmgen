@@ -89,7 +89,7 @@ data("plant.spp")
 data("bat.spp")
 data("insect.spp")
 analysis_spp <- str_trim(insect.spp)
-analysis_spp <- insect.spp[1:2]
+analysis_spp <- insect.spp
 analysis_spp
 
 ```
